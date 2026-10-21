@@ -16,6 +16,8 @@ h3 { margin: 0; font-size: 18px; line-height: 24px; font-weight: 600; }
 .nav-item { font: inherit; text-align: left; border: none; background: none; padding: 10px var(--space-12); border-radius: var(--radius-6); color: var(--color-text-secondary); cursor: pointer; }
 .nav-item:hover { background: var(--color-divider); }
 .nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 600; }
+.sidebar-session { margin-top: auto; padding: var(--space-12) var(--space-12) 0; display: flex; flex-direction: column; gap: var(--space-8); }
+.sidebar-session p { margin: 0; font-size: 13px; color: var(--color-text-muted); overflow-wrap: anywhere; }
 .content { flex: 1; min-width: 0; padding: var(--space-32) var(--space-40) 96px; display: flex; flex-direction: column; gap: var(--space-24); }
 .header { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--space-16); flex-wrap: wrap; }
 .switcher { font: inherit; font-size: 14px; font-weight: 600; color: var(--color-text-secondary); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-6); padding: var(--space-4) 10px; margin-bottom: var(--space-12); }
