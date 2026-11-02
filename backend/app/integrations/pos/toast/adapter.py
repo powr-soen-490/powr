@@ -14,6 +14,7 @@ from app.integrations.pos.toast.client import (
     ToastClient,
     ToastCredentials,
 )
+from app.integrations.pos.toast.menus import MENUS_PATH, menu_items_from_toast
 
 logger = logging.getLogger(__name__)
 
@@ -48,11 +49,12 @@ class ToastAdapter(PosAdapter):
         return True
 
     def fetch_menu_items(self) -> list[MenuItem]:
-        raise NotImplementedError("Toast menus are not implemented yet.")
+        items = menu_items_from_toast(self._client.get(MENUS_PATH), self.connection, self.currency)
+        logger.info("Fetched %d Toast menu items for connection %s", len(items), self.connection.id)
+        return items
 
     def fetch_orders(self, start_time: datetime, end_time: datetime) -> list[SaleLine]:
         raise NotImplementedError("Toast orders are not implemented yet.")
 
     def fetch_stock_items(self) -> list[StockItem]:
         raise NotImplementedError("Toast stock is not implemented yet.")
-
