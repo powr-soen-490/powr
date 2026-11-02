@@ -103,4 +103,4 @@ class StockItem(BaseModel):
     item_name: str | None = Field(default=None, min_length=1, max_length=255)
     quantity: Decimal | None = Field(default=None, allow_inf_nan=False)
     is_available: bool | None = None
-    
+
