@@ -44,6 +44,9 @@ class Settings(BaseSettings):
             raise ValueError("POS_CREDENTIALS_ENCRYPTION_KEY must encode exactly 32 bytes")
         return value
 
+    # Toast API host, shown as "API Access URL" on the Toast Web credentials page.
+    toast_api_base_url: str = "https://ws-api.toasttab.com"
+
     # Session & Cookie Security Settings
     session_secret_key: str = DEV_SESSION_SECRET_KEY
     session_cookie_name: str = "powr_session"

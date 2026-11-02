@@ -4,6 +4,5 @@
 
 pytest==9.1.1
 pytest-cov==7.1.0
-httpx2==2.13.1
 ruff==0.16.10
 mypy==2.4.0
