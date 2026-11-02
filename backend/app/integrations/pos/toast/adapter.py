@@ -25,6 +25,7 @@ from app.integrations.pos.toast.orders import (
     sale_lines_from_order,
     toast_datetime,
 )
+from app.integrations.pos.toast.stock import STOCK_PATH, stock_items_from_toast
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +81,12 @@ class ToastAdapter(PosAdapter):
         return lines
 
     def fetch_stock_items(self) -> list[StockItem]:
-        raise NotImplementedError("Toast stock is not implemented yet.")
+        """Items that are out of stock or limited; see ``stock.py`` for what Toast omits."""
+        items = stock_items_from_toast(self._client.get(STOCK_PATH), self.connection)
+        logger.info(
+            "Fetched %d Toast stock items for connection %s", len(items), self.connection.id
+        )
+        return items
 
     def _orders_in_window(self, start: datetime, end: datetime) -> Iterator[dict[str, Any]]:
         """Request pages until one comes back with fewer than ORDERS_PAGE_SIZE orders."""
