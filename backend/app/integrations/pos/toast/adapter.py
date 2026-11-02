@@ -55,4 +55,4 @@ class ToastAdapter(PosAdapter):
 
     def fetch_stock_items(self) -> list[StockItem]:
         raise NotImplementedError("Toast stock is not implemented yet.")
-    
+

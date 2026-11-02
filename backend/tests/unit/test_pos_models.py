@@ -158,4 +158,3 @@ class TestStockItem:
                 item_id="item-1",
                 item_name="",
             )
-

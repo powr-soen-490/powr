@@ -117,4 +117,3 @@ class ToastClient:
             return json.loads(response.text, parse_float=Decimal)
         except json.JSONDecodeError as exc:
             raise ToastApiError(f"Toast returned invalid JSON for {path}.") from exc
-        
