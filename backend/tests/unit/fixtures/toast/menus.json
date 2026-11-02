@@ -1,0 +1,119 @@
+{
+  "restaurantGuid": "restaurant-guid-1",
+  "lastUpdated": "2026-10-30T12:00:00.000+0000",
+  "restaurantTimeZone": "America/Toronto",
+  "menus": [
+    {
+      "guid": "menu-lunch",
+      "name": "Lunch",
+      "menuGroups": [
+        {
+          "guid": "group-mains",
+          "name": "Mains",
+          "menuItems": [
+            {
+              "guid": "item-gyro",
+              "name": "Gyro plate",
+              "price": 18.50,
+              "pricingStrategy": "MENU_SPECIFIC_PRICE",
+              "modifierGroupReferences": [1, 99]
+            },
+            {
+              "guid": "item-souvlaki",
+              "name": "Souvlaki",
+              "price": 0,
+              "pricingStrategy": "BASE_PRICE",
+              "modifierGroupReferences": []
+            }
+          ],
+          "menuGroups": [
+            {
+              "guid": "group-pizzas",
+              "name": "Pizzas",
+              "menuItems": [
+                {
+                  "guid": "item-pizza",
+                  "name": "Village pizza",
+                  "price": null,
+                  "pricingStrategy": "SIZE_PRICE",
+                  "modifierGroupReferences": [2]
+                }
+              ],
+              "menuGroups": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "guid": "menu-dinner",
+      "name": "Dinner",
+      "menuGroups": [
+        {
+          "guid": "group-dinner-mains",
+          "name": "Mains",
+          "menuItems": [
+            {
+              "guid": "item-gyro",
+              "name": "Gyro plate",
+              "price": 22.00,
+              "pricingStrategy": "MENU_SPECIFIC_PRICE",
+              "modifierGroupReferences": [1]
+            },
+            {
+              "guid": "item-baklava",
+              "name": "",
+              "price": 7.25,
+              "pricingStrategy": "BASE_PRICE"
+            }
+          ],
+          "menuGroups": []
+        }
+      ]
+    }
+  ],
+  "modifierGroupReferences": {
+    "1": {
+      "referenceId": 1,
+      "guid": "modgroup-toppings",
+      "name": "Toppings",
+      "minSelections": 0,
+      "maxSelections": null,
+      "pricingStrategy": "NONE",
+      "modifierOptionReferences": [10, 11]
+    },
+    "2": {
+      "referenceId": 2,
+      "guid": "modgroup-size",
+      "name": "Size",
+      "minSelections": 1,
+      "maxSelections": 1,
+      "pricingStrategy": "SIZE_PRICE",
+      "modifierOptionReferences": [12]
+    }
+  },
+  "modifierOptionReferences": {
+    "10": {
+      "referenceId": 10,
+      "guid": "option-feta",
+      "name": "Extra feta",
+      "price": 1.50,
+      "pricingStrategy": "BASE_PRICE"
+    },
+    "11": {
+      "referenceId": 11,
+      "guid": "option-tzatziki",
+      "name": "Tzatziki",
+      "price": 0,
+      "pricingStrategy": "BASE_PRICE"
+    },
+    "12": {
+      "referenceId": 12,
+      "guid": "option-large",
+      "name": "Large",
+      "price": null,
+      "pricingStrategy": "SIZE_PRICE"
+    }
+  },
+  "preModifierGroupReferences": {}
+}
