@@ -130,11 +130,17 @@ def test_session_cookie_is_httponly_and_samesite(make_client: ClientFactory) -> 
     assert "path=/" in cookie
 
 
-def test_session_cookie_is_secure_when_configured(
+def test_session_cookie_is_secure_in_production(
     make_client: ClientFactory, api_app: FastAPI, migrated_engine: Engine
 ) -> None:
     url = migrated_engine.url.render_as_string(hide_password=False)
-    production_like = Settings(_env_file=None, database_url=url, cookie_secure=True)
+    production_like = Settings(
+        _env_file=None,
+        database_url=url,
+        environment="production",
+        session_secret_key="a-private-secret-that-is-not-the-committed-default",
+        cookie_secure=True,
+    )
     api_app.dependency_overrides[get_settings] = lambda: production_like
 
     response = make_client().post("/api/auth/signup", json=signup_payload())
