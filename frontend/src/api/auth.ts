@@ -96,3 +96,19 @@ export async function signup(request: SignupRequest): Promise<AuthUser> {
   }
   throw new AuthError(SERVER_ERROR)
 }
+
+// Ends the session on the server and clears the cookie.
+export async function logout(): Promise<void> {
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+  } catch {
+    throw new AuthError(NETWORK_ERROR)
+  }
+  if (!response.ok) {
+    throw new AuthError(SERVER_ERROR)
+  }
+}

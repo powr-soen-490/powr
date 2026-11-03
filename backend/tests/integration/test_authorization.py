@@ -6,15 +6,12 @@ Each test runs in a throwaway database on the DATABASE_URL server and signs up r
 through /api/auth/signup. Skipped when that user cannot create databases.
 """
 
-import uuid
 from collections.abc import Callable, Iterator
 
-import psycopg
 import pytest
 from fastapi import APIRouter
 from fastapi.testclient import TestClient
-from sqlalchemy import Engine, create_engine, make_url, text
-from sqlalchemy.exc import ProgrammingError
+from sqlalchemy import Engine, text
 
 from app.core.auth import CurrentUserDep, OwnerDep
 from app.core.config import Settings, get_settings
@@ -40,26 +37,9 @@ def owner_only(user: OwnerDep, body: dict[str, str] | None = None) -> dict[str, 
 
 
 @pytest.fixture
-def engine(integration_database_url: str) -> Iterator[Engine]:
-    name = f"powr_authz_{uuid.uuid4().hex[:12]}"
-    server = create_engine(integration_database_url, isolation_level="AUTOCOMMIT")
-    try:
-        with server.connect() as connection:
-            connection.execute(text(f'CREATE DATABASE "{name}"'))
-    except ProgrammingError as error:
-        server.dispose()
-        if isinstance(error.orig, psycopg.errors.InsufficientPrivilege):
-            pytest.skip("the DATABASE_URL user cannot create a scratch database")
-        raise
-    scratch = create_engine(make_url(integration_database_url).set(database=name))
-    migrate_up(scratch)
-    try:
-        yield scratch
-    finally:
-        scratch.dispose()
-        with server.connect() as connection:
-            connection.execute(text(f'DROP DATABASE IF EXISTS "{name}" WITH (FORCE)'))
-        server.dispose()
+def engine(scratch_engine: Engine) -> Engine:
+    migrate_up(scratch_engine)
+    return scratch_engine
 
 
 @pytest.fixture

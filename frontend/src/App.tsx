@@ -19,7 +19,7 @@ import { Settings } from './pages/Settings'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 
-function Dashboard() {
+function Dashboard({ user, onLoggedOut }: { user?: AuthUser; onLoggedOut?: () => void }) {
   const [page, setPage] = useState<PageId>('home')
 
   const pages: Record<PageId, ReactNode> = {
@@ -35,7 +35,7 @@ function Dashboard() {
     <MockDataProvider>
       <ToastProvider>
         <div className="app">
-          <Sidebar page={page} onNavigate={setPage} />
+          <Sidebar page={page} onNavigate={setPage} user={user} onLoggedOut={onLoggedOut} />
           <main className="content">{pages[page]}</main>
         </div>
       </ToastProvider>
@@ -56,7 +56,16 @@ function App() {
         path="/signup"
         element={user ? <Navigate to="/" replace /> : <SignupPage onSignedUp={setUser} />}
       />
-      <Route path="/" element={user ? <Dashboard /> : <Navigate to="/login" replace />} />
+      <Route
+        path="/"
+        element={
+          user ? (
+            <Dashboard user={user} onLoggedOut={() => setUser(null)} />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
       <Route path="/mockup" element={<Dashboard />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
