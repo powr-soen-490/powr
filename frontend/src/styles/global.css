@@ -10,8 +10,8 @@ h2 { margin: 0 0 var(--space-12); font-size: 22px; line-height: 28px; font-weigh
 h3 { margin: 0; font-size: 18px; line-height: 24px; font-weight: 600; }
 
 /* Layout */
-.app { display: flex; min-height: 100vh; }
-.sidebar { width: 200px; flex: none; background: var(--color-surface); border-right: 1px solid var(--color-border); padding: var(--space-24) var(--space-12); display: flex; flex-direction: column; gap: 2px; }
+.app { display: flex; min-height: 100vh; align-items: flex-start; }
+.sidebar { width: 200px; flex: none; position: sticky; top: 0; height: 100vh; background: var(--color-surface); border-right: 1px solid var(--color-border); padding: var(--space-24) var(--space-12); display: flex; flex-direction: column; gap: 2px; }
 .wordmark { font-size: 22px; font-weight: 700; letter-spacing: .04em; padding: 0 var(--space-12) var(--space-20); }
 .nav-item { font: inherit; text-align: left; border: none; background: none; padding: 10px var(--space-12); border-radius: var(--radius-6); color: var(--color-text-secondary); cursor: pointer; }
 .nav-item:hover { background: var(--color-divider); }

@@ -19,13 +19,10 @@ export function Sidebar({
   const [loggingOut, setLoggingOut] = useState(false)
 
   async function handleLogout() {
-    if (!onLoggedOut) {
-      return
-    }
     setLoggingOut(true)
     try {
       await logout()
-      onLoggedOut()
+      onLoggedOut?.()
     } catch {
       // Stay signed in when the server cannot be reached. The session is still valid.
     } finally {
