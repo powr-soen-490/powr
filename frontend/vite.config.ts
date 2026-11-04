@@ -16,6 +16,7 @@ export default defineConfig({
     },
   },
   test: {
+    environment: 'jsdom',
     coverage: {
       provider: 'v8',
       // lcov is uploaded to Codecov in CI; text prints a summary in the job log
