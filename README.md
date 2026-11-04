@@ -381,20 +381,32 @@ Otherwise, follow the conventions listed below:
 TODO: detail this section once we have versioning system in place.
 
 ### Commit messages
-No specific commit-message syntax is required. However, make sure that feature and fix commit messages follow these rules:
-- describes the actual change rather than using vague wording.
-- identifies the affected functionality or component.
-- uses a clear action-oriented description.
+Every commit pushed to a branch must follow the [Conventional Commits](https://www.conventionalcommits.org/) specification. Because we merge with standard merge commits rather than squashing, CI checks every commit on your branch and blocks the pull request if any commit violates the syntax.
 
-Obviously, merge commits and automated dependency-update commits are excluded.
+Format: `<type>(<optional-scope>): <description>`
+
+- **Types**:
+  - `feat`: A new feature (bumps minor version, e.g., `0.1.0` -> `0.2.0`)
+  - `fix`: A bug fix (bumps patch version, e.g., `0.1.0` -> `0.1.1`)
+  - `chore`: Maintenance, config, dependencies (no version bump)
+  - `docs`: Documentation changes only (no version bump)
+  - `refactor`: Code changes that neither fix a bug nor add a feature
+  - `test`: Adding or updating tests
+  - `ci`: CI/CD workflow updates
+
+- **Issue References & Scopes**:
+  Place the issue number or component in the scope:
+  - `feat(#8): add basic restaurant layout table`
+  - `fix(backend): [#12] resolve order creation timeout`
+  - `chore: update dependencies`
+
+- **Breaking Changes**:
+  Add `!` after the type/scope or add a `BREAKING CHANGE:` footer to trigger a major bump:
+  - `feat!: switch auth scheme to oauth2`
 
 ### Pull request process
-When about to open a pull request, make sure the title includes the issue number in brackets, for example "[#8] Set up basic project structure".
-Make sure you assign at least 2 reviewers, ideally people that are in your subteam, or people that have worked on said feature recently.
-
-**Before merging**: Make sure your PR has the following:
-- Approval by at least 1 member.
-- All checks pass (linter, unit tests, code quality report, etc.).
-- Most importantly, your branch is up to date with and REBASED on master.
-
-Finally, do not "squash & merge", always "Merge pull request". This is for better traceability.
+1. **Title**: Include the issue reference in brackets (e.g., `[#8] Set up basic project structure`).
+2. **Reviewers**: Assign at least 2 reviewers (at least 1 approval required before merge).
+3. **Checks**: Ensure all CI checks pass (linter, unit/integration tests, playwright, and `commitlint`).
+4. **Branch state**: Ensure your branch is up to date with and rebased on `master`.
+5. **Merge Method**: Always select **"Merge pull request"** (create a merge commit). **Never** select "Squash and merge".
