@@ -1,0 +1,23 @@
+# Source-File AI Declaration
+# AI contribution: 50% or more AI-generated
+name: commitlint
+
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  lint-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate PR commits with commitlint
+        uses: wagoid/commitlint-github-action@v6
+        with:
+          configFile: .commitlintrc.json
+          failOnWarnings: false
