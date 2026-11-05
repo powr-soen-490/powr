@@ -47,6 +47,7 @@ services:
       - /app/node_modules
     environment:
       API_PROXY_TARGET: http://backend:8000
+      VITE_USE_POLLING: "true"
     depends_on:
       - backend
 
