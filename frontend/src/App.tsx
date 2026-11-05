@@ -18,6 +18,7 @@ import { Inventory } from './pages/Inventory'
 import { Settings } from './pages/Settings'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
+import ToastSettingsPage from './pages/ToastSettingsPage'
 
 function Dashboard({ user, onLoggedOut }: { user?: AuthUser; onLoggedOut?: () => void }) {
   const [page, setPage] = useState<PageId>('home')
@@ -67,6 +68,16 @@ function App() {
         }
       />
       <Route path="/mockup" element={<Dashboard />} />
+      <Route
+        path="/settings/pos"
+        element={
+          user ? (
+            <ToastSettingsPage key={user.restaurant_id} user={user} />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

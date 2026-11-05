@@ -123,6 +123,28 @@ cannot reach PostgreSQL; see [Troubleshooting](#troubleshooting).
 Interactive API documentation is at <http://localhost:8000/docs>, and the frontend is at
 <http://localhost:5173>.
 
+### POS credential encryption
+
+POS client secrets and access tokens are stored using AES-256-GCM. Set
+`POS_CREDENTIALS_ENCRYPTION_KEY` in the root `.env` (or the deployment environment) to a
+base64-encoded, randomly generated 32-byte key. There is no default key: secret reads and
+writes fail if the key is missing. Other endpoints and the metadata-only list still work.
+
+Generate a key, then save its output as `POS_CREDENTIALS_ENCRYPTION_KEY` in `.env`:
+
+```bash
+python -c "import base64, secrets; print(base64.urlsafe_b64encode(secrets.token_bytes(32)).decode())"
+```
+
+Keep the key private and persistent across restarts, and use the same key for every backend
+instance sharing a database. Replacing it makes existing ciphertext unreadable; retain the
+key securely with your database backups. Never commit a real key.
+
+
+POST and PATCH credential requests accept optional `access_token` and `expires_at` fields.
+On PATCH, an omitted or null token/expiry preserves its current value. Secrets are decrypted
+only for server-side integrations; GET responses continue to exclude secrets and tokens.
+
 ### E2E Tests
 To run the end-to-end tests, from the root directory (the first three commands are needed once):
 ```bash
