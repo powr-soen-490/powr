@@ -69,6 +69,16 @@ export async function login(email: string, password: string): Promise<AuthUser> 
   throw new AuthError(SERVER_ERROR)
 }
 
+// Restore the signed-in user from the session cookie; null when there is no valid session.
+export async function fetchCurrentUser(): Promise<AuthUser | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' })
+    return response.ok ? ((await response.json()) as AuthUser) : null
+  } catch {
+    return null
+  }
+}
+
 // Create a restaurant and its owner account, then the backend signs the new user in.
 export async function signup(request: SignupRequest): Promise<AuthUser> {
   const response = await postJson('/api/auth/signup', {

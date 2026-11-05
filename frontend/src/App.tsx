@@ -1,11 +1,11 @@
 // Source-File AI Declaration
 // AI contribution: 50% or more AI-generated
 
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import './styles/tokens.css'
 import './styles/global.css'
-import type { AuthUser } from './api/auth'
+import { fetchCurrentUser, type AuthUser } from './api/auth'
 import { Sidebar } from './layout/Sidebar'
 import type { PageId } from './layout/navigation'
 import { ToastProvider } from './components/Toast'
@@ -45,6 +45,26 @@ function Dashboard({ user, onLoggedOut }: { user?: AuthUser; onLoggedOut?: () =>
 
 function App() {
   const [user, setUser] = useState<AuthUser | null>(null)
+  const [checkingSession, setCheckingSession] = useState(true)
+
+  // On a full page load, restore the user from the session cookie before routing,
+  // so protected routes don't redirect to /login while the check is in flight.
+  useEffect(() => {
+    let cancelled = false
+    void fetchCurrentUser().then((currentUser) => {
+      if (cancelled) return
+      // Keep a user who logged in while the check was in flight.
+      setUser((existing) => existing ?? currentUser)
+      setCheckingSession(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  if (checkingSession) {
+    return null
+  }
 
   return (
     <Routes>
