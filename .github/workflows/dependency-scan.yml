@@ -1,0 +1,51 @@
+# Source-File AI Declaration
+# AI contribution: 50% or more AI-generated
+name: dependency-scan
+
+# Do not make this a required check: on pull requests it only warns.
+on:
+  pull_request:
+    branches: [ "master" ]
+  schedule:
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "22"
+  PYTHON_VERSION: "3.12"
+  PIP_AUDIT_VERSION: "2.10.1"
+
+jobs:
+  scan:
+    name: scan
+    runs-on: ubuntu-latest
+    # Two issue-opening runs at once could both see no open issue and both create it.
+    # Pull requests open no issues, so each gets its own group and never waits.
+    concurrency:
+      group: ${{ github.event_name == 'pull_request' && format('dependency-scan-{0}', github.run_id) || 'dependency-scan-issues' }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install pip-audit
+        run: pip install "pip-audit==$PIP_AUDIT_VERSION"
+
+      # Unmerged pull requests must not open issues, so they only report
+      - name: Scan dependencies
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/report_vulnerabilities.py ${{ github.event_name != 'pull_request' && '--open-issues' || '' }}
