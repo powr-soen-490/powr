@@ -98,7 +98,7 @@ def test_is_feature_enabled_wraps_flagsmith_errors(monkeypatch: pytest.MonkeyPat
     )
 
     class FailedFlags:
-        def get_environment_flags(self) -> None:
+        def is_feature_enabled(self, _feature_name: str) -> bool:
             raise FlagsmithClientError("request failed")
 
     class FailedClient:
@@ -124,7 +124,7 @@ def test_is_feature_enabled_wraps_request_errors(monkeypatch: pytest.MonkeyPatch
     )
 
     class FailedFlags:
-        def get_environment_flags(self) -> None:
+        def is_feature_enabled(self, _feature_name: str) -> bool:
             raise RequestException("connection failed")
 
     class FailedClient:

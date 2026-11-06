@@ -41,7 +41,7 @@ async function loadProvider() {
 describe('FeatureFlagsProvider', () => {
   beforeEach(() => {
     providerCapture.options.length = 0
-    vi.stubEnv('VITE_FLAGSMITH_ENVIRONMENT_KEY', '')
+    vi.stubEnv('FLAGSMITH_ENVIRONMENT_KEY', '')
     vi.stubEnv('VITE_FLAGSMITH_API_URL', '')
     vi.stubEnv('DEV', true)
     vi.stubEnv('PROD', false)
@@ -84,7 +84,7 @@ describe('FeatureFlagsProvider', () => {
     )
 
     expect(consoleError).toHaveBeenCalledWith(
-      'VITE_FLAGSMITH_ENVIRONMENT_KEY is missing; all feature pages will remain hidden.',
+      'FLAGSMITH_ENVIRONMENT_KEY is missing; all feature pages will remain hidden.',
     )
     const options = providerCapture.options[0] as ProviderOptions
     expect(Object.values(options.defaultFlags).every((flag) => !flag.enabled)).toBe(true)
@@ -92,7 +92,7 @@ describe('FeatureFlagsProvider', () => {
   })
 
   it('uses the configured environment key and reports SDK errors', async () => {
-    vi.stubEnv('VITE_FLAGSMITH_ENVIRONMENT_KEY', 'staging-client-key')
+    vi.stubEnv('FLAGSMITH_ENVIRONMENT_KEY', 'staging-client-key')
     vi.stubEnv('VITE_FLAGSMITH_API_URL', 'https://flags.example/api/')
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
     const FeatureFlagsProvider = await loadProvider()

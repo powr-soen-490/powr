@@ -8,6 +8,7 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 export default defineConfig({
   envDir: '..',
+  envPrefix: ['VITE_', 'FLAGSMITH_ENVIRONMENT_KEY'],
   plugins: [react()],
   server: {
     // Same-origin /api in dev so the session cookie works without cross-site settings.

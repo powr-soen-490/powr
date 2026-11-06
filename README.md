@@ -219,12 +219,13 @@ Add the keys for the matching Flagsmith environment to the root `.env` file:
 # Server-side SDK key; keep secret and never expose it to Vite.
 FLAGSMITH_SERVER_SIDE_KEY=your-server-side-environment-key
 # Client-side environment key; this is public and is embedded in the frontend.
-VITE_FLAGSMITH_ENVIRONMENT_KEY=your-client-side-environment-key
+FLAGSMITH_ENVIRONMENT_KEY=your-client-side-environment-key
 ```
 
 `docker compose` passes both keys to their respective apps. Vite reads the root `.env`
 when run directly from `frontend/`; for a deployed frontend, configure
-`VITE_FLAGSMITH_ENVIRONMENT_KEY` (and optionally `VITE_FLAGSMITH_API_URL`) at build time.
+`FLAGSMITH_ENVIRONMENT_KEY` (and optionally `VITE_FLAGSMITH_API_URL`) at build time.
+The Flagsmith client key is public; do not put the server-side key in Vercel.
 The backend accepts `FLAGSMITH_API_URL` to use a self-hosted Flagsmith API. The client
 environment key is public; do not use the backend server-side key in frontend settings.
 

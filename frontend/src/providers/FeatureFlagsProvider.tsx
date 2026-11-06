@@ -6,7 +6,7 @@ import flagsmith, { type IFlags } from '@flagsmith/flagsmith'
 import { FlagsmithProvider as FlagsmithReactProvider } from '@flagsmith/flagsmith/react'
 import { PAGE_FLAGS, type PageFlag } from '../layout/navigation'
 
-const environmentKey = import.meta.env.VITE_FLAGSMITH_ENVIRONMENT_KEY
+const environmentKey = import.meta.env.FLAGSMITH_ENVIRONMENT_KEY
 const hasEnvironmentKey = Boolean(environmentKey)
 const defaultFlags: IFlags<PageFlag> = {
   [PAGE_FLAGS.home]: { enabled: import.meta.env.DEV, value: null },
@@ -18,7 +18,7 @@ const defaultFlags: IFlags<PageFlag> = {
 }
 
 if (!hasEnvironmentKey && import.meta.env.PROD) {
-  console.error('VITE_FLAGSMITH_ENVIRONMENT_KEY is missing; all feature pages will remain hidden.')
+  console.error('FLAGSMITH_ENVIRONMENT_KEY is missing; all feature pages will remain hidden.')
 }
 
 export function FeatureFlagsProvider({ children }: { children: ReactNode }) {
