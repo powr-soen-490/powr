@@ -92,18 +92,22 @@ describe('Sidebar', () => {
 })
 
 describe('App', () => {
-  it('sends signed-out visitors from home to login', () => {
+  it('sends signed-out visitors from home to login', async () => {
+    // The session check finds no cookie, so the visitor is signed out.
+    vi.mocked(fetch).mockResolvedValue(new Response(null, { status: 401 }))
     render(
       <MemoryRouter initialEntries={['/']}>
         <App />
       </MemoryRouter>,
     )
 
-    expect(screen.getByRole('heading', { name: 'Welcome' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Welcome' })).toBeTruthy()
   })
 
   it('shows the dashboard log out button after a successful login', async () => {
-    vi.mocked(fetch).mockResolvedValue(
+    // First call is the session check on load (no session yet), then the login itself.
+    vi.mocked(fetch).mockResolvedValueOnce(new Response(null, { status: 401 }))
+    vi.mocked(fetch).mockResolvedValueOnce(
       new Response(JSON.stringify(OWNER), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
@@ -115,7 +119,7 @@ describe('App', () => {
       </MemoryRouter>,
     )
 
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: OWNER.email } })
+    fireEvent.change(await screen.findByLabelText('Email'), { target: { value: OWNER.email } })
     fireEvent.change(screen.getByPlaceholderText('Your password'), {
       target: { value: 'Str0ng!Password' },
     })
