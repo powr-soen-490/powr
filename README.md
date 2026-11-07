@@ -234,6 +234,7 @@ backend/
 frontend/                  React + TypeScript app
 e2e/                       Playwright end-to-end tests
 scripts/check_headers.py   Source-File AI Declaration check
+scripts/report_vulnerabilities.py   Dependency scan; opens issues on its daily run
 docker-compose.yml         Local PostgreSQL + backend + frontend
 ```
 
@@ -344,6 +345,44 @@ and publishes the GitHub Release.
 
 Runs after `ci` passes on `master`. Waits until the staging backend's `/health` reports the merged commit,
 smoke-tests the backend and frontend, and records the deployment in the matching GitHub Release.
+
+### `dependency-scan` workflow ([dependency-scan.yml](.github/workflows/dependency-scan.yml))
+
+Checks dependencies for known vulnerabilities with `pip-audit` (`backend/requirements-dev.txt`, including
+transitive packages) and `npm audit` (`frontend/` and the repository root, shown as `frontend` and `e2e`).
+Docker base images and GitHub Actions versions are not covered.
+
+The `scan` job does the following:
+
+| Runs on | What it does |
+|---|---|
+| Every pull request | Reports findings only. The check stays green, so it never blocks merging; keep it out of the required checks |
+| Daily at 09:00 UTC, or started from the Actions tab | Reports findings and opens or updates GitHub issues. Green when it runs, whatever it finds; fails only if a scan cannot run |
+
+| Severity | PR warning | Job summary | GitHub issue |
+|---|---|---|---|
+| High, critical | Yes | Yes | Yes |
+| Low, moderate | No | Yes | No |
+| Unknown (Python advisory with no severity on [OSV.dev](https://osv.dev)) | No | Yes | No |
+
+**Issues.** Each vulnerable package gets one issue per scan, titled `[deps] <scope>: <package>` and labelled
+`dependency-scan`. Later runs update the open issue instead of creating another, so keep its title and
+label unchanged. Nothing is closed automatically and no pull requests are opened: put `Closes #<issue>` in
+the pull request that fixes it. An issue closed while the package is still vulnerable is opened again on
+the next run.
+
+**Accepting a risk.** Add the Python advisory to `IGNORED_PIP_VULNS` in
+[scripts/report_vulnerabilities.py](scripts/report_vulnerabilities.py). npm findings have no ignore list, so
+they need a fix or an npm `overrides` entry.
+
+**Changing the threshold.** Set `MIN_SEVERITY` in the same script.
+
+To scan locally without creating issues, run this from the repository root (needs npm):
+
+```
+pip install pip-audit
+python scripts/report_vulnerabilities.py
+```
 
 ## Deployment
 
