@@ -47,6 +47,8 @@ services:
       - /app/node_modules
     environment:
       API_PROXY_TARGET: http://backend:8000
+      FLAGSMITH_ENVIRONMENT_KEY: ${FLAGSMITH_ENVIRONMENT_KEY:-}
+      VITE_FLAGSMITH_API_URL: ${VITE_FLAGSMITH_API_URL:-https://edge.api.flagsmith.com/api/v1/}
       VITE_USE_POLLING: "true"
     depends_on:
       - backend

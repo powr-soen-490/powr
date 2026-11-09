@@ -7,6 +7,8 @@ import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  envDir: '..',
+  envPrefix: ['VITE_', 'FLAGSMITH_ENVIRONMENT_KEY'],
   plugins: [react()],
   server: {
     // File-change events from a Windows/macOS host don't reach a Docker bind mount, so the
@@ -18,6 +20,7 @@ export default defineConfig({
     },
   },
   test: {
+    environment: 'jsdom',
     coverage: {
       provider: 'v8',
       // lcov is uploaded to Codecov in CI; text prints a summary in the job log

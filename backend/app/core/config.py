@@ -6,7 +6,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal, Self
 
-from pydantic import Field, PostgresDsn, model_validator
+from pydantic import Field, PostgresDsn, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # The repository-root .env is shared with docker-compose. Inside the container this path
@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     database_url: PostgresDsn
     cors_origins: list[str] = ["http://localhost:5173"]
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
+    flagsmith_server_side_key: SecretStr | None = None
+    flagsmith_api_url: str = "https://edge.api.flagsmith.com/api/v1/"
 
     # Session & Cookie Security Settings
     session_secret_key: str = DEV_SESSION_SECRET_KEY

@@ -6,6 +6,7 @@ import { cleanup, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from '../src/App'
+import { FeatureFlagsProvider } from '../src/providers/FeatureFlagsProvider'
 
 const USER = {
   user_id: '00000000-0000-0000-0000-000000000001',
@@ -26,7 +27,9 @@ function mockMe(response: Response | Error) {
 function renderAt(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <App />
+      <FeatureFlagsProvider>
+        <App />
+      </FeatureFlagsProvider>
     </MemoryRouter>,
   )
 }

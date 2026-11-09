@@ -3,15 +3,17 @@
 
 import { useState } from 'react'
 import { logout, type AuthUser } from '../api/auth'
-import { NAV, type PageId } from './navigation'
+import type { NavigationItem, PageId } from './navigation'
 
 export function Sidebar({
   page,
+  items,
   onNavigate,
   user,
   onLoggedOut,
 }: {
-  page: PageId
+  page: PageId | null
+  items: NavigationItem[]
   onNavigate: (page: PageId) => void
   user?: AuthUser
   onLoggedOut?: () => void
@@ -33,7 +35,7 @@ export function Sidebar({
   return (
     <nav className="sidebar" aria-label="Main">
       <div className="wordmark">POWR</div>
-      {NAV.map((item) => (
+      {items.map((item) => (
         <button
           key={item.id}
           className={`nav-item ${item.id === page ? 'active' : ''}`}

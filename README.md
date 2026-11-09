@@ -217,6 +217,67 @@ logger.info("Imported %d orders for restaurant %s", count, restaurant_id)
 - **Never log secrets**: passwords, API keys, OAuth tokens or `DATABASE_URL`. Customer
   personal data must not be logged either.
 
+### Feature flags
+
+POWR uses [Flagsmith](https://www.flagsmith.com/) for feature flags in both the React
+frontend and FastAPI backend. Create separate Flagsmith environments for development,
+staging, and production so each deployment uses its own keys and flag values.
+
+Create these Boolean feature flags in the Flagsmith project, then set their values in each
+environment:
+
+| Flag | Page |
+|---|---|
+| `page_home` | Home |
+| `page_recommended_orders` | Recommended Orders |
+| `page_forecast` | Forecast |
+| `page_menu_mapping` | Menu Mapping |
+| `page_inventory` | Inventory & Vendors |
+| `page_settings` | Settings |
+
+Keep unfinished pages **off in the Staging environment**. The frontend removes disabled
+pages from the sidebar and prevents dashboard links from opening them. Pages default to
+off in production if no client-side key is configured; the local frontend defaults them
+on in development when no key is present. A missing or unavailable backend flag service
+fails closed: guarded endpoints return `503`, and disabled features return `404`.
+
+Add the keys for the matching Flagsmith environment to the root `.env` file:
+
+```dotenv
+# Server-side SDK key; keep secret and never expose it to Vite.
+FLAGSMITH_SERVER_SIDE_KEY=your-server-side-environment-key
+# Client-side environment key; this is public and is embedded in the frontend.
+FLAGSMITH_ENVIRONMENT_KEY=your-client-side-environment-key
+```
+
+`docker compose` passes both keys to their respective apps. Vite reads the root `.env`
+when run directly from `frontend/`; for a deployed frontend, configure
+`FLAGSMITH_ENVIRONMENT_KEY` (and optionally `VITE_FLAGSMITH_API_URL`) at build time.
+The Flagsmith client key is public; do not put the server-side key in Vercel.
+The backend accepts `FLAGSMITH_API_URL` to use a self-hosted Flagsmith API. The client
+environment key is public; do not use the backend server-side key in frontend settings.
+
+The app already uses `page_*` flags to control its pages. For a new frontend component,
+use the Flagsmith React SDK:
+
+```tsx
+const flags = useFlags(['page_inventory'])
+if (!flags.page_inventory?.enabled) return null
+```
+
+For backend endpoints, apply the shared route dependency so disabled pages cannot reach
+their API:
+
+```python
+@router.get("/inventory", dependencies=[Depends(require_feature("page_inventory"))])
+def get_inventory() -> InventoryResponse:
+    ...
+```
+
+Import `useFlags` from `@flagsmith/flagsmith/react` and `require_feature` from
+`app.core.feature_flags`. Keep frontend and backend flag names aligned with the Flagsmith
+environment, and turn on a staging flag only after its page and API are ready to demo.
+
 ### Project layout
 
 ```

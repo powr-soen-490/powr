@@ -8,7 +8,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router'
 import { AuthError, logout } from '../src/api/auth'
 import App from '../src/App'
+import { NAV } from '../src/layout/navigation'
 import { Sidebar } from '../src/layout/Sidebar'
+import { FeatureFlagsProvider } from '../src/providers/FeatureFlagsProvider'
 
 const OWNER = {
   user_id: '11111111-1111-1111-1111-111111111111',
@@ -58,7 +60,7 @@ describe('logout', () => {
 
 describe('Sidebar', () => {
   it('hides the session when nobody is signed in', () => {
-    render(<Sidebar page="home" onNavigate={() => undefined} />)
+    render(<Sidebar page="home" items={NAV} onNavigate={() => undefined} />)
 
     expect(screen.queryByRole('button', { name: 'Log out' })).toBeNull()
   })
@@ -67,7 +69,13 @@ describe('Sidebar', () => {
     const onLoggedOut = vi.fn()
     vi.mocked(fetch).mockResolvedValue(okLogout())
     render(
-      <Sidebar page="home" onNavigate={() => undefined} user={OWNER} onLoggedOut={onLoggedOut} />,
+      <Sidebar
+        page="home"
+        items={NAV}
+        onNavigate={() => undefined}
+        user={OWNER}
+        onLoggedOut={onLoggedOut}
+      />,
     )
 
     expect(screen.getByText('Logged in as john@example.com')).toBeTruthy()
@@ -80,7 +88,13 @@ describe('Sidebar', () => {
     const onLoggedOut = vi.fn()
     vi.mocked(fetch).mockRejectedValue(new TypeError('Failed to fetch'))
     render(
-      <Sidebar page="home" onNavigate={() => undefined} user={OWNER} onLoggedOut={onLoggedOut} />,
+      <Sidebar
+        page="home"
+        items={NAV}
+        onNavigate={() => undefined}
+        user={OWNER}
+        onLoggedOut={onLoggedOut}
+      />,
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Log out', exact: true }))
@@ -97,7 +111,9 @@ describe('App', () => {
     vi.mocked(fetch).mockResolvedValue(new Response(null, { status: 401 }))
     render(
       <MemoryRouter initialEntries={['/']}>
-        <App />
+        <FeatureFlagsProvider>
+          <App />
+        </FeatureFlagsProvider>
       </MemoryRouter>,
     )
 
@@ -115,7 +131,9 @@ describe('App', () => {
     )
     render(
       <MemoryRouter initialEntries={['/login']}>
-        <App />
+        <FeatureFlagsProvider>
+          <App />
+        </FeatureFlagsProvider>
       </MemoryRouter>,
     )
 

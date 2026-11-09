@@ -22,3 +22,5 @@ services:
         sync: false
       - key: SESSION_SECRET_KEY
         generateValue: true
+      - key: FLAGSMITH_SERVER_SIDE_KEY
+        sync: false
