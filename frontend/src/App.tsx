@@ -1,12 +1,12 @@
 // Source-File AI Declaration
 // AI contribution: 50% or more AI-generated
 
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import { useFlags, useFlagsmithLoading } from '@flagsmith/flagsmith/react'
 import './styles/tokens.css'
 import './styles/global.css'
-import type { AuthUser } from './api/auth'
+import { fetchCurrentUser, type AuthUser } from './api/auth'
 import { Sidebar } from './layout/Sidebar'
 import { getVisibleNavigation, PAGE_FLAG_NAMES, PAGE_FLAGS, type PageId } from './layout/navigation'
 import { ToastProvider } from './components/Toast'
@@ -20,7 +20,7 @@ import { Settings } from './pages/Settings'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 
-function Dashboard() {
+function Dashboard({ user, onLoggedOut }: { user?: AuthUser; onLoggedOut?: () => void }) {
   const [page, setPage] = useState<PageId>('home')
   const flags = useFlags(PAGE_FLAG_NAMES)
   const loading = useFlagsmithLoading()
@@ -54,6 +54,8 @@ function Dashboard() {
             onNavigate={(nextPage) => {
               if (isPageEnabled(nextPage)) setPage(nextPage)
             }}
+            user={user}
+            onLoggedOut={onLoggedOut}
           />
           <main className="content">
             {loading?.error && (
@@ -73,6 +75,26 @@ function Dashboard() {
 
 function App() {
   const [user, setUser] = useState<AuthUser | null>(null)
+  const [checkingSession, setCheckingSession] = useState(true)
+
+  // On a full page load, restore the user from the session cookie before routing,
+  // so protected routes don't redirect to /login while the check is in flight.
+  useEffect(() => {
+    let cancelled = false
+    void fetchCurrentUser().then((currentUser) => {
+      if (cancelled) return
+      // Keep a user who logged in while the check was in flight.
+      setUser((existing) => existing ?? currentUser)
+      setCheckingSession(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  if (checkingSession) {
+    return null
+  }
 
   return (
     <Routes>
@@ -84,7 +106,16 @@ function App() {
         path="/signup"
         element={user ? <Navigate to="/" replace /> : <SignupPage onSignedUp={setUser} />}
       />
-      <Route path="/" element={user ? <Dashboard /> : <Navigate to="/login" replace />} />
+      <Route
+        path="/"
+        element={
+          user ? (
+            <Dashboard user={user} onLoggedOut={() => setUser(null)} />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
       <Route path="/mockup" element={<Dashboard />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

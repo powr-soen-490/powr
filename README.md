@@ -73,13 +73,26 @@ This is also the setup needed to run tests, linting and type checks locally.
    database that `.env` expects:
 
    ```bash
-   psql -h localhost -d postgres -c "CREATE USER powr_user WITH PASSWORD 'powr_password';"
+   psql -h localhost -d postgres -c "CREATE USER powr_user WITH PASSWORD 'powr_password' CREATEDB;"
    psql -h localhost -d postgres -c "CREATE DATABASE powr_dev OWNER powr_user;"
    ```
 
+   `CREATEDB` lets the tests create their own databases: without it the integration tests are
+   skipped and the end-to-end tests cannot start.
+
    If `psql` asks for a password you don't know, see [Troubleshooting](#troubleshooting).
 
-3. Start the backend from `backend/`, with the virtual environment active:
+3. Create the app's tables in `powr_dev`. Run this from `backend/`, with the virtual
+   environment active:
+
+   ```bash
+   python -m app.core.database up
+   ```
+
+   It prints `Database migrated up.` Run it again whenever you pull a new file in
+   `backend/db/`; it only adds what is missing and keeps your data.
+
+4. Start the backend from `backend/`, with the virtual environment active:
 
    ```bash
    uvicorn app.main:app --reload
@@ -87,7 +100,7 @@ This is also the setup needed to run tests, linting and type checks locally.
 
    It reads its settings from the `.env` file in the repository root.
 
-4. In another terminal, start the frontend:
+5. In another terminal, start the frontend:
 
    ```bash
    cd frontend
@@ -118,8 +131,16 @@ npm ci --prefix frontend
 npx playwright install --with-deps chromium
 npm run test:e2e
 ```
-Playwright starts the frontend dev server on <http://localhost:5173>, or reuses one that is already
-running (for example from `docker compose up`).
+Before running them, start PostgreSQL (`docker compose up`, or your local PostgreSQL) and
+activate `backend/.venv` in the same terminal; Docker users need it too (see
+[Backend Tests](#backend-tests-and-code-quality)).
+
+Playwright starts its own frontend (<http://localhost:5174>) and backend
+(<http://localhost:8001>), separate from the ones you run by hand. That backend uses its own
+database, `powr_dev_e2e`, which is wiped and recreated at the start of every run, so tests always
+start from the same empty state and never touch your `powr_dev` data. Creating it needs the
+`CREATEDB` permission (see [Option B](#option-b-directly-on-your-machine); Docker's user already
+has it).
 
 ### Frontend Tests and code quality
 Run from `frontend/` after `npm ci`. CI runs the same checks.
@@ -135,6 +156,11 @@ Run from `frontend/` after `npm ci`. CI runs the same checks.
 Run from `backend/` with the virtual environment active. CI runs the same checks, so a pull
 request passes CI if they pass locally.
 
+Tests run on your machine even if you use Docker: the Docker image does not include the test
+tools. So create the virtual environment once (step 1 of
+[Option B](#option-b-directly-on-your-machine)); with Docker, that is the only Option B step you
+need.
+
 | Command | What it does |
 |---|---|
 | `pytest` | Runs all tests |
@@ -144,8 +170,10 @@ request passes CI if they pass locally.
 | `python ../scripts/check_headers.py` | Checks the Source-File AI Declaration of every applicable file (see [`AGENTS.md`](AGENTS.md)) |
 
 Tests are split into `tests/unit/` (no database needed) and `tests/integration/` (real
-PostgreSQL connections). The test that needs a running database is **skipped** unless
-`DATABASE_URL` is set in your shell, as it is in CI:
+PostgreSQL). Each integration test creates its own empty database and deletes it afterwards,
+so your `powr_dev` data is never touched. They are **skipped** unless `DATABASE_URL` is set in
+your shell and its user has `CREATEDB` (Docker's user does; for Option B, see step 2). With
+Docker, keep `docker compose up` running so the database is reachable on `localhost:5432`:
 
 ```bash
 DATABASE_URL=postgresql://powr_user:powr_password@localhost:5432/powr_dev pytest
@@ -267,6 +295,7 @@ backend/
 frontend/                  React + TypeScript app
 e2e/                       Playwright end-to-end tests
 scripts/check_headers.py   Source-File AI Declaration check
+scripts/report_vulnerabilities.py   Dependency scan; opens issues on its daily run
 docker-compose.yml         Local PostgreSQL + backend + frontend
 ```
 
@@ -291,7 +320,7 @@ chosen during installation.
    asked:
 
    ```bash
-   psql -h localhost -U postgres -d postgres -c "CREATE USER powr_user WITH PASSWORD 'powr_password';"
+   psql -h localhost -U postgres -d postgres -c "CREATE USER powr_user WITH PASSWORD 'powr_password' CREATEDB;"
    psql -h localhost -U postgres -d postgres -c "CREATE DATABASE powr_dev OWNER powr_user;"
    ```
 
@@ -316,7 +345,7 @@ chosen during installation.
    3. Create the powr user and database (no password needed here):
 
       ```bash
-      $PG/psql -p 5433 -U postgres -d postgres -c "CREATE USER powr_user WITH PASSWORD 'powr_password';"
+      $PG/psql -p 5433 -U postgres -d postgres -c "CREATE USER powr_user WITH PASSWORD 'powr_password' CREATEDB;"
       $PG/psql -p 5433 -U postgres -d postgres -c "CREATE DATABASE powr_dev OWNER powr_user;"
       ```
 
@@ -361,7 +390,8 @@ npm and pip dependencies are cached.
 
 ### `Playwright Tests` workflow ([playwright.yml](.github/workflows/playwright.yml))
 
-Runs the end-to-end tests on every pull request and every push to `master`.
+Runs the end-to-end tests on every pull request and every push to `master`. It starts an empty
+PostgreSQL, then Playwright starts the backend and frontend exactly as it does locally.
 
 ### `release` workflow ([release.yml](.github/workflows/release.yml))
 
@@ -376,6 +406,44 @@ and publishes the GitHub Release.
 
 Runs after `ci` passes on `master`. Waits until the staging backend's `/health` reports the merged commit,
 smoke-tests the backend and frontend, and records the deployment in the matching GitHub Release.
+
+### `dependency-scan` workflow ([dependency-scan.yml](.github/workflows/dependency-scan.yml))
+
+Checks dependencies for known vulnerabilities with `pip-audit` (`backend/requirements-dev.txt`, including
+transitive packages) and `npm audit` (`frontend/` and the repository root, shown as `frontend` and `e2e`).
+Docker base images and GitHub Actions versions are not covered.
+
+The `scan` job does the following:
+
+| Runs on | What it does |
+|---|---|
+| Every pull request | Reports findings only. The check stays green, so it never blocks merging; keep it out of the required checks |
+| Daily at 09:00 UTC, or started from the Actions tab | Reports findings and opens or updates GitHub issues. Green when it runs, whatever it finds; fails only if a scan cannot run |
+
+| Severity | PR warning | Job summary | GitHub issue |
+|---|---|---|---|
+| High, critical | Yes | Yes | Yes |
+| Low, moderate | No | Yes | No |
+| Unknown (Python advisory with no severity on [OSV.dev](https://osv.dev)) | No | Yes | No |
+
+**Issues.** Each vulnerable package gets one issue per scan, titled `[deps] <scope>: <package>` and labelled
+`dependency-scan`. Later runs update the open issue instead of creating another, so keep its title and
+label unchanged. Nothing is closed automatically and no pull requests are opened: put `Closes #<issue>` in
+the pull request that fixes it. An issue closed while the package is still vulnerable is opened again on
+the next run.
+
+**Accepting a risk.** Add the Python advisory to `IGNORED_PIP_VULNS` in
+[scripts/report_vulnerabilities.py](scripts/report_vulnerabilities.py). npm findings have no ignore list, so
+they need a fix or an npm `overrides` entry.
+
+**Changing the threshold.** Set `MIN_SEVERITY` in the same script.
+
+To scan locally without creating issues, run this from the repository root (needs npm):
+
+```
+pip install pip-audit
+python scripts/report_vulnerabilities.py
+```
 
 ## Deployment
 
