@@ -125,8 +125,27 @@ class TestRequests:
 
 
 class TestSaleLines:
-    def test_keeps_only_sold_menu_items(self, lines: dict[str, SaleLine]) -> None:
-        assert set(lines) == {"line-gyro", "line-olives", "line-refunded"}
+    def test_keeps_only_menu_item_lines(self, lines: dict[str, SaleLine]) -> None:
+        assert set(lines) == {
+            "line-gyro",
+            "line-olives",
+            "line-refunded",
+            "line-voided",
+            "line-in-voided-check",
+            "line-in-voided-order",
+            "line-in-deleted-order",
+        }
+
+    def test_sold_lines_are_not_voided(self, lines: dict[str, SaleLine]) -> None:
+        assert not lines["line-gyro"].is_voided
+        assert not lines["line-refunded"].is_voided
+
+    @pytest.mark.parametrize(
+        "line_id",
+        ["line-voided", "line-in-voided-check", "line-in-voided-order", "line-in-deleted-order"],
+    )
+    def test_flags_voided_and_deleted_lines(self, lines: dict[str, SaleLine], line_id: str) -> None:
+        assert lines[line_id].is_voided
 
     def test_maps_line_fields(self, lines: dict[str, SaleLine]) -> None:
         gyro = lines["line-gyro"]

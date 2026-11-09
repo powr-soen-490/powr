@@ -39,17 +39,16 @@ def toast_datetime(value: datetime) -> str:
 
 
 def sale_lines_from_order(order: dict[str, Any], connection: PosConnection) -> Iterator[SaleLine]:
-    """One SaleLine per sold menu item; voided and deleted orders, checks and items are
-    skipped, while refunded items are kept because their ingredients were still used."""
-    if order.get("voided") or order.get("deleted"):
-        return
+    """One SaleLine per sold menu item. Lines in voided or deleted orders, checks or items
+    are kept with is_voided=True so the importer can undo them; refunded items are kept as
+    sold because their ingredients were still used."""
     order_id = order.get("guid")
     opened = order.get("openedDate")
     if not order_id or not opened:
         return
+    order_voided = _is_voided(order)
     for check in order.get("checks") or []:
-        if check.get("voided") or check.get("deleted"):
-            continue
+        check_voided = order_voided or _is_voided(check)
         for selection in check.get("selections") or []:
             if not _is_sold_menu_item(selection):
                 continue
@@ -64,7 +63,12 @@ def sale_lines_from_order(order: dict[str, Any], connection: PosConnection) -> I
                 timestamp=opened,
                 price=_non_negative(selection.get("price")),
                 modifiers=tuple(_sale_modifiers(selection.get("modifiers") or [])),
+                is_voided=check_voided or _is_voided(selection),
             )
+
+
+def _is_voided(entity: dict[str, Any]) -> bool:
+    return bool(entity.get("voided") or entity.get("deleted"))
 
 
 def _is_sold_menu_item(selection: dict[str, Any]) -> bool:
@@ -74,7 +78,6 @@ def _is_sold_menu_item(selection: dict[str, Any]) -> bool:
         and (selection.get("item") or {}).get("guid")
         and isinstance(quantity, (int, Decimal))
         and quantity > 0
-        and not selection.get("voided")
         and not selection.get("deferred")
         and selection.get("selectionType") not in NON_FOOD_SELECTION_TYPES
     )

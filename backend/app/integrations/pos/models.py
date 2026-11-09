@@ -85,6 +85,10 @@ class SaleLine(BaseModel):
     price: Decimal | None = Field(default=None, ge=Decimal("0"), allow_inf_nan=False)
     modifiers: tuple[SaleModifier, ...] = ()
 
+    # True when the POS voided or deleted the line, its check or its order, so the importer
+    # can undo a line it saved before the void.
+    is_voided: bool = False
+
     @field_validator("timestamp")
     @classmethod
     def normalize_timestamp(cls, value: datetime) -> datetime:

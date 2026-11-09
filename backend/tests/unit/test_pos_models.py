@@ -105,6 +105,7 @@ class TestSaleLine:
 
         assert line.price is None
         assert line.modifiers == ()
+        assert line.is_voided is False
 
     def test_keeps_price_and_modifiers(self) -> None:
         modifier = SaleModifier(item_id="mod-1", item_name="Extra feta", quantity=Decimal("2"))

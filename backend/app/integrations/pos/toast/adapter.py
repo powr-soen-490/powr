@@ -71,7 +71,8 @@ class ToastAdapter(PosAdapter):
         """Sale lines from orders modified in [start_time, end_time).
 
         Toast filters ordersBulk by modifiedDate, so an older order that was changed in the
-        range (for example voided) is returned too; callers deduplicate by order and line ID.
+        range (for example voided) is returned too, with is_voided set on its lines; callers
+        upsert by order and line ID.
         """
         lines: list[SaleLine] = []
         for window_start, window_end in order_windows(start_time, end_time):
