@@ -1,7 +1,7 @@
 # Source-File AI Declaration
 # AI contribution: 50% or more AI-generated
 
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from uuid import UUID
 
@@ -81,6 +81,8 @@ class SaleLine(BaseModel):
     item_name: str = Field(min_length=1, max_length=255)
     quantity: Decimal = Field(gt=Decimal("0"), allow_inf_nan=False)
     timestamp: AwareDatetime
+    # The restaurant's business day; a sale after midnight still counts for the night before.
+    business_date: date
     # Net amount charged for the line after discounts, when the provider reports it.
     price: Decimal | None = Field(default=None, ge=Decimal("0"), allow_inf_nan=False)
     modifiers: tuple[SaleModifier, ...] = ()

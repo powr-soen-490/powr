@@ -3,7 +3,7 @@
 """Translates Toast ordersBulk responses into SaleLine models."""
 
 from collections.abc import Iterator
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 
@@ -44,7 +44,8 @@ def sale_lines_from_order(order: dict[str, Any], connection: PosConnection) -> I
     sold because their ingredients were still used."""
     order_id = order.get("guid")
     opened = order.get("openedDate")
-    if not order_id or not opened:
+    business_date = _business_date(order.get("businessDate"))
+    if not order_id or not opened or business_date is None:
         return
     order_voided = _is_voided(order)
     for check in order.get("checks") or []:
@@ -61,10 +62,19 @@ def sale_lines_from_order(order: dict[str, Any], connection: PosConnection) -> I
                 item_name=selection.get("displayName") or MISSING_NAME,
                 quantity=selection["quantity"],
                 timestamp=opened,
+                business_date=business_date,
                 price=_non_negative(selection.get("price")),
                 modifiers=tuple(_sale_modifiers(selection.get("modifiers") or [])),
                 is_voided=check_voided or _is_voided(selection),
             )
+
+
+def _business_date(value: Any) -> date | None:
+    """Toast sends the business date as a number like 20261001."""
+    try:
+        return datetime.strptime(str(value), "%Y%m%d").date()
+    except ValueError:
+        return None
 
 
 def _is_voided(entity: dict[str, Any]) -> bool:

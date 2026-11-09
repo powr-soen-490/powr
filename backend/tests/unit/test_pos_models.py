@@ -2,7 +2,7 @@
 # AI contribution: 50% or more AI-generated
 """Validation rules of the provider-independent POS models."""
 
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any
 from uuid import uuid4
@@ -46,6 +46,7 @@ def make_sale_line(**overrides: Any) -> SaleLine:
         "item_name": "Gyro plate",
         "quantity": Decimal("1"),
         "timestamp": datetime(2026, 10, 1, 18, 30, tzinfo=UTC),
+        "business_date": date(2026, 10, 1),
     }
     fields.update(overrides)
     return SaleLine(**fields)
@@ -122,6 +123,12 @@ class TestSaleLine:
     def test_rejects_modifier_without_positive_quantity(self) -> None:
         with pytest.raises(ValidationError):
             SaleModifier(item_id="mod-1", item_name="Extra feta", quantity=Decimal("0"))
+
+    def test_requires_business_date(self) -> None:
+        fields = make_sale_line().model_dump(exclude={"business_date"})
+
+        with pytest.raises(ValidationError):
+            SaleLine(**fields)
 
     def test_normalizes_timestamp_to_utc(self) -> None:
         montreal = timezone(timedelta(hours=-4))

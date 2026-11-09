@@ -120,6 +120,7 @@
   {
     "guid": "order-voided",
     "openedDate": "2026-10-01T18:00:00.000+0000",
+    "businessDate": 20261001,
     "voided": true,
     "deleted": false,
     "checks": [
@@ -140,6 +141,7 @@
   {
     "guid": "order-deleted",
     "openedDate": "2026-10-01T19:00:00.000+0000",
+    "businessDate": 20261001,
     "voided": false,
     "deleted": true,
     "checks": [

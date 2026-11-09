@@ -3,7 +3,7 @@
 """Fetching Toast orders by date range and translating them into SaleLine models."""
 
 import json
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any
 
@@ -17,6 +17,7 @@ from app.integrations.pos.toast.orders import (
     ORDERS_PAGE_SIZE,
     ORDERS_PATH,
     order_windows,
+    sale_lines_from_order,
     toast_datetime,
 )
 from tests.unit.toast_fakes import CONNECTION, FIXTURES_DIR, FakeToast
@@ -33,6 +34,7 @@ def simple_order(number: int) -> dict[str, Any]:
     return {
         "guid": f"order-{number}",
         "openedDate": "2026-10-01T18:00:00.000+0000",
+        "businessDate": 20261001,
         "checks": [
             {
                 "selections": [
@@ -160,6 +162,26 @@ class TestSaleLines:
 
     def test_uses_opened_date_in_utc(self, lines: dict[str, SaleLine]) -> None:
         assert lines["line-gyro"].timestamp == datetime(2026, 10, 1, 18, 30, tzinfo=UTC)
+
+    def test_uses_business_date(self, lines: dict[str, SaleLine]) -> None:
+        assert lines["line-gyro"].business_date == date(2026, 10, 1)
+
+    def test_late_night_sale_counts_for_the_previous_business_day(self) -> None:
+        order = simple_order(1)
+        # 12:30am in Montreal on October 2, still the night of October 1.
+        order["openedDate"] = "2026-10-02T04:30:00.000+0000"
+
+        [line] = sale_lines_from_order(order, CONNECTION)
+
+        assert line.timestamp.date() == date(2026, 10, 2)
+        assert line.business_date == date(2026, 10, 1)
+
+    @pytest.mark.parametrize("business_date", [None, "not-a-date", 20261399])
+    def test_skips_orders_without_a_valid_business_date(self, business_date: Any) -> None:
+        order = simple_order(1)
+        order["businessDate"] = business_date
+
+        assert list(sale_lines_from_order(order, CONNECTION)) == []
 
     def test_keeps_weighed_quantities_exact(self, lines: dict[str, SaleLine]) -> None:
         assert lines["line-olives"].quantity == Decimal("0.35")
