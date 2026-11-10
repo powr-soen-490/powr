@@ -3,6 +3,7 @@
 
 import { useState, type ReactNode } from 'react'
 import { PageHeader } from '../layout/PageHeader'
+import { SalesImport } from './SalesImport'
 
 function SettingsRow({ title, description, children, onClick }: {
   title: string
@@ -30,6 +31,9 @@ function SettingsRow({ title, description, children, onClick }: {
 export function Settings() {
   const [theme, setTheme] = useState('light')
   const [unit, setUnit] = useState('metric')
+  const [view, setView] = useState<'main' | 'pos'>('main')
+
+  if (view === 'pos') return <SalesImport onBack={() => setView('main')} />
 
   return (
     <>
@@ -42,7 +46,8 @@ export function Settings() {
         />
         <SettingsRow
           title="POS Settings"
-          description="Manage your Toast connection and sync preferences."
+          description="Manage your Toast connection and import your sales history."
+          onClick={() => setView('pos')}
         />
         <SettingsRow title="Theme" description="Choose the appearance of POWR.">
           <div className="pill-options" role="group" aria-label="Theme">
