@@ -58,6 +58,14 @@ class ToastClient:
             base_url=base_url, timeout=REQUEST_TIMEOUT_SECONDS, transport=transport
         )
 
+    @property
+    def is_closed(self) -> bool:
+        return self._http.is_closed
+
+    def close(self) -> None:
+        """Close the connections kept open for reuse between requests."""
+        self._http.close()
+
     def login(self) -> None:
         """Exchange the client ID and secret for an access token."""
         response = self._send(

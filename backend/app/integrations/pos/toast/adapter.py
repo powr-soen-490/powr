@@ -62,6 +62,9 @@ class ToastAdapter(PosAdapter):
             return False
         return True
 
+    def close(self) -> None:
+        self._client.close()
+
     def fetch_menu_items(self) -> list[MenuItem]:
         items = menu_items_from_toast(self._client.get(MENUS_PATH), self.connection, self.currency)
         logger.info("Fetched %d Toast menu items for connection %s", len(items), self.connection.id)

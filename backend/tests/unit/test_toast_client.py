@@ -110,6 +110,30 @@ class TestGet:
             toast.adapter()._client.get(MENUS_PATH)
 
 
+class TestClose:
+    def test_with_block_closes_the_client(self, toast: FakeToast) -> None:
+        with toast.adapter() as adapter:
+            adapter.authenticate()
+            assert not adapter._client.is_closed
+
+        assert adapter._client.is_closed
+
+    def test_with_block_closes_the_client_when_a_request_fails(self, toast: FakeToast) -> None:
+        toast.reply(LOGIN_PATH, httpx2.Response(500))
+
+        with pytest.raises(ToastApiError), toast.adapter() as adapter:
+            adapter.authenticate()
+
+        assert adapter._client.is_closed
+
+    def test_close_can_be_called_directly(self, toast: FakeToast) -> None:
+        adapter = toast.adapter()
+
+        adapter.close()
+
+        assert adapter._client.is_closed
+
+
 class TestSecrets:
     def test_credentials_hide_the_secret_when_printed(self) -> None:
         credentials = ToastCredentials(client_id="test-client-id", client_secret=CLIENT_SECRET)

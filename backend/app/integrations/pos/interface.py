@@ -3,6 +3,7 @@
 
 from abc import ABC, abstractmethod
 from datetime import datetime
+from typing import Self
 
 from app.integrations.pos.models import MenuItem, PosConnection, SaleLine, StockItem
 
@@ -32,3 +33,12 @@ class PosAdapter(ABC):
     def fetch_stock_items(self) -> list[StockItem]:
         """Fetch stock items from the POS system"""
         pass
+
+    def close(self) -> None:
+        """Release open connections; adapters that hold none keep this default"""
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self.close()
