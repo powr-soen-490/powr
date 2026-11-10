@@ -18,8 +18,10 @@ backend/
     main.py            FastAPI application entry point (uvicorn app.main:app)
     core/              settings, database, logging; shared by all modules
     api/               top-level router and app-wide endpoints (health)
+    integrations/      provider-independent contracts with external systems
+      pos/             PosAdapter interface and internal POS models; <provider>/ per POS
     modules/           one package per business area
-      pos/             POS sync; adapters/<provider>/ per POS
+      pos/             POS sync and POS credentials
       forecasting/     demand forecasting and order recommendations
   db/                  legacy SQL init script, to be replaced by Alembic migrations
   tests/               unit/ (no database) and integration/ (real PostgreSQL)
@@ -37,7 +39,8 @@ Setup and run instructions are in `README.md`.
   business logic or SQL; services never import FastAPI.
 - Modules call each other only through services, never another module's repository or models.
 - Every restaurant-owned table has a `restaurant_id`, and every query filters by it.
-- Raw POS payloads never leave `modules/pos/adapters/`; adapters return internal models.
+- Raw POS payloads never leave `integrations/pos/<provider>/`; adapters return the internal
+  models in `integrations/pos/models.py`.
 - Configuration comes from environment variables only. Never commit `.env` or secrets.
 - Timestamps are timezone-aware (UTC); money and quantities use `Decimal`/`NUMERIC`, never floats.
 - Primary keys are UUIDs.

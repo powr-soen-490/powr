@@ -1,0 +1,12 @@
+{
+  "@class": ".SuccessfulResponse",
+  "token": {
+    "tokenType": "Bearer",
+    "scope": null,
+    "expiresIn": 86400,
+    "accessToken": "test-access-token",
+    "idToken": null,
+    "refreshToken": null
+  },
+  "status": "SUCCESS"
+}
