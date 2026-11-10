@@ -3,7 +3,8 @@
 """PosAdapter implementation for Toast's read-only Standard API access."""
 
 import logging
-from collections.abc import Iterator
+import time
+from collections.abc import Callable, Iterator
 from datetime import datetime
 from typing import Any
 
@@ -25,6 +26,7 @@ from app.integrations.pos.toast.orders import (
     sale_lines_from_order,
     toast_datetime,
 )
+from app.integrations.pos.toast.retry import RetryPolicy
 from app.integrations.pos.toast.stock import STOCK_PATH, stock_items_from_toast
 
 logger = logging.getLogger(__name__)
@@ -44,6 +46,9 @@ class ToastAdapter(PosAdapter):
         currency: str,
         base_url: str,
         transport: httpx2.BaseTransport | None = None,
+        retry_policy: RetryPolicy | None = None,
+        sleep: Callable[[float], None] = time.sleep,
+        clock: Callable[[], float] = time.time,
     ) -> None:
         super().__init__(connection)
         self.currency = currency
@@ -52,6 +57,9 @@ class ToastAdapter(PosAdapter):
             restaurant_guid=connection.location_id,
             base_url=base_url,
             transport=transport,
+            retry_policy=retry_policy,
+            sleep=sleep,
+            clock=clock,
         )
 
     def authenticate(self) -> bool:
