@@ -9,10 +9,9 @@ touches a developer's own data. Skipped when that user cannot create databases.
 import uuid
 from collections.abc import Iterator
 
-import psycopg
 import pytest
-from sqlalchemy import Connection, Engine, create_engine, inspect, make_url, text
-from sqlalchemy.exc import IntegrityError, ProgrammingError
+from sqlalchemy import Connection, Engine, inspect, text
+from sqlalchemy.exc import IntegrityError
 
 from app.core.database import migrate_down, migrate_up
 
@@ -20,25 +19,8 @@ AUTH_TABLES = {"users", "restaurant_memberships", "invites", "eula_acceptances"}
 
 
 @pytest.fixture
-def engine(integration_database_url: str) -> Iterator[Engine]:
-    name = f"powr_auth_tables_{uuid.uuid4().hex[:12]}"
-    server = create_engine(integration_database_url, isolation_level="AUTOCOMMIT")
-    try:
-        with server.connect() as connection:
-            connection.execute(text(f'CREATE DATABASE "{name}"'))
-    except ProgrammingError as error:
-        server.dispose()
-        if isinstance(error.orig, psycopg.errors.InsufficientPrivilege):
-            pytest.skip("the DATABASE_URL user cannot create a scratch database")
-        raise
-    scratch = create_engine(make_url(integration_database_url).set(database=name))
-    try:
-        yield scratch
-    finally:
-        scratch.dispose()
-        with server.connect() as connection:
-            connection.execute(text(f'DROP DATABASE IF EXISTS "{name}" WITH (FORCE)'))
-        server.dispose()
+def engine(scratch_engine: Engine) -> Engine:
+    return scratch_engine
 
 
 @pytest.fixture
