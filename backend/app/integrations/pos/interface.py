@@ -34,9 +34,11 @@ class PosAdapter(ABC):
         """Fetch stock items from the POS system"""
         pass
 
+    @abstractmethod
     def close(self) -> None:
-        """Release open connections; adapters that hold none keep this default"""
-
+        """Close any open connections to the POS system"""
+        pass
+    
     def __enter__(self) -> Self:
         return self
 
