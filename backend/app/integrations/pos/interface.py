@@ -38,7 +38,7 @@ class PosAdapter(ABC):
     def close(self) -> None:
         """Close any open connections to the POS system"""
         pass
-    
+
     def __enter__(self) -> Self:
         return self
 
