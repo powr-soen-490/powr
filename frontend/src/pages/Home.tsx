@@ -114,31 +114,41 @@ function OverOrderedList() {
   )
 }
 
-export function Home({ onNavigate }: { onNavigate: (page: PageId) => void }) {
+export function Home({
+  onNavigate,
+  enabledPages,
+}: {
+  onNavigate: (page: PageId) => void
+  enabledPages: ReadonlySet<PageId>
+}) {
+  const visibleTasks = TASKS.filter((task) => enabledPages.has(task.target))
+
   return (
     <>
       <PageHeader title="Good morning, John" subtitle="Monday, Oct 12 · 3 things need your attention · POS synced 2 h ago" />
 
-      <section className="stack">
-        <h2 style={{ margin: 0 }}>Needs attention</h2>
-        <div className="card" style={{ padding: 0 }}>
-          {TASKS.map((task, i) => (
-            <div
-              key={task.title}
-              style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px', borderTop: i === 0 ? 'none' : '1px solid var(--color-divider)', flexWrap: 'wrap' }}
-            >
-              <div style={{ width: 40, height: 40, borderRadius: 8, background: TONE_BG[task.tone], display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
-                {task.icon}
+      {visibleTasks.length > 0 && (
+        <section className="stack">
+          <h2 style={{ margin: 0 }}>Needs attention</h2>
+          <div className="card" style={{ padding: 0 }}>
+            {visibleTasks.map((task, i) => (
+              <div
+                key={task.title}
+                style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px', borderTop: i === 0 ? 'none' : '1px solid var(--color-divider)', flexWrap: 'wrap' }}
+              >
+                <div style={{ width: 40, height: 40, borderRadius: 8, background: TONE_BG[task.tone], display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
+                  {task.icon}
+                </div>
+                <div style={{ flex: '1 1 260px' }}>
+                  <strong>{task.title}</strong>
+                  <div className="label">{task.detail}</div>
+                </div>
+                <button className={`btn ${i === 0 ? 'btn-primary' : 'btn-secondary'}`} onClick={() => onNavigate(task.target)}>{task.action}</button>
               </div>
-              <div style={{ flex: '1 1 260px' }}>
-                <strong>{task.title}</strong>
-                <div className="label">{task.detail}</div>
-              </div>
-              <button className={`btn ${i === 0 ? 'btn-primary' : 'btn-secondary'}`} onClick={() => onNavigate(task.target)}>{task.action}</button>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="stack">
         <div className="header" style={{ alignItems: 'center' }}>
@@ -191,23 +201,25 @@ export function Home({ onNavigate }: { onNavigate: (page: PageId) => void }) {
           </table>
         </div>
 
-        <div className="card" style={{ flex: '2 1 340px' }}>
-          <h2>Next orders</h2>
-          <table>
-            <thead><tr><th>Vendor</th><th>Delivery</th><th>Status</th><th>Total</th></tr></thead>
-            <tbody>
-              {NEXT_ORDERS.map((order) => (
-                <tr key={order.vendor}>
-                  <td>{order.vendor}</td>
-                  <td>{order.delivery}</td>
-                  <td><span className={`badge ${order.status === 'APPROVED' ? 'success' : ''}`}>{order.status}</span></td>
-                  <td>{order.total}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <button className="link" style={{ marginTop: 12 }} onClick={() => onNavigate('orders')}>Go to recommended orders →</button>
-        </div>
+        {enabledPages.has('orders') && (
+          <div className="card" style={{ flex: '2 1 340px' }}>
+            <h2>Next orders</h2>
+            <table>
+              <thead><tr><th>Vendor</th><th>Delivery</th><th>Status</th><th>Total</th></tr></thead>
+              <tbody>
+                {NEXT_ORDERS.map((order) => (
+                  <tr key={order.vendor}>
+                    <td>{order.vendor}</td>
+                    <td>{order.delivery}</td>
+                    <td><span className={`badge ${order.status === 'APPROVED' ? 'success' : ''}`}>{order.status}</span></td>
+                    <td>{order.total}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <button className="link" style={{ marginTop: 12 }} onClick={() => onNavigate('orders')}>Go to recommended orders →</button>
+          </div>
+        )}
       </div>
     </>
   )

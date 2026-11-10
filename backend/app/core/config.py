@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     database_url: PostgresDsn
     cors_origins: list[str] = ["http://localhost:5173"]
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
+    flagsmith_server_side_key: SecretStr | None = None
+    flagsmith_api_url: str = "https://edge.api.flagsmith.com/api/v1/"
 
     # No development fallback: POS secret reads/writes require an explicitly configured key.
     pos_credentials_encryption_key: SecretStr | None = None

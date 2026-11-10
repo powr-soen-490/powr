@@ -1,13 +1,14 @@
 // Source-File AI Declaration
 // AI contribution: 50% or more AI-generated
 
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
+import { useFlags, useFlagsmithLoading } from '@flagsmith/flagsmith/react'
 import './styles/tokens.css'
 import './styles/global.css'
-import type { AuthUser } from './api/auth'
+import { fetchCurrentUser, type AuthUser } from './api/auth'
 import { Sidebar } from './layout/Sidebar'
-import type { PageId } from './layout/navigation'
+import { getVisibleNavigation, PAGE_FLAG_NAMES, PAGE_FLAGS, type PageId } from './layout/navigation'
 import { ToastProvider } from './components/Toast'
 import { MockDataProvider } from './mocks/MockDataProvider'
 import { Home } from './pages/Home'
@@ -20,11 +21,19 @@ import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import ToastSettingsPage from './pages/ToastSettingsPage'
 
-function Dashboard() {
+function Dashboard({ user, onLoggedOut }: { user?: AuthUser; onLoggedOut?: () => void }) {
   const [page, setPage] = useState<PageId>('home')
+  const flags = useFlags(PAGE_FLAG_NAMES)
+  const loading = useFlagsmithLoading()
+  const isPageEnabled = (pageId: PageId) => flags[PAGE_FLAGS[pageId]]?.enabled ?? false
+  const navigation = getVisibleNavigation((flag) => flags[flag]?.enabled ?? false)
+  const enabledPages = new Set(navigation.map(({ id }) => id))
+  const selectedPage = navigation.some((item) => item.id === page)
+    ? page
+    : navigation[0]?.id ?? null
 
   const pages: Record<PageId, ReactNode> = {
-    home: <Home onNavigate={setPage} />,
+    home: <Home onNavigate={setPage} enabledPages={enabledPages} />,
     orders: <RecommendedOrders />,
     forecast: <Forecast />,
     menu: <MenuMapping />,
@@ -32,12 +41,33 @@ function Dashboard() {
     settings: <Settings />,
   }
 
+  if (loading?.isLoading) {
+    return <main className="content"><p role="status">Loading feature flags…</p></main>
+  }
+
   return (
     <MockDataProvider>
       <ToastProvider>
         <div className="app">
-          <Sidebar page={page} onNavigate={setPage} />
-          <main className="content">{pages[page]}</main>
+          <Sidebar
+            page={selectedPage}
+            items={navigation}
+            onNavigate={(nextPage) => {
+              if (isPageEnabled(nextPage)) setPage(nextPage)
+            }}
+            user={user}
+            onLoggedOut={onLoggedOut}
+          />
+          <main className="content">
+            {loading?.error && (
+              <p role="alert">Feature flags could not be refreshed. Disabled pages remain hidden.</p>
+            )}
+            {selectedPage ? pages[selectedPage] : (
+              <section className="card" role="status">
+                No pages are enabled for this environment.
+              </section>
+            )}
+          </main>
         </div>
       </ToastProvider>
     </MockDataProvider>
@@ -46,6 +76,26 @@ function Dashboard() {
 
 function App() {
   const [user, setUser] = useState<AuthUser | null>(null)
+  const [checkingSession, setCheckingSession] = useState(true)
+
+  // On a full page load, restore the user from the session cookie before routing,
+  // so protected routes don't redirect to /login while the check is in flight.
+  useEffect(() => {
+    let cancelled = false
+    void fetchCurrentUser().then((currentUser) => {
+      if (cancelled) return
+      // Keep a user who logged in while the check was in flight.
+      setUser((existing) => existing ?? currentUser)
+      setCheckingSession(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  if (checkingSession) {
+    return null
+  }
 
   return (
     <Routes>
@@ -57,7 +107,16 @@ function App() {
         path="/signup"
         element={user ? <Navigate to="/" replace /> : <SignupPage onSignedUp={setUser} />}
       />
-      <Route path="/" element={user ? <Dashboard /> : <Navigate to="/login" replace />} />
+      <Route
+        path="/"
+        element={
+          user ? (
+            <Dashboard user={user} onLoggedOut={() => setUser(null)} />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
       <Route path="/mockup" element={<Dashboard />} />
       <Route
         path="/settings/pos"
