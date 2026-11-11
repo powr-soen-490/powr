@@ -7,6 +7,7 @@ import uuid
 from collections.abc import Callable, Iterator
 from typing import Any
 
+import httpx2
 import psycopg
 import pytest
 from fastapi import FastAPI
@@ -29,6 +30,39 @@ from app.main import create_app  # noqa: E402
 
 # Meets the password policy; used by sign_up_owner.
 TEST_PASSWORD = "Str0ng!Password"
+
+
+TOAST_API_DOMAIN = "toasttab.com"
+
+
+def _refuse_toast(request: httpx2.Request) -> None:
+    host = request.url.host
+    if host == TOAST_API_DOMAIN or host.endswith(f".{TOAST_API_DOMAIN}"):
+        raise RuntimeError(f"Tests must not call the real Toast API ({request.url}).")
+
+
+@pytest.fixture(autouse=True)
+def block_real_toast_calls(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Fails any test that sends a real request to Toast; tests use saved responses instead.
+
+    Both the synchronous and asynchronous httpx2 transports are guarded. Clients built on
+    another HTTP library (requests, urllib) are not.
+    """
+    send = httpx2.HTTPTransport.handle_request
+    send_async = httpx2.AsyncHTTPTransport.handle_async_request
+
+    def guarded(transport: httpx2.HTTPTransport, request: httpx2.Request) -> httpx2.Response:
+        _refuse_toast(request)
+        return send(transport, request)
+
+    async def guarded_async(
+        transport: httpx2.AsyncHTTPTransport, request: httpx2.Request
+    ) -> httpx2.Response:
+        _refuse_toast(request)
+        return await send_async(transport, request)
+
+    monkeypatch.setattr(httpx2.HTTPTransport, "handle_request", guarded)
+    monkeypatch.setattr(httpx2.AsyncHTTPTransport, "handle_async_request", guarded_async)
 
 
 @pytest.fixture
