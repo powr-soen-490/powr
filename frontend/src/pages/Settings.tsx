@@ -2,6 +2,8 @@
 // AI contribution: 50% or more AI-generated
 
 import { useState, type ReactNode } from 'react'
+import { Button } from '../components/Button'
+import { Segmented } from '../components/Segmented'
 import { PageHeader } from '../layout/PageHeader'
 import { SalesImport } from './SalesImport'
 
@@ -19,9 +21,7 @@ function SettingsRow({ title, description, children, onClick }: {
       </div>
       <div className="settings-row-control">
         {children ?? (
-          <button type="button" className="settings-link" onClick={onClick}>
-            Open <span aria-hidden="true">›</span>
-          </button>
+          <Button onClick={onClick}>Open</Button>
         )}
       </div>
     </div>
@@ -29,7 +29,7 @@ function SettingsRow({ title, description, children, onClick }: {
 }
 
 export function Settings() {
-  const [theme, setTheme] = useState('light')
+  const [theme, setTheme] = useState('Light')
   const [unit, setUnit] = useState('metric')
   const [view, setView] = useState<'main' | 'pos'>('main')
 
@@ -50,19 +50,7 @@ export function Settings() {
           onClick={() => setView('pos')}
         />
         <SettingsRow title="Theme" description="Choose the appearance of POWR.">
-          <div className="pill-options" role="group" aria-label="Theme">
-            {['light', 'dark'].map((option) => (
-              <button
-                key={option}
-                type="button"
-                className={`pill-toggle${theme === option ? ' on' : ''}`}
-                aria-pressed={theme === option}
-                onClick={() => setTheme(option)}
-              >
-                {option[0].toUpperCase() + option.slice(1)}
-              </button>
-            ))}
-          </div>
+          <Segmented label="Theme" options={['Light', 'Dark']} value={theme} onChange={setTheme} />
         </SettingsRow>
         <SettingsRow title="Unit" description="Choose how quantities are displayed.">
           <label className="select-wrap settings-select">
