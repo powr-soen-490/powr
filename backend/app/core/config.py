@@ -2,11 +2,12 @@
 # AI contribution: 50% or more AI-generated
 """Application settings, loaded from environment variables and validated at startup."""
 
+import base64
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal, Self
 
-from pydantic import Field, PostgresDsn, SecretStr, model_validator
+from pydantic import Field, PostgresDsn, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # The repository-root .env is shared with docker-compose. Inside the container this path
@@ -28,6 +29,25 @@ class Settings(BaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     flagsmith_server_side_key: SecretStr | None = None
     flagsmith_api_url: str = "https://edge.api.flagsmith.com/api/v1/"
+
+    # No development fallback: POS secret reads/writes require an explicitly configured key.
+    pos_credentials_encryption_key: SecretStr | None = None
+
+    @field_validator("pos_credentials_encryption_key")
+    @classmethod
+    def validate_encryption_key(cls, value: SecretStr | None) -> SecretStr | None:
+        if value is None:
+            return None
+        try:
+            decoded = base64.b64decode(value.get_secret_value(), altchars=b"-_", validate=True)
+        except ValueError as exc:
+            raise ValueError("POS_CREDENTIALS_ENCRYPTION_KEY must be base64-encoded") from exc
+        if len(decoded) != 32:
+            raise ValueError("POS_CREDENTIALS_ENCRYPTION_KEY must encode exactly 32 bytes")
+        return value
+
+    # Toast API host, shown as "API Access URL" on the Toast Web credentials page.
+    toast_api_base_url: str = "https://ws-api.toasttab.com"
 
     # Session & Cookie Security Settings
     session_secret_key: str = DEV_SESSION_SECRET_KEY

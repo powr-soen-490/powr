@@ -123,6 +123,28 @@ cannot reach PostgreSQL; see [Troubleshooting](#troubleshooting).
 Interactive API documentation is at <http://localhost:8000/docs>, and the frontend is at
 <http://localhost:5173>.
 
+### POS credential encryption
+
+POS client secrets and access tokens are stored using AES-256-GCM. Set
+`POS_CREDENTIALS_ENCRYPTION_KEY` in the root `.env` (or the deployment environment) to a
+base64-encoded, randomly generated 32-byte key. There is no default key: secret reads and
+writes fail if the key is missing. Other endpoints and the metadata-only list still work.
+
+Generate a key, then save its output as `POS_CREDENTIALS_ENCRYPTION_KEY` in `.env`:
+
+```bash
+python -c "import base64, secrets; print(base64.urlsafe_b64encode(secrets.token_bytes(32)).decode())"
+```
+
+Keep the key private and persistent across restarts, and use the same key for every backend
+instance sharing a database. Replacing it makes existing ciphertext unreadable; retain the
+key securely with your database backups. Never commit a real key.
+
+
+POST and PATCH credential requests accept optional `access_token` and `expires_at` fields.
+On PATCH, an omitted or null token/expiry preserves its current value. Secrets are decrypted
+only for server-side integrations; GET responses continue to exclude secrets and tokens.
+
 ### E2E Tests
 To run the end-to-end tests, from the root directory (the first three commands are needed once):
 ```bash
@@ -481,20 +503,32 @@ Otherwise, follow the conventions listed below:
 TODO: detail this section once we have versioning system in place.
 
 ### Commit messages
-No specific commit-message syntax is required. However, make sure that feature and fix commit messages follow these rules:
-- describes the actual change rather than using vague wording.
-- identifies the affected functionality or component.
-- uses a clear action-oriented description.
+Every commit pushed to a branch must follow the [Conventional Commits](https://www.conventionalcommits.org/) specification. Because we merge with standard merge commits rather than squashing, CI checks every commit on your branch and blocks the pull request if any commit violates the syntax.
 
-Obviously, merge commits and automated dependency-update commits are excluded.
+Format: `<type>(<optional-scope>): <description>`
+
+- **Types**:
+  - `feat`: A new feature (bumps minor version, e.g., `0.1.0` -> `0.2.0`)
+  - `fix`: A bug fix (bumps patch version, e.g., `0.1.0` -> `0.1.1`)
+  - `chore`: Maintenance, config, dependencies (no version bump)
+  - `docs`: Documentation changes only (no version bump)
+  - `refactor`: Code changes that neither fix a bug nor add a feature
+  - `test`: Adding or updating tests
+  - `ci`: CI/CD workflow updates
+
+- **Issue References & Scopes**:
+  Place the issue number or component in the scope:
+  - `feat(#8): add basic restaurant layout table`
+  - `fix(backend): [#12] resolve order creation timeout`
+  - `chore: update dependencies`
+
+- **Breaking Changes**:
+  Add `!` after the type/scope or add a `BREAKING CHANGE:` footer to trigger a major bump:
+  - `feat!: switch auth scheme to oauth2`
 
 ### Pull request process
-When about to open a pull request, make sure the title includes the issue number in brackets, for example "[#8] Set up basic project structure".
-Make sure you assign at least 2 reviewers, ideally people that are in your subteam, or people that have worked on said feature recently.
-
-**Before merging**: Make sure your PR has the following:
-- Approval by at least 1 member.
-- All checks pass (linter, unit tests, code quality report, etc.).
-- Most importantly, your branch is up to date with and REBASED on master.
-
-Finally, do not "squash & merge", always "Merge pull request". This is for better traceability.
+1. **Title**: Include the issue reference in brackets (e.g., `[#8] Set up basic project structure`).
+2. **Reviewers**: Assign at least 2 reviewers (at least 1 approval required before merge).
+3. **Checks**: Ensure all CI checks pass (linter, unit/integration tests, playwright, and `commitlint`).
+4. **Branch state**: Ensure your branch is up to date with and rebased on `master`.
+5. **Merge Method**: Always select **"Merge pull request"** (create a merge commit). **Never** select "Squash and merge".

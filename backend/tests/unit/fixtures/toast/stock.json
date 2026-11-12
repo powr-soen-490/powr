@@ -1,0 +1,34 @@
+[
+  {
+    "guid": "item-gyro",
+    "itemGuidValidity": "VALID",
+    "status": "QUANTITY",
+    "quantity": 12.0,
+    "multiLocationId": "100000000000000001",
+    "versionId": null
+  },
+  {
+    "guid": "item-baklava",
+    "itemGuidValidity": "VALID",
+    "status": "OUT_OF_STOCK",
+    "quantity": null,
+    "multiLocationId": "100000000000000002",
+    "versionId": null
+  },
+  {
+    "guid": "option-feta",
+    "itemGuidValidity": "VALID",
+    "status": "QUANTITY",
+    "quantity": 0.5,
+    "multiLocationId": "100000000000000003",
+    "versionId": null
+  },
+  {
+    "guid": "item-unknown",
+    "itemGuidValidity": "INVALID",
+    "status": "OUT_OF_STOCK",
+    "quantity": null,
+    "multiLocationId": null,
+    "versionId": null
+  }
+]
