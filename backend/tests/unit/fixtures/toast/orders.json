@@ -1,0 +1,162 @@
+[
+  {
+    "guid": "order-1",
+    "openedDate": "2026-10-01T14:30:00.000-0400",
+    "modifiedDate": "2026-10-01T15:10:00.000-0400",
+    "businessDate": 20261001,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "check-1",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "line-gyro",
+            "item": {"guid": "item-gyro", "entityType": "MenuItem"},
+            "displayName": "Gyro plate",
+            "selectionType": "NONE",
+            "quantity": 2,
+            "price": 40.00,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "line-gyro-feta",
+                "item": {"guid": "option-feta"},
+                "displayName": "Extra feta",
+                "quantity": 2,
+                "price": 3.00,
+                "voided": false
+              },
+              {
+                "guid": "line-gyro-onions",
+                "item": {"guid": "option-onions"},
+                "displayName": "Onions",
+                "quantity": 1,
+                "price": 0,
+                "voided": true
+              }
+            ]
+          },
+          {
+            "guid": "line-olives",
+            "item": {"guid": "item-olives"},
+            "displayName": "Olives by weight",
+            "selectionType": "NONE",
+            "quantity": 0.35,
+            "price": 4.20,
+            "voided": false,
+            "deferred": false,
+            "modifiers": []
+          },
+          {
+            "guid": "line-refunded",
+            "item": {"guid": "item-souvlaki"},
+            "displayName": "Souvlaki",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 16.00,
+            "voided": false,
+            "deferred": false,
+            "refundDetails": {"refundAmount": 16.00, "taxRefundAmount": 2.40},
+            "modifiers": []
+          },
+          {
+            "guid": "line-voided",
+            "item": {"guid": "item-baklava"},
+            "displayName": "Baklava",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 7.25,
+            "voided": true,
+            "deferred": false,
+            "modifiers": []
+          },
+          {
+            "guid": "line-gift-card",
+            "item": {"guid": "item-gift-card"},
+            "displayName": "Gift card",
+            "selectionType": "TOAST_CARD_SELL",
+            "quantity": 1,
+            "price": 50.00,
+            "voided": false,
+            "deferred": true,
+            "modifiers": []
+          },
+          {
+            "guid": "line-open-item",
+            "displayName": "Open food",
+            "selectionType": "OPEN_ITEM",
+            "quantity": 1,
+            "price": 5.00,
+            "voided": false,
+            "deferred": false,
+            "modifiers": []
+          }
+        ]
+      },
+      {
+        "guid": "check-voided",
+        "voided": true,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "line-in-voided-check",
+            "item": {"guid": "item-gyro"},
+            "displayName": "Gyro plate",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 20.00,
+            "voided": false,
+            "deferred": false,
+            "modifiers": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "order-voided",
+    "openedDate": "2026-10-01T18:00:00.000+0000",
+    "businessDate": 20261001,
+    "voided": true,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "check-2",
+        "selections": [
+          {
+            "guid": "line-in-voided-order",
+            "item": {"guid": "item-gyro"},
+            "displayName": "Gyro plate",
+            "quantity": 1,
+            "price": 20.00
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "order-deleted",
+    "openedDate": "2026-10-01T19:00:00.000+0000",
+    "businessDate": 20261001,
+    "voided": false,
+    "deleted": true,
+    "checks": [
+      {
+        "guid": "check-3",
+        "selections": [
+          {
+            "guid": "line-in-deleted-order",
+            "item": {"guid": "item-gyro"},
+            "displayName": "Gyro plate",
+            "quantity": 1,
+            "price": 20.00
+          }
+        ]
+      }
+    ]
+  }
+]

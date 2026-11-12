@@ -1,0 +1,17 @@
+{
+  "status": 401,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "status": 401,
+    "code": 10013,
+    "message": "unauthorized",
+    "messageKey": "Full authentication is required to access this resource",
+    "fieldName": null,
+    "link": "Full authentication is required to access this resource",
+    "requestId": "5e703f67-cdb4-4c34-b276-0e9bbaa17612",
+    "developerMessage": null,
+    "errors": []
+  }
+}
