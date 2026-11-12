@@ -75,7 +75,7 @@ export function SalesImport({ onBack }: { onBack: () => void }) {
         </Alert>
       )}
 
-      <section className="card" aria-label="Import range">
+      <section className="card import-card" aria-label="Import range">
         <div className="card-head">
           <div>
             <h2>Date range</h2>
