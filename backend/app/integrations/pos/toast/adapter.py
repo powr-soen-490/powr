@@ -5,7 +5,7 @@
 import logging
 import time
 from collections.abc import Callable, Iterator
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
 import httpx2
@@ -23,6 +23,7 @@ from app.integrations.pos.toast.orders import (
     ORDERS_PAGE_SIZE,
     ORDERS_PATH,
     order_windows,
+    orders_on_business_date,
     sale_lines_from_order,
     toast_datetime,
 )
@@ -90,6 +91,21 @@ class ToastAdapter(PosAdapter):
             for order in self._orders_in_window(window_start, window_end):
                 lines.extend(sale_lines_from_order(order, self.connection))
         logger.info("Fetched %d Toast sale lines for connection %s", len(lines), self.connection.id)
+        return lines
+
+    def fetch_orders_for_business_date(self, business_date: date) -> list[SaleLine]:
+        """Sale lines from orders of one business day, including voided ones (is_voided)."""
+        lines = [
+            line
+            for order in orders_on_business_date(self._client, business_date)
+            for line in sale_lines_from_order(order, self.connection)
+        ]
+        logger.info(
+            "Fetched %d Toast sale lines for business date %s, connection %s",
+            len(lines),
+            business_date.isoformat(),
+            self.connection.id,
+        )
         return lines
 
     def fetch_stock_items(self) -> list[StockItem]:

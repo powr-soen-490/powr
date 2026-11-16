@@ -15,6 +15,8 @@ from app.integrations.pos.toast.client import LOGIN_PATH, ToastClient, ToastCred
 from app.integrations.pos.toast.retry import RetryPolicy
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "toast"
+# A real week of Toast data (Nov 9-15, 2026), scrubbed by scripts/record_toast_fixtures.py.
+RECORDED_WEEK_DIR = Path(__file__).parents[1] / "fixtures" / "toast_week"
 BASE_URL = "https://toast.test"
 RESTAURANT_GUID = "restaurant-guid-1"
 CLIENT_SECRET = "test-client-secret"
