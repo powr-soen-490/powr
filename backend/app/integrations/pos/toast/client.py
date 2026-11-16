@@ -67,12 +67,15 @@ class ToastClient:
     Rate limits, server errors and network failures are retried with backoff (see
     ``retry.py``). The access token is renewed shortly before it expires, and once more if
     Toast rejects it as expired.
+
+    ``restaurant_guid`` is None only for endpoints that are not about one restaurant, such
+    as listing the restaurants a login can access; requests then skip the restaurant header.
     """
 
     def __init__(
         self,
         credentials: ToastCredentials,
-        restaurant_guid: str,
+        restaurant_guid: str | None,
         *,
         base_url: str,
         transport: httpx2.BaseTransport | None = None,
@@ -145,15 +148,10 @@ class ToastClient:
         return self._decode(response, path)
 
     def _get_with_token(self, path: str, params: dict[str, str | int] | None) -> httpx2.Response:
-        return self._send(
-            "GET",
-            path,
-            params=params,
-            headers={
-                "Authorization": f"Bearer {self._access_token}",
-                "Toast-Restaurant-External-ID": self._restaurant_guid,
-            },
-        )
+        headers = {"Authorization": f"Bearer {self._access_token}"}
+        if self._restaurant_guid is not None:
+            headers["Toast-Restaurant-External-ID"] = self._restaurant_guid
+        return self._send("GET", path, params=params, headers=headers)
 
     def _token_expires_soon(self) -> bool:
         return self._token_refresh_at is not None and self._clock() >= self._token_refresh_at
