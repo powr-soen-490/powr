@@ -32,6 +32,7 @@ MOCK_TIMEZONE = ZoneInfo("America/New_York")
 BASE_ORDERS_PER_DAY = 55
 WEEKDAY_FACTORS = (0.85, 0.85, 0.95, 1.0, 1.25, 1.3, 1.1)  # Monday first
 LUNCH_SHARE = 0.4
+MIN_POPULARITY = 0.01
 
 MENU_ADAPTER = TypeAdapter(list[MenuItem])
 SALES_ADAPTER = TypeAdapter(list[SaleLine])
@@ -72,14 +73,15 @@ def generate_menu(restaurant_id: UUID, rng: random.Random) -> list[MenuItem]:
 
 
 def popularity_weights(menu: Sequence[MenuItem]) -> list[float]:
-    """Cheaper items sell more, times a random score that is fixed per item across runs."""
-    prices = sorted(float(item.price) for item in menu if item.price is not None)
-    median = prices[len(prices) // 2] if prices else 1.0
+    """Item popularity drawn from a normal distribution whose mean and spread are random per
+    restaurant. Seeded by restaurant and item IDs, so it is the same on every run."""
     weights = []
     for item in menu:
-        score = random.Random(f"{item.restaurant_id}:{item.item_id}").uniform(0.1, 1.0)
-        price_factor = (median / float(item.price)) ** 0.5 if item.price else 1.0
-        weights.append(score * price_factor)
+        restaurant_rng = random.Random(str(item.restaurant_id))
+        mean = restaurant_rng.uniform(1.0, 10.0)
+        spread = mean * restaurant_rng.uniform(0.1, 0.5)
+        score = random.Random(f"{item.restaurant_id}:{item.item_id}").gauss(mean, spread)
+        weights.append(max(score, MIN_POPULARITY))  # a normal draw can be zero or negative
     return weights
 
 

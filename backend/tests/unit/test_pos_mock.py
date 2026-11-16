@@ -90,15 +90,19 @@ def test_menu_depends_on_seed() -> None:
     assert len({tuple(names(seed)) for seed in range(10)}) > 1
 
 
-def test_popularity_is_stable_and_favours_cheaper_items() -> None:
+def test_popularity_is_stable_positive_and_ignores_price() -> None:
     menu = mock.generate_menu(RESTAURANT, random.Random(1))
     weights = mock.popularity_weights(menu)
     assert weights == mock.popularity_weights(menu)
-    # Same item at two prices: the random score cancels out and only the price differs.
-    cheap, pricey = mock.popularity_weights(
-        [menu[0].model_copy(update={"price": Decimal(p)}) for p in ("2", "8")]
-    )
-    assert cheap > pricey
+    assert all(weight > 0 for weight in weights)
+    repriced = [item.model_copy(update={"price": Decimal("99")}) for item in menu]
+    assert mock.popularity_weights(repriced) == weights
+
+
+def test_popularity_distribution_differs_per_restaurant() -> None:
+    menu = mock.generate_menu(RESTAURANT, random.Random(1))
+    other = [item.model_copy(update={"restaurant_id": uuid4()}) for item in menu]
+    assert mean(mock.popularity_weights(other)) != mean(mock.popularity_weights(menu))
 
 
 def test_sales_match_domain_model_and_menu(tmp_path: Path) -> None:
