@@ -48,6 +48,10 @@ class Settings(BaseSettings):
 
     # Toast API host, shown as "API Access URL" on the Toast Web credentials page.
     toast_api_base_url: str = "https://ws-api.toasttab.com"
+    # Toast API credentials for local script testing (never use in production)
+    toast_client_id: str | None = None
+    toast_client_secret: str | None = None
+    toast_restaurant_guid: str | None = None
 
     # Session & Cookie Security Settings
     session_secret_key: str = DEV_SESSION_SECRET_KEY
