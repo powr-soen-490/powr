@@ -56,6 +56,8 @@ class MenuItem(BaseModel):
     price: Decimal | None = Field(default=None, ge=Decimal("0"), allow_inf_nan=False)
     currency: str = Field(min_length=1, max_length=3)
     modifier_groups: tuple[MenuModifierGroup, ...] = ()
+    # True for generated test data, so it can be filtered out or deleted later.
+    is_mock: bool = False
 
 
 class SaleModifier(BaseModel):
@@ -90,6 +92,8 @@ class SaleLine(BaseModel):
     # True when the POS voided or deleted the line, its check or its order, so the importer
     # can undo a line it saved before the void.
     is_voided: bool = False
+    # True for generated test data, so it can be filtered out or deleted later.
+    is_mock: bool = False
 
     @field_validator("timestamp")
     @classmethod
