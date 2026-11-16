@@ -16,6 +16,7 @@ from app.api.toast import router as toast_router
 from app.core.config import Settings, get_settings
 from app.core.database import create_session_factory
 from app.core.logging_config import configure_logging
+from app.modules.invites.router import router as invites_router
 
 
 async def http_exception_handler(_request: Request, exc: StarletteHTTPException) -> JSONResponse:
@@ -70,6 +71,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(auth_router)
     app.include_router(pos_router)
     app.include_router(toast_router)
+    app.include_router(invites_router)
     return app
 
 
