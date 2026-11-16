@@ -70,6 +70,15 @@ def save_connection(
     )
 
 
+def any_connection(db: Session, *, provider: str) -> bool:
+    """Whether any restaurant is still connected to the provider."""
+    row = db.execute(
+        text("SELECT 1 FROM pos_connections WHERE provider = :provider LIMIT 1"),
+        {"provider": provider},
+    ).first()
+    return row is not None
+
+
 def delete_connection(db: Session, *, restaurant_id: UUID, provider: str) -> None:
     db.execute(
         text("""

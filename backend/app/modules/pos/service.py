@@ -155,10 +155,15 @@ def connect_toast(
 
 
 def disconnect_toast(db: Session, *, restaurant_id: UUID) -> None:
-    """Remove the restaurant's Toast location and the shared Toast login."""
+    """Remove the restaurant's Toast location, and the shared Toast login once nobody uses it.
+
+    Other restaurants may still be connected with the shared login, so it is only deleted
+    when this was the last Toast connection.
+    """
     try:
         repository.delete_connection(db, restaurant_id=restaurant_id, provider=TOAST)
-        repository.delete_credentials(db, pos_name=TOAST)
+        if not repository.any_connection(db, provider=TOAST):
+            repository.delete_credentials(db, pos_name=TOAST)
         db.commit()
     except SQLAlchemyError as exc:
         db.rollback()

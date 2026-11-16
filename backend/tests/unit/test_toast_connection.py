@@ -57,6 +57,8 @@ class FakeDatabase:
     def __init__(self, user: CurrentUser) -> None:
         self.user = user
         self.connection: dict[str, Any] | None = None
+        # Whether another restaurant is still connected to Toast.
+        self.others_connected = False
         self.pos_queries: list[tuple[str, dict[str, Any]]] = []
         # When set, every POS query fails as if the database were down.
         self.pos_error: SQLAlchemyError | None = None
@@ -72,6 +74,7 @@ class FakeDatabase:
             if self.pos_error is not None:
                 raise self.pos_error
             self.pos_queries.append((sql, params or {}))
+            result.first.return_value = (1,) if self.others_connected else None
             result.mappings.return_value.first.return_value = self.connection
         return result
 
@@ -236,6 +239,21 @@ def test_disconnect_removes_the_guid_and_the_saved_credentials(
         {"restaurant_id": owner.user.restaurant_id, "provider": "TOAST"}
     ]
     assert owner.queries("DELETE FROM pos_credentials") == [{"pos_name": "TOAST"}]
+    owner.session.commit.assert_called_once()
+
+
+def test_disconnect_keeps_the_credentials_while_another_restaurant_uses_them(
+    client: TestClient, owner: FakeDatabase
+) -> None:
+    owner.others_connected = True
+
+    response = client.delete(CONNECTION)
+
+    assert response.status_code == 200
+    assert owner.queries("DELETE FROM pos_connections") == [
+        {"restaurant_id": owner.user.restaurant_id, "provider": "TOAST"}
+    ]
+    assert owner.queries("DELETE FROM pos_credentials") == []
     owner.session.commit.assert_called_once()
 
 

@@ -107,6 +107,31 @@ def test_owner_connects_sees_only_their_restaurant_and_disconnects(
     assert owner.get(CONNECTION).status_code == 404
 
 
+def test_disconnecting_one_restaurant_keeps_the_login_for_the_others(
+    make_client: Callable[[], TestClient],
+    sign_up_owner: Callable[[TestClient, str], dict[str, Any]],
+    migrated_engine: Engine,
+) -> None:
+    first = make_client()
+    sign_up_owner(first, "first@example.com")
+    second = make_client()
+    sign_up_owner(second, "second@example.com")
+    body = {"client_id": "shared-client", "client_secret": SECRET}
+    assert first.put(CONNECTION, json=body).status_code == 200
+    assert second.put(CONNECTION, json=body).status_code == 200
+
+    assert first.delete(CONNECTION).status_code == 200
+
+    connections, credentials = stored(migrated_engine)
+    assert len(connections) == 1
+    assert [row["client_id"] for row in credentials] == ["shared-client"]
+    assert first.get(CONNECTION).status_code == 404
+    assert second.get(CONNECTION).status_code == 200
+
+    assert second.delete(CONNECTION).status_code == 200
+    assert stored(migrated_engine) == ([], [])
+
+
 def test_location_name_migration_can_run_again(migrated_engine: Engine) -> None:
     migrate_up(migrated_engine)
 
