@@ -19,6 +19,16 @@ class PosConnection(BaseModel):
     location_id: str = Field(min_length=1, max_length=255)
 
 
+class PosLocation(BaseModel):
+    """A location a POS login can access, before it is linked to a powr restaurant."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    # The provider's ID for the location, e.g. the Toast restaurant GUID.
+    location_id: str = Field(min_length=1, max_length=255)
+    name: str = Field(min_length=1, max_length=255)
+
+
 class MenuModifierOption(BaseModel):
     """One choice inside a modifier group, e.g. "Extra cheese"."""
 
