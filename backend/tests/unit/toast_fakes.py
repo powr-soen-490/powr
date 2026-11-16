@@ -77,10 +77,12 @@ class FakeToast:
     def clock(self) -> float:
         return self.now
 
-    def adapter(self, retry_policy: RetryPolicy | None = None) -> ToastAdapter:
+    def adapter(
+        self, retry_policy: RetryPolicy | None = None, connection: PosConnection = CONNECTION
+    ) -> ToastAdapter:
         credentials = ToastCredentials(client_id="test-client-id", client_secret=CLIENT_SECRET)
         return ToastAdapter(
-            CONNECTION,
+            connection,
             credentials,
             currency="CAD",
             base_url=BASE_URL,
