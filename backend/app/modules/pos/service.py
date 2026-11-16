@@ -2,7 +2,7 @@
 # AI contribution: 50% or more AI-generated
 """POS credential rules and transactions, independent of HTTP handling."""
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
@@ -13,8 +13,19 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.core.encryption import SecretEncryptionError, decrypt_secret, encrypt_secret
-from app.integrations.pos.models import PosConnection, SaleLine
+from app.integrations.pos.models import PosConnection, PosLocation, SaleLine
+from app.integrations.pos.toast.client import (
+    ToastApiError,
+    ToastAuthenticationError,
+    ToastCredentials,
+    ToastRateLimitError,
+)
 from app.modules.pos import repository
+
+TOAST = "TOAST"
+
+# Lists the Toast restaurants some credentials can access (see integrations/pos/toast).
+ToastLocationFinder = Callable[[ToastCredentials], list[PosLocation]]
 
 
 class DailyAggregation(TypedDict):
@@ -58,7 +69,7 @@ def aggregate_sales(
 
 
 class ConnectionStorageError(Exception):
-    """The POS connection could not be retrieved."""
+    """The POS connection could not be read or saved because of a database failure."""
 
 
 def get_connection(db: Session, restaurant_id: UUID, provider: str) -> PosConnection | None:
@@ -67,6 +78,109 @@ def get_connection(db: Session, restaurant_id: UUID, provider: str) -> PosConnec
     except SQLAlchemyError as exc:
         db.rollback()
         raise ConnectionStorageError from exc
+
+
+class ToastConnectError(Exception):
+    """Toast could not be connected; nothing was saved."""
+
+
+class ToastLoginRejectedError(ToastConnectError):
+    """Toast rejected the client ID or secret."""
+
+
+class ToastBusyError(ToastConnectError):
+    """Toast is limiting logins right now."""
+
+
+class ToastUnavailableError(ToastConnectError):
+    """Toast could not be reached or answered with an error."""
+
+
+class NoToastRestaurantError(ToastConnectError):
+    """The credentials work but cannot access any restaurant."""
+
+
+class MultipleToastRestaurantsError(ToastConnectError):
+    """The credentials can access several restaurants; picking one is planned in #161."""
+
+
+def get_toast_connection(db: Session, restaurant_id: UUID) -> dict[str, Any] | None:
+    """The restaurant's Toast location ID and name, or None when it is not connected."""
+    try:
+        return repository.get_connection_details(db, restaurant_id, TOAST)
+    except SQLAlchemyError as exc:
+        db.rollback()
+        raise ConnectionStorageError from exc
+
+
+def connect_toast(
+    db: Session,
+    *,
+    restaurant_id: UUID,
+    client_id: str,
+    client_secret: str,
+    find_locations: ToastLocationFinder,
+) -> PosLocation:
+    """Check the credentials with Toast, then save them with the restaurant they can access.
+
+    Nothing is saved unless Toast accepts the credentials and they can access exactly one
+    restaurant.
+    """
+    location = _find_one_toast_location(
+        find_locations, ToastCredentials(client_id=client_id, client_secret=client_secret)
+    )
+    try:
+        # pos_credentials holds one Toast login for the whole app, so connecting replaces it.
+        # Per-restaurant logins are part of the connection model planned in #161.
+        repository.replace_credentials(
+            db,
+            pos_name=TOAST,
+            client_id=client_id,
+            encrypted_client_secret=encrypt_secret(
+                client_secret, context=f"pos_credentials:{TOAST}:client_secret"
+            ),
+        )
+        repository.save_connection(
+            db,
+            restaurant_id=restaurant_id,
+            provider=TOAST,
+            location_id=location.location_id,
+            location_name=location.name,
+        )
+        db.commit()
+    except (SQLAlchemyError, SecretEncryptionError) as exc:
+        db.rollback()
+        raise ConnectionStorageError from exc
+    return location
+
+
+def disconnect_toast(db: Session, *, restaurant_id: UUID) -> None:
+    """Remove the restaurant's Toast location and the shared Toast login."""
+    try:
+        repository.delete_connection(db, restaurant_id=restaurant_id, provider=TOAST)
+        repository.delete_credentials(db, pos_name=TOAST)
+        db.commit()
+    except SQLAlchemyError as exc:
+        db.rollback()
+        raise ConnectionStorageError from exc
+
+
+def _find_one_toast_location(
+    find_locations: ToastLocationFinder, credentials: ToastCredentials
+) -> PosLocation:
+    try:
+        locations = find_locations(credentials)
+    except ToastAuthenticationError as exc:
+        raise ToastLoginRejectedError from exc
+    except ToastRateLimitError as exc:
+        raise ToastBusyError from exc
+    except ToastApiError as exc:
+        raise ToastUnavailableError from exc
+    if not locations:
+        raise NoToastRestaurantError
+    if len(locations) > 1:
+        raise MultipleToastRestaurantsError
+    return locations[0]
 
 
 class CredentialsAlreadyExistError(Exception):
