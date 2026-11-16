@@ -4,9 +4,27 @@
 [![codecov](https://codecov.io/gh/powr-soen-490/powr/branch/master/graph/badge.svg)](https://codecov.io/gh/powr-soen-490/powr)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=powr-soen-490_powr&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=powr-soen-490_powr)
 
+## Project summary
+
+**POWR (Predictive Ordering Waste Reduction)** is a software-only platform for independent
+restaurants. It connects to the restaurant's existing POS (Toast first), converts menu-item sales
+into ingredient usage through recipes, forecasts ingredient demand, and recommends supplier orders
+that the kitchen manager reviews and approves before ordering. Our stakeholder is Mykonos Grill
+(Boca Raton, FL).
+
 Stack: React (TypeScript) frontend, FastAPI (Python) backend, PostgreSQL database.
 Architecture rules are in [`CLAUDE.md`](CLAUDE.md), and the AI declaration policy in
 [`AGENTS.md`](AGENTS.md).
+
+- **Wiki:** [powr wiki](https://github.com/powr-soen-490/powr/wiki)
+- **Project board:** [project board](https://github.com/orgs/powr-soen-490/projects/2)
+- **Releases:** [GitHub Releases](https://github.com/powr-soen-490/powr/releases)
+
+## Release demos
+
+| Release | Demo video |
+|---|---|
+| Release 1 | TODO: add the demo video link |
 
 ## Getting started
 
