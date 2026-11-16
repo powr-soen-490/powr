@@ -8,7 +8,12 @@ import { MemoryRouter } from 'react-router'
 import ToastSettingsPage from '../src/pages/ToastSettingsPage'
 
 const owner = { user_id: 'user', restaurant_id: 'restaurant', email: 'owner@example.com', role: 'owner' }
-const metadata = { id: 'connection', pos_name: 'TOAST', client_id: 'saved-client', expires_at: null }
+const metadata = { id: 'credential', pos_name: 'TOAST', client_id: 'saved-client', expires_at: null }
+const mykonos = { location_id: 'guid-1', location_name: 'Mykonos Grill - Boca NEW' }
+const CREDENTIALS = 'GET /api/pos/credentials?pos_name=TOAST'
+const CONNECTION = 'GET /api/pos/toast/connection'
+const CONNECT = 'PUT /api/pos/toast/connection'
+const DISCONNECT = 'DELETE /api/pos/toast/connection'
 const fetchMock = vi.fn<typeof fetch>()
 
 function json(body: unknown, status = 200, requestId?: string) {
@@ -16,6 +21,22 @@ function json(body: unknown, status = 200, requestId?: string) {
     status,
     headers: { 'Content-Type': 'application/json', ...(requestId ? { 'X-Request-ID': requestId } : {}) },
   })
+}
+
+// Answers each "METHOD url" with its queued replies; the last reply repeats.
+function serve(routes: Record<string, (Response | Error)[]>) {
+  fetchMock.mockImplementation(async (input, init) => {
+    const key = `${init?.method ?? 'GET'} ${String(input)}`
+    const queue = routes[key]
+    if (!queue?.length) throw new Error(`Unexpected request: ${key}`)
+    const reply = queue.length > 1 ? queue.shift()! : queue[0]
+    if (reply instanceof Error) throw reply
+    return reply.clone()
+  })
+}
+
+function calls(key: string) {
+  return fetchMock.mock.calls.filter(([input, init]) => `${init?.method ?? 'GET'} ${String(input)}` === key)
 }
 
 function show(role = 'owner') {
@@ -37,49 +58,64 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe('Toast credential form', () => {
-  it('connects through the API and clears the secret after submitting', async () => {
-    fetchMock.mockResolvedValueOnce(json({}, 404))
-      .mockResolvedValueOnce(json({ message: 'Saved' }))
-      .mockResolvedValueOnce(json({ ...metadata, client_id: 'my-client' }))
+describe('Toast connection form', () => {
+  it('connects without asking for a restaurant GUID and shows the restaurant Toast found', async () => {
+    serve({
+      [CREDENTIALS]: [json({}, 404), json({ ...metadata, client_id: 'my-client' })],
+      [CONNECTION]: [json({}, 404), json(mykonos)],
+      [CONNECT]: [json(mykonos)],
+    })
     const view = show()
     await screen.findByText('Not connected')
+    expect(screen.queryByLabelText(/GUID/i)).toBeNull()
     fill()
     expect((screen.getByLabelText('Client secret') as HTMLInputElement).type).toBe('password')
     fireEvent.click(screen.getByRole('button', { name: 'Connect Toast' }))
     await screen.findByText('Connected')
 
-    expect(fetchMock.mock.calls[1]).toEqual(['/api/pos/credentials', {
-      method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pos_name: 'TOAST', client_id: 'my-client', client_secret: 'private-secret' }),
-    }])
+    expect(calls(CONNECT)).toEqual([['/api/pos/toast/connection', {
+      method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client_id: 'my-client', client_secret: 'private-secret' }),
+    }]])
+    expect(screen.getByText('Mykonos Grill - Boca NEW')).toBeTruthy()
+    expect(screen.getByText(/Connected to Mykonos Grill - Boca NEW\./)).toBeTruthy()
     expect((screen.getByLabelText('Client secret') as HTMLInputElement).value).toBe('')
     expect(view.container.innerHTML).not.toContain('private-secret')
     expect(localStorage.length).toBe(0)
     expect(sessionStorage.length).toBe(0)
   })
 
-  it('updates saved credentials and disconnects only after confirmation', async () => {
-    fetchMock.mockResolvedValueOnce(json({ ...metadata, expires_at: '2020-01-01T00:00:00Z' }))
-      .mockResolvedValueOnce(json({ message: 'Updated' }))
-      .mockResolvedValueOnce(json({ ...metadata, client_id: 'updated-client' }))
-      .mockResolvedValueOnce(json({ message: 'Deleted' }))
+  it('updates the connection and disconnects only after confirmation', async () => {
+    serve({
+      [CREDENTIALS]: [json({ ...metadata, expires_at: '2020-01-01T00:00:00Z' }), json(metadata)],
+      [CONNECTION]: [json(mykonos)],
+      [CONNECT]: [json(mykonos)],
+      [DISCONNECT]: [json({ message: 'Toast disconnected.' })],
+    })
     show()
     await screen.findByText('Needs reconnect')
+    expect(screen.getByText('Mykonos Grill - Boca NEW')).toBeTruthy()
     expect((screen.getByLabelText('Client secret') as HTMLInputElement).value).toBe('')
     fill('updated-client', 'new-secret')
-    fireEvent.click(screen.getByRole('button', { name: 'Update credentials' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Update connection' }))
     await screen.findByText('Connected')
-    expect(fetchMock.mock.calls[1][1]?.method).toBe('PATCH')
+    expect(calls(CONNECT)).toHaveLength(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'Disconnect Toast' }))
-    expect(fetchMock).toHaveBeenCalledTimes(3)
+    expect(calls(DISCONNECT)).toHaveLength(0)
     fireEvent.click(screen.getByRole('button', { name: 'Confirm disconnect' }))
     await screen.findByText('Not connected')
-    expect(fetchMock.mock.calls[3]).toEqual([
-      '/api/pos/credentials?pos_name=TOAST', { method: 'DELETE', credentials: 'include' },
-    ])
+    expect(calls(DISCONNECT)).toEqual([['/api/pos/toast/connection', { method: 'DELETE', credentials: 'include' }]])
+    expect(screen.queryByText('Mykonos Grill - Boca NEW')).toBeNull()
     expect((screen.getByLabelText('Client ID') as HTMLInputElement).value).toBe('')
+  })
+
+  it('treats credentials saved before restaurant lookup existed as not connected', async () => {
+    serve({ [CREDENTIALS]: [json(metadata)], [CONNECTION]: [json({}, 404)] })
+    show()
+    await screen.findByText('Not connected')
+    expect(screen.getByRole('button', { name: 'Connect Toast' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Disconnect Toast' })).toBeTruthy()
   })
 
   it('does not expose the form or call owner APIs for a kitchen manager', () => {
@@ -89,22 +125,35 @@ describe('Toast credential form', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it('shows the server request ID without echoing a failed request secret', async () => {
-    fetchMock.mockResolvedValueOnce(json({}, 404))
-      .mockResolvedValueOnce(json({ detail: 'private-secret' }, 500, 'request-123'))
+  it.each([
+    [400, "Toast didn't accept this client ID and secret"],
+    [404, "can't access any restaurant"],
+    [409, 'more than one restaurant'],
+    [429, 'Toast is limiting logins'],
+    [502, "Couldn't reach Toast"],
+    [500, 'Could not save or load Toast credentials'],
+  ])('explains a %i from connecting without echoing the server or the secret', async (status, message) => {
+    serve({
+      [CREDENTIALS]: [json({}, 404)],
+      [CONNECTION]: [json({}, 404)],
+      [CONNECT]: [json({ detail: 'private-secret' }, status, 'request-123')],
+    })
     const view = show()
     await screen.findByText('Not connected')
     fill()
     fireEvent.click(screen.getByRole('button', { name: 'Connect Toast' }))
     await screen.findByText('request-123')
-    expect(screen.getByRole('alert').textContent).not.toContain('private-secret')
+    expect(screen.getByRole('alert').textContent).toContain(message)
     expect(view.container.innerHTML).not.toContain('private-secret')
+    expect(screen.getByText('Not connected')).toBeTruthy()
     expect((screen.getByLabelText('Client secret') as HTMLInputElement).value).toBe('')
   })
 
   it('keeps saving disabled until the initial status request can be retried', async () => {
-    fetchMock.mockRejectedValueOnce(new TypeError('Network failure'))
-      .mockResolvedValueOnce(json(metadata))
+    serve({
+      [CREDENTIALS]: [new TypeError('Network failure'), json(metadata)],
+      [CONNECTION]: [json(mykonos)],
+    })
     show()
     await screen.findByRole('alert')
     expect((screen.getByLabelText('Client ID') as HTMLInputElement).closest('fieldset')?.disabled).toBe(true)

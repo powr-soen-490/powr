@@ -5,7 +5,8 @@ import { useEffect, useRef, useState, type SubmitEvent } from 'react'
 import { Link } from 'react-router'
 import type { AuthUser } from '../api/auth'
 import {
-  disconnectToast, getToastCredentials, PosError, saveToastCredentials, type PosCredentials,
+  connectToast, disconnectToast, getToastConnection, getToastCredentials, PosError,
+  type PosCredentials, type ToastConnection,
 } from '../api/pos'
 import AuthLayout from '../components/auth/AuthLayout'
 import './ToastSettingsPage.css'
@@ -13,6 +14,7 @@ import './ToastSettingsPage.css'
 function ToastSettingsPage({ user }: { user: AuthUser }) {
   const owner = user.role === 'owner'
   const [saved, setSaved] = useState<PosCredentials | null>(null)
+  const [connection, setConnection] = useState<ToastConnection | null>(null)
   const [clientId, setClientId] = useState('')
   const [clientSecret, setClientSecret] = useState('')
   const [loading, setLoading] = useState(owner)
@@ -27,9 +29,10 @@ function ToastSettingsPage({ user }: { user: AuthUser }) {
   useEffect(() => {
     if (!owner) return
     let active = true
-    getToastCredentials().then((credentials) => {
+    Promise.all([getToastCredentials(), getToastConnection()]).then(([credentials, restaurant]) => {
       if (!active) return
       setSaved(credentials)
+      setConnection(restaurant)
       setCheckedAt(Date.now())
       setClientId(credentials?.client_id ?? '')
       setLoaded(true)
@@ -45,8 +48,9 @@ function ToastSettingsPage({ user }: { user: AuthUser }) {
     setLoading(true)
     setError(null)
     try {
-      const credentials = await getToastCredentials()
+      const [credentials, restaurant] = await Promise.all([getToastCredentials(), getToastConnection()])
       setSaved(credentials)
+      setConnection(restaurant)
       setCheckedAt(Date.now())
       setClientId(credentials?.client_id ?? '')
       setLoaded(true)
@@ -67,9 +71,11 @@ function ToastSettingsPage({ user }: { user: AuthUser }) {
     const secret = clientSecret
     setClientSecret('')
     try {
-      await saveToastCredentials(clientId.trim(), secret, saved !== null)
-      setNotice('Toast credentials saved. The saved secret cannot be viewed again.')
-      // The write API returns a message, so read the saved public metadata separately.
+      // Toast checks the credentials and POWR finds the restaurant GUID from them.
+      const restaurant = await connectToast(clientId.trim(), secret)
+      setNotice(`Connected to ${restaurant.location_name ?? 'your Toast restaurant'}. `
+        + 'The saved secret cannot be viewed again.')
+      // The connect API does not return the credential metadata, so read it separately.
       setLoaded(false)
       await reload()
     } catch (failure) {
@@ -90,9 +96,10 @@ function ToastSettingsPage({ user }: { user: AuthUser }) {
     try {
       await disconnectToast()
       setSaved(null)
+      setConnection(null)
       setClientId('')
       setConfirmDisconnect(false)
-      setNotice('Toast disconnected. Saved credentials have been deleted.')
+      setNotice('Toast disconnected. Saved credentials and the connected restaurant have been removed.')
     } catch (failure) {
       setError(asPosError(failure))
     } finally {
@@ -101,16 +108,21 @@ function ToastSettingsPage({ user }: { user: AuthUser }) {
     }
   }
 
+  const connected = saved !== null && connection !== null
   const expired = saved?.expires_at ? new Date(saved.expires_at).getTime() <= checkedAt : false
-  const status = saved ? (expired ? 'Needs reconnect' : 'Connected') : 'Not connected'
+  const status = connected ? (expired ? 'Needs reconnect' : 'Connected') : 'Not connected'
 
   return (
-    <AuthLayout title="Toast connection" subtitle="Manage your Toast API credentials."
+    <AuthLayout title="Toast connection"
+      subtitle="Enter your Toast API credentials. POWR finds your restaurant automatically."
       error={null} footer={<Link className="auth-link" to="/">Back to home</Link>}>
       {!owner ? <p>Only restaurant owners can view or change POS credentials.</p> : <>
         <p className="toast-status" role="status">
           Status: <strong>{loading ? 'Loading…' : loaded ? status : 'Unavailable'}</strong>
         </p>
+        {loaded && connected && <p className="toast-status">
+          Connected to: <strong>{connection.location_name ?? 'your Toast restaurant'}</strong>
+        </p>}
         {error && <div className="toast-error" role="alert">
           <p>{error.message}</p>
           {error.requestId && <p>Request ID: <code>{error.requestId}</code></p>}
@@ -132,18 +144,18 @@ function ToastSettingsPage({ user }: { user: AuthUser }) {
                 aria-describedby="toast-secret-help"
                 onChange={(event) => setClientSecret(event.target.value)} />
               <span className="field-hint" id="toast-secret-help">
-                {saved ? 'Enter a new secret to update your credentials. ' : ''}
+                {connected ? 'Enter a new secret to update your connection. ' : ''}
                 Your saved secret is never shown again.
               </span>
             </div>
             <button className="auth-button toast-save" type="submit">
-              {busy ? 'Saving…' : saved ? 'Update credentials' : 'Connect Toast'}
+              {busy ? 'Checking with Toast…' : connected ? 'Update connection' : 'Connect Toast'}
             </button>
           </fieldset>
         </form>
-        {saved && <div className="toast-disconnect">
+        {(saved || connection) && <div className="toast-disconnect">
           {confirmDisconnect ? <div role="group" aria-label="Confirm disconnect">
-            <p>Disconnect Toast and delete the saved credentials?</p>
+            <p>Disconnect Toast and remove the saved credentials and connected restaurant?</p>
             <div className="toast-actions">
               <button type="button" disabled={busy} onClick={() => setConfirmDisconnect(false)}>Cancel</button>
               <button type="button" className="toast-danger" disabled={busy} onClick={disconnect}>
