@@ -110,6 +110,15 @@ describe('Toast connection form', () => {
     expect((screen.getByLabelText('Client ID') as HTMLInputElement).value).toBe('')
   })
 
+  it('asks to reconnect when the restaurant is linked but the saved login is gone', async () => {
+    serve({ [CREDENTIALS]: [json({}, 404)], [CONNECTION]: [json(mykonos)] })
+    show()
+    await screen.findByText('Not connected')
+    expect((screen.getByLabelText('Client ID') as HTMLInputElement).value).toBe('')
+    expect(screen.getByRole('button', { name: 'Connect Toast' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Disconnect Toast' })).toBeTruthy()
+  })
+
   it('does not treat a login shared by another restaurant as its own connection', async () => {
     serve({ [CREDENTIALS]: [json(metadata)], [CONNECTION]: [json({}, 404)] })
     show()
