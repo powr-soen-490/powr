@@ -4,18 +4,15 @@
 
 import logging
 from datetime import UTC, datetime, timedelta
-from decimal import Decimal
-from typing import Annotated, TypedDict
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.core.auth import OwnerDep
 from app.core.config import get_settings
 from app.core.database import get_db
-from app.integrations.pos.models import PosConnection
 from app.integrations.pos.toast.adapter import ToastAdapter
 from app.integrations.pos.toast.client import (
     ToastApiError,
@@ -37,35 +34,6 @@ DbSession = Annotated[Session, Depends(get_db)]
 logger = logging.getLogger(__name__)
 
 
-class DailyAggregation(TypedDict):
-    """Aggregated stats for a single business date."""
-
-    items: int
-    revenue: Decimal
-    orders: set[str]
-
-
-def _get_toast_connection(db: Session, restaurant_id: UUID) -> PosConnection | None:
-    """Retrieve the Toast POS connection for a restaurant."""
-    row = db.execute(
-        text("""
-            SELECT id, restaurant_id, provider, location_id
-            FROM pos_connections
-            WHERE restaurant_id = :restaurant_id AND provider = 'TOAST'
-            LIMIT 1
-        """),
-        {"restaurant_id": restaurant_id},
-    ).first()
-    if not row:
-        return None
-    return PosConnection(
-        id=UUID(str(row[0])),
-        restaurant_id=UUID(str(row[1])),
-        provider=row[2],
-        location_id=row[3],
-    )
-
-
 def _get_toast_adapter(db: Session, restaurant_id: UUID) -> ToastAdapter:
     """Create a ToastAdapter instance for a restaurant, or raise HTTPException if not configured."""
     # Get Toast credentials
@@ -85,7 +53,14 @@ def _get_toast_adapter(db: Session, restaurant_id: UUID) -> ToastAdapter:
         )
 
     # Get Toast connection for this restaurant
-    connection = _get_toast_connection(db, restaurant_id)
+    try:
+        connection = service.get_connection(db, restaurant_id, "TOAST")
+    except service.ConnectionStorageError as exc:
+        logger.exception("Failed to retrieve Toast connection for restaurant %s", restaurant_id)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve Toast connection.",
+        ) from exc
     if not connection:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -100,7 +75,7 @@ def _get_toast_adapter(db: Session, restaurant_id: UUID) -> ToastAdapter:
     return ToastAdapter(
         connection,
         credentials,
-        currency="CAD",  # TODO: Store currency in POS connection
+        currency="USD",
         base_url=get_settings().toast_api_base_url,
     )
 
@@ -118,7 +93,8 @@ def get_sales_summary(
     adapter = _get_toast_adapter(db, user.restaurant_id)
 
     try:
-        adapter.authenticate()
+        if not adapter.authenticate():
+            raise ToastAuthenticationError("Toast rejected the credentials.")
 
         # Calculate time window
         end_time = datetime.now(UTC)
@@ -128,28 +104,12 @@ def get_sales_summary(
         orders = adapter.fetch_orders(start_time, end_time)
 
         # Aggregate by business date
-        daily_stats: dict[str, DailyAggregation] = {}
-        for line in orders:
-            date_key = str(line.business_date)
-            if date_key not in daily_stats:
-                daily_stats[date_key] = DailyAggregation(
-                    items=0,
-                    revenue=Decimal("0"),
-                    orders=set(),
-                )
-            stat = daily_stats[date_key]
-            stat["items"] = stat["items"] + int(line.quantity)
-            stat["revenue"] = stat["revenue"] + (line.price or Decimal("0"))
-            stat["orders"].add(line.order_id)
+        summary = service.aggregate_sales(orders, start_time.date(), end_time.date())
 
         # Build response
         daily_list: list[DailySalesStats] = []
-        total_orders: set[str] = set()
-        total_items = 0
-        total_revenue = Decimal("0")
-
-        for date_str in sorted(daily_stats.keys()):
-            stat = daily_stats[date_str]
+        for date_str in sorted(summary.daily):
+            stat = summary.daily[date_str]
             orders_set = stat["orders"]
             items_count = stat["items"]
             revenue_amount = stat["revenue"]
@@ -161,24 +121,20 @@ def get_sales_summary(
                     revenue=revenue_amount,
                 )
             )
-            total_orders.update(orders_set)
-            total_items += items_count
-            total_revenue += revenue_amount
-
         return SalesSummaryResponse(
             days=days,
             start_date=str(start_time.date()),
             end_date=str(end_time.date()),
-            total_orders=len(total_orders),
-            total_items=total_items,
-            total_revenue=total_revenue,
+            total_orders=summary.total_orders,
+            total_items=summary.total_items,
+            total_revenue=summary.total_revenue,
             daily_stats=daily_list,
         )
 
     except ToastAuthenticationError as exc:
         logger.warning("Toast authentication failed for restaurant %s", user.restaurant_id)
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Toast authentication failed. Check credentials.",
         ) from exc
     except ToastApiError as exc:
@@ -203,14 +159,15 @@ def get_menu(
     adapter = _get_toast_adapter(db, user.restaurant_id)
 
     try:
-        adapter.authenticate()
+        if not adapter.authenticate():
+            raise ToastAuthenticationError("Toast rejected the credentials.")
 
         # Fetch menu items
         menu_items = adapter.fetch_menu_items()
 
         # Convert to response models
         items_response: list[MenuItemResponse] = []
-        currency = "CAD"  # Default, will be overridden by first item
+        currency = "USD"  # Default until currency is stored on the POS connection
 
         for item in menu_items:
             currency = item.currency
@@ -250,7 +207,7 @@ def get_menu(
     except ToastAuthenticationError as exc:
         logger.warning("Toast authentication failed for restaurant %s", user.restaurant_id)
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Toast authentication failed. Check credentials.",
         ) from exc
     except ToastApiError as exc:

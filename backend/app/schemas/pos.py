@@ -37,7 +37,7 @@ class DailySalesStats(BaseModel):
 
     date: str = Field(..., description="Business date in YYYY-MM-DD format")
     orders: int = Field(..., ge=0, description="Number of orders on this date")
-    items: int = Field(..., ge=0, description="Total quantity of items sold")
+    items: Decimal = Field(..., ge=0, description="Total quantity of items sold")
     revenue: Decimal = Field(..., ge=0, description="Total revenue for the date")
 
 
@@ -48,7 +48,7 @@ class SalesSummaryResponse(BaseModel):
     start_date: str = Field(..., description="Start date in YYYY-MM-DD format")
     end_date: str = Field(..., description="End date in YYYY-MM-DD format")
     total_orders: int = Field(..., ge=0, description="Total orders in the period")
-    total_items: int = Field(..., ge=0, description="Total items sold in the period")
+    total_items: Decimal = Field(..., ge=0, description="Total quantity sold in the period")
     total_revenue: Decimal = Field(..., ge=0, description="Total revenue in the period")
     daily_stats: list[DailySalesStats] = Field(
         default_factory=list, description="Daily breakdown of sales"

@@ -9,6 +9,28 @@ from uuid import UUID
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.integrations.pos.models import PosConnection
+
+
+def get_connection(db: Session, restaurant_id: UUID, provider: str) -> PosConnection | None:
+    row = db.execute(
+        text("""
+            SELECT id, restaurant_id, provider, location_id
+            FROM pos_connections
+            WHERE restaurant_id = :restaurant_id AND provider = :provider
+            LIMIT 1
+        """),
+        {"restaurant_id": restaurant_id, "provider": provider},
+    ).first()
+    if row is None:
+        return None
+    return PosConnection(
+        id=UUID(str(row[0])),
+        restaurant_id=UUID(str(row[1])),
+        provider=row[2],
+        location_id=row[3],
+    )
+
 
 def credentials_exist(db: Session, pos_name: str) -> bool:
     row = db.execute(

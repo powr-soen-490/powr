@@ -77,18 +77,18 @@ This script pulls the last 30 days of sales and prints a summary.
 
 ### Step 4: Use the REST Endpoints
 
-Both endpoints require **owner authentication**. Credentials are stored encrypted in the database, not in `.env`.
+Both endpoints require **owner authentication**. Credentials are stored encrypted in the database, not in `.env`. A `pos_connections` row must also link the restaurant to its Toast restaurant GUID; the Integrations page does not yet configure that GUID. The legacy `pos_integrations` table does not store a location GUID and is not used by these endpoints.
 
 The owner enters Toast credentials through the UI (Integrations page), which encrypts and stores them before making API calls.
 
 **Test with curl:**
 
 ```bash
-# After authenticating as owner, get auth token from response headers
-curl -H "Authorization: Bearer <your-auth-token>" \
+# After authenticating as owner, use the session cookie
+curl -b "powr_session=<your-session-cookie>" \
   http://localhost:8000/api/pos/toast/sales-summary?days=7
 
-curl -H "Authorization: Bearer <your-auth-token>" \
+curl -b "powr_session=<your-session-cookie>" \
   http://localhost:8000/api/pos/toast/menu
 ```
 
@@ -150,35 +150,37 @@ Scopes are **not** explicitly restricted; access is determined by the applicatio
   "start_date": "2026-09-11",
   "end_date": "2026-10-11",
   "total_orders": 150,
-  "total_items": 450,
-  "total_revenue": 4500.00,
+  "total_items": "450.35",
+  "total_revenue": "4500.00",
   "daily_stats": [
     {
       "date": "2026-09-11",
       "orders": 5,
-      "items": 15,
-      "revenue": 150.00
+      "items": "15.35",
+      "revenue": "150.00"
     },
     {
       "date": "2026-09-12",
       "orders": 6,
-      "items": 18,
-      "revenue": 180.00
+      "items": "18",
+      "revenue": "180.00"
     }
   ]
 }
 ```
 
 **Error Responses**:
-- `401 Unauthorized`: Toast credentials invalid or not configured
+- `401 Unauthorized`: No valid powr session
 - `404 Not Found`: Toast credentials or restaurant connection not configured
 - `422 Unprocessable Entity`: Invalid query parameters (e.g., days=0 or days=999)
-- `502 Bad Gateway`: Toast API error (rate limited, down, etc.)
+- `502 Bad Gateway`: Toast authentication or API error (rate limited, down, etc.)
 
 **Notes**:
 - Does NOT save data to the database (designed for ad-hoc reporting)
 - Splits date ranges into 7-day windows due to Toast API limits
-- Voided/refunded items are included (ingredient usage still occurred)
+- Voided items are excluded; refunded items are included
+- Toast filters by modification time; results are additionally filtered by business date
+- Item quantities and revenue are decimal strings, preserving fractional quantities and precision
 - Revenue is a sum of line prices; discounts are reflected in line-level prices
 
 ### GET /api/pos/toast/menu
@@ -190,13 +192,13 @@ Scopes are **not** explicitly restricted; access is determined by the applicatio
 **Response** (200 OK):
 ```json
 {
-  "currency": "CAD",
+  "currency": "USD",
   "items": [
     {
       "item_id": "item-guid-123",
       "item_name": "Chicken Gyro Plate",
       "price": 14.99,
-      "currency": "CAD",
+      "currency": "USD",
       "modifier_groups": [
         {
           "group_id": "mod-group-1",
@@ -223,12 +225,13 @@ Scopes are **not** explicitly restricted; access is determined by the applicatio
 ```
 
 **Error Responses**:
-- `401 Unauthorized`: Toast credentials invalid or not configured
+- `401 Unauthorized`: No valid powr session
 - `404 Not Found`: Toast credentials or restaurant connection not configured
-- `502 Bad Gateway`: Toast API error
+- `502 Bad Gateway`: Toast authentication or API error
 
 **Notes**:
 - Returns all menu items visible to the Standard API
+- Currency defaults to USD until it is stored on the POS connection
 - Prices are base menu prices; dynamic pricing (by size, etc.) appears only at sale time
 - Modifier options with `null` price are priced by customer choice or included with the item
 - Items are ordered as they appear in Toast's menu structure
@@ -306,7 +309,7 @@ If Toast returns an order or menu item without a name, powr uses the constant `M
 
 **Test Coverage**:
 - Unit tests using a fake Toast server (no real API calls in CI)
-- Credentials and connection configuration validated on startup
+- Credentials and restaurant connection are checked when the endpoints are called
 - Error handling for authentication failures, API errors, and missing data
 
 **Known Issues**:
