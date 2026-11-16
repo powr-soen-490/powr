@@ -66,7 +66,10 @@ export function SalesImport({ onBack }: { onBack: () => void }) {
       <PageHeader
         title="Import sales history"
         subtitle="Bring your Toast orders into POWR so the forecast learns from what you actually sold."
-        actions={<Button variant="ghost" onClick={onBack}>‹ Back to Settings</Button>}
+        actions={<>
+          <Button variant="ghost" onClick={onBack}>‹ Back to Settings</Button>
+          <a className="btn btn-secondary" href="/settings/pos">Manage Toast connection</a>
+        </>}
       />
 
       {status === 'failed' && (
