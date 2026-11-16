@@ -41,6 +41,7 @@ h3 { margin: 0; font-size: 18px; line-height: 24px; font-weight: 600; }
 
 /* Buttons */
 .btn { font: inherit; font-size: 14px; line-height: 20px; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-8); height: 40px; padding: 0 var(--space-16); border-radius: var(--radius-6); border: 1px solid transparent; cursor: pointer; white-space: nowrap; }
+a.btn { text-decoration: none; }
 .btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-primary); }
 .btn:disabled { background: var(--color-divider); border-color: var(--color-divider); color: var(--color-text-muted); cursor: not-allowed; }
 .btn-primary { background: var(--color-primary); color: var(--color-surface); }

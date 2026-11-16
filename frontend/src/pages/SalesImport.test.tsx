@@ -61,4 +61,10 @@ describe('SalesImport', () => {
     fireEvent.click(screen.getByRole('button', { name: '‹ Back to Settings' }))
     expect(screen.getByRole('heading', { name: 'Settings' })).not.toBeNull()
   })
+
+  it('links to the Toast connection page', () => {
+    render(<SalesImport onBack={vi.fn()} />)
+
+    expect(screen.getByRole('link', { name: 'Manage Toast connection' }).getAttribute('href')).toBe('/settings/pos')
+  })
 })
