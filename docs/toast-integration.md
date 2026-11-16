@@ -53,7 +53,8 @@ See [How to Create Toast Credentials](#how-to-create-toast-credentials) below.
 Save the credentials:
 - **Client ID** (e.g., `abc123def456`)
 - **Client Secret** (e.g., `secret_xyz789`)
-- **Restaurant GUID** (e.g., `rest-guid-123`)
+
+The owner never needs the restaurant GUID in the app: powr finds it when Toast is connected (see [Connecting a Restaurant](#connecting-a-restaurant)). Only the local pull script below needs it in `.env`.
 
 ### Step 3: Test Locally (Optional)
 
@@ -77,9 +78,9 @@ This script pulls the last 30 days of sales and prints a summary.
 
 ### Step 4: Use the REST Endpoints
 
-Both endpoints require **owner authentication**. Credentials are stored encrypted in the database, not in `.env`. A `pos_connections` row must also link the restaurant to its Toast restaurant GUID; the Integrations page does not yet configure that GUID. The legacy `pos_integrations` table does not store a location GUID and is not used by these endpoints.
+Both endpoints require **owner authentication**. Credentials are stored encrypted in the database, not in `.env`, and a `pos_connections` row links the restaurant to its Toast restaurant GUID. The legacy `pos_integrations` table does not store a location GUID and is not used by these endpoints.
 
-The owner enters Toast credentials through the UI (Integrations page), which encrypts and stores them before making API calls.
+The owner connects Toast on the Toast connection page (`/settings/pos`, linked from **Settings → POS Settings**), which fills both; see [Connecting a Restaurant](#connecting-a-restaurant).
 
 **Test with curl:**
 
@@ -111,7 +112,29 @@ Toast Standard API requires **OAuth 2.0 Machine Client** credentials:
 3. Click **Create New Credential**
 4. Select **Machine Client** as the access type
 5. Save your **Client ID** and **Client Secret** securely
-6. Retrieve your **Restaurant GUID** from Toast's restaurant settings
+6. Optional, for the local pull script only: the **Restaurant GUID** is in the confirmation email Toast sends when the credential is created
+
+### Connecting a Restaurant
+
+The owner enters only the client ID and secret. When they click **Connect Toast**, `PUT /api/pos/toast/connection`:
+
+1. Logs in to Toast with the credentials.
+2. Calls `GET /partners/v1/restaurants`, which lists the restaurants the credentials can access. This is the only Toast call made without the `Toast-Restaurant-External-ID` header, since no GUID is known yet.
+3. If exactly one restaurant comes back, saves the credentials (encrypted) and links the owner's restaurant to that restaurant's GUID and name in `pos_connections`, in one transaction.
+
+Nothing is saved when the check fails:
+
+| Toast answer | HTTP status | Shown to the owner |
+|---|---|---|
+| Credentials rejected | 400 | Toast didn't accept this client ID and secret |
+| No restaurant | 404 | These credentials can't access any restaurant |
+| More than one restaurant | 409 | Not supported yet (choosing one is planned in #161) |
+| Login rate limit | 429 | Toast is limiting logins; wait a few minutes |
+| Unreachable or error | 502 | Couldn't reach Toast |
+
+The page then shows **Connected to: _restaurant name_**. `GET /api/pos/toast/connection` returns `{location_id, location_name}` for the owner's restaurant (404 when not connected), and `DELETE /api/pos/toast/connection` removes the restaurant's GUID and the saved Toast credentials.
+
+`pos_credentials` holds a single Toast login for the whole app, so connecting replaces any login saved before. Per-restaurant logins are part of the connection model planned in #161.
 
 ### Storing Credentials in powr
 
@@ -120,7 +143,7 @@ Credentials are stored in the `pos_credentials` table and encrypted at rest. The
 - **Never** sent to the frontend
 - **Only** accessible to endpoints marked as owner-only
 - **Automatically** decrypted when needed for API calls
-- **Validated** on first use
+- **Validated** with Toast before they are saved
 
 ## Scopes
 
@@ -293,6 +316,18 @@ If Toast returns an order or menu item without a name, powr uses the constant `M
 
 ## Version History
 
+### Version 1.1 (November 2026)
+
+**Features**:
+- Connecting Toast finds the restaurant GUID automatically from the client ID and secret (#160)
+- Credentials are checked with Toast before anything is saved
+- The Toast connection page shows which restaurant is connected and is linked from POS Settings
+
+**Endpoints**:
+- `GET /api/pos/toast/connection` - Connected restaurant
+- `PUT /api/pos/toast/connection` - Connect Toast
+- `DELETE /api/pos/toast/connection` - Disconnect Toast
+
 ### Version 1.0 (October 2026)
 
 **Features**:
@@ -332,11 +367,13 @@ backend/app/
 │       ├── orders.py         # Order response parsing
 │       ├── menus.py          # Menu response parsing
 │       ├── stock.py          # Stock response parsing
+│       ├── locations.py      # Restaurants a login can access (finds the GUID)
 │       └── retry.py          # Retry policy (rate limit, backoff)
 ├── api/
-│   └── toast.py              # REST endpoints
+│   ├── toast.py              # Sales summary and menu endpoints
+│   └── toast_connection.py   # Connect, view and disconnect Toast
 ├── modules/pos/
-│   ├── service.py            # Credential management
+│   ├── service.py            # Credential and connection management
 │   └── repository.py         # Database queries
 └── schemas/pos.py            # Pydantic response models
 ```
