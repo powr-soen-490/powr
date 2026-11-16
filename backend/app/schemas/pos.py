@@ -88,3 +88,18 @@ class MenuResponse(BaseModel):
 
     currency: str
     items: list[MenuItemResponse]
+
+
+class ToastConnectRequest(BaseModel):
+    """Toast credentials to check; the restaurant GUID is found from them, never typed."""
+
+    client_id: str = Field(..., min_length=1, max_length=255)
+    client_secret: str = Field(..., min_length=1, max_length=1024)
+
+
+class ToastConnectionResponse(BaseModel):
+    """The Toast restaurant linked to the caller's restaurant."""
+
+    location_id: str
+    # None for connections saved before the name was stored.
+    location_name: str | None

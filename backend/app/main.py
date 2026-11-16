@@ -13,6 +13,7 @@ from app.api.auth import router as auth_router
 from app.api.health import router as health_router
 from app.api.pos import router as pos_router
 from app.api.toast import router as toast_router
+from app.api.toast_connection import router as toast_connection_router
 from app.core.config import Settings, get_settings
 from app.core.database import create_session_factory
 from app.core.logging_config import configure_logging
@@ -70,6 +71,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(auth_router)
     app.include_router(pos_router)
     app.include_router(toast_router)
+    app.include_router(toast_connection_router)
     return app
 
 
