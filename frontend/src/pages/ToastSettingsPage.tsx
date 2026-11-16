@@ -34,7 +34,7 @@ function ToastSettingsPage({ user }: { user: AuthUser }) {
       setSaved(credentials)
       setConnection(restaurant)
       setCheckedAt(Date.now())
-      setClientId(credentials?.client_id ?? '')
+      setClientId(ownClientId(credentials, restaurant))
       setLoaded(true)
     }).catch((failure: unknown) => {
       if (active) setError(asPosError(failure))
@@ -52,7 +52,7 @@ function ToastSettingsPage({ user }: { user: AuthUser }) {
       setSaved(credentials)
       setConnection(restaurant)
       setCheckedAt(Date.now())
-      setClientId(credentials?.client_id ?? '')
+      setClientId(ownClientId(credentials, restaurant))
       setLoaded(true)
     } catch (failure) {
       setError(asPosError(failure))
@@ -153,7 +153,7 @@ function ToastSettingsPage({ user }: { user: AuthUser }) {
             </button>
           </fieldset>
         </form>
-        {(saved || connection) && <div className="toast-disconnect">
+        {connection && <div className="toast-disconnect">
           {confirmDisconnect ? <div role="group" aria-label="Confirm disconnect">
             <p>Disconnect Toast and remove the saved credentials and connected restaurant?</p>
             <div className="toast-actions">
@@ -168,6 +168,12 @@ function ToastSettingsPage({ user }: { user: AuthUser }) {
       </>}
     </AuthLayout>
   )
+}
+
+// The saved Toast login is shared by the whole app, so it may belong to another restaurant.
+// Only show its client ID when this restaurant is connected with it.
+function ownClientId(credentials: PosCredentials | null, restaurant: ToastConnection | null): string {
+  return restaurant ? credentials?.client_id ?? '' : ''
 }
 
 function asPosError(error: unknown): PosError {

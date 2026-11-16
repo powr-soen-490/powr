@@ -110,12 +110,13 @@ describe('Toast connection form', () => {
     expect((screen.getByLabelText('Client ID') as HTMLInputElement).value).toBe('')
   })
 
-  it('treats credentials saved before restaurant lookup existed as not connected', async () => {
+  it('does not treat a login shared by another restaurant as its own connection', async () => {
     serve({ [CREDENTIALS]: [json(metadata)], [CONNECTION]: [json({}, 404)] })
     show()
     await screen.findByText('Not connected')
     expect(screen.getByRole('button', { name: 'Connect Toast' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Disconnect Toast' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Disconnect Toast' })).toBeNull()
+    expect((screen.getByLabelText('Client ID') as HTMLInputElement).value).toBe('')
   })
 
   it('falls back to a generic name when the connected restaurant has no saved name', async () => {
