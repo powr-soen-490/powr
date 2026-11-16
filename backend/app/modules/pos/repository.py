@@ -1,6 +1,6 @@
 # Source-File AI Declaration
 # AI contribution: 50% or more AI-generated
-"""Database queries for shared POS provider credentials."""
+"""Database queries for shared POS provider credentials and each restaurant's POS connection."""
 
 from datetime import datetime
 from typing import Any
@@ -29,6 +29,74 @@ def get_connection(db: Session, restaurant_id: UUID, provider: str) -> PosConnec
         restaurant_id=UUID(str(row[1])),
         provider=row[2],
         location_id=row[3],
+    )
+
+
+def get_connection_details(
+    db: Session, restaurant_id: UUID, provider: str
+) -> dict[str, Any] | None:
+    row = (
+        db.execute(
+            text("""
+                SELECT location_id, location_name
+                FROM pos_connections
+                WHERE restaurant_id = :restaurant_id AND provider = :provider
+            """),
+            {"restaurant_id": restaurant_id, "provider": provider},
+        )
+        .mappings()
+        .first()
+    )
+    return dict(row) if row is not None else None
+
+
+def save_connection(
+    db: Session, *, restaurant_id: UUID, provider: str, location_id: str, location_name: str
+) -> None:
+    """Link the restaurant to a POS location, replacing the location it was linked to before."""
+    db.execute(
+        text("""
+            INSERT INTO pos_connections (restaurant_id, provider, location_id, location_name)
+            VALUES (:restaurant_id, :provider, :location_id, :location_name)
+            ON CONFLICT (restaurant_id, provider) DO UPDATE
+            SET location_id = EXCLUDED.location_id, location_name = EXCLUDED.location_name
+        """),
+        {
+            "restaurant_id": restaurant_id,
+            "provider": provider,
+            "location_id": location_id,
+            "location_name": location_name,
+        },
+    )
+
+
+def delete_connection(db: Session, *, restaurant_id: UUID, provider: str) -> None:
+    db.execute(
+        text("""
+            DELETE FROM pos_connections
+            WHERE restaurant_id = :restaurant_id AND provider = :provider
+        """),
+        {"restaurant_id": restaurant_id, "provider": provider},
+    )
+
+
+def replace_credentials(
+    db: Session, *, pos_name: str, client_id: str, encrypted_client_secret: str
+) -> None:
+    """Save new credentials and forget the old access token, which belonged to the old ones."""
+    db.execute(
+        text("""
+            INSERT INTO pos_credentials (pos_name, client_id, client_secret)
+            VALUES (:pos_name, :client_id, :client_secret)
+            ON CONFLICT (pos_name) DO UPDATE
+            SET client_id = EXCLUDED.client_id, client_secret = EXCLUDED.client_secret,
+                access_token = NULL, expires_at = NULL
+        """),
+        {
+            "pos_name": pos_name,
+            "client_id": client_id,
+            "client_secret": encrypted_client_secret,
+        },
     )
 
 
