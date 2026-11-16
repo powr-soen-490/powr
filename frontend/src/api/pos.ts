@@ -27,7 +27,8 @@ const API_BASE_URL: string = import.meta.env.VITE_API_URL ?? ''
 const CREDENTIALS_URL = '/api/pos/credentials'
 const CONNECTION_URL = '/api/pos/toast/connection'
 
-// Why connecting failed, by status code. The server's own text is never shown.
+// Why connecting failed, by status code. The server's own text is never shown. When adding or
+// changing a status code here, update CONNECT_ERRORS in backend/app/api/toast_connection.py too.
 const CONNECT_ERRORS: Record<number, string> = {
   400: "Toast didn't accept this client ID and secret. Check them and try again.",
   404: "These Toast credentials can't access any restaurant.",

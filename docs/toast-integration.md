@@ -132,9 +132,9 @@ Nothing is saved when the check fails:
 | Login rate limit | 429 | Toast is limiting logins; wait a few minutes |
 | Unreachable or error | 502 | Couldn't reach Toast |
 
-The page then shows **Connected to: _restaurant name_**. `GET /api/pos/toast/connection` returns `{location_id, location_name}` for the owner's restaurant (404 when not connected), and `DELETE /api/pos/toast/connection` removes the restaurant's GUID and the saved Toast credentials.
+The page then shows **Connected to: _restaurant name_**. `GET /api/pos/toast/connection` returns `{location_id, location_name}` for the owner's restaurant (404 when not connected), and `DELETE /api/pos/toast/connection` removes the restaurant's GUID. The saved Toast credentials are removed too, unless another restaurant is still connected with them.
 
-`pos_credentials` holds a single Toast login for the whole app, so connecting replaces any login saved before. Per-restaurant logins are part of the connection model planned in #161.
+`pos_credentials` holds a single Toast login for the whole app, so connecting replaces any login saved before, even one another restaurant uses. Per-restaurant logins are part of the connection model planned in #161.
 
 ### Storing Credentials in powr
 

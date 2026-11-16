@@ -20,7 +20,8 @@ router = APIRouter(prefix="/api/pos/toast", tags=["toast"])
 DbSession = Annotated[Session, Depends(get_db)]
 
 # Each failure has its own status code, so the frontend can pick its own message without
-# displaying text that came back from the server.
+# displaying text that came back from the server. When adding or changing a status code here,
+# update CONNECT_ERRORS in frontend/src/api/pos.ts too.
 CONNECT_ERRORS: dict[type[service.ToastConnectError], tuple[int, str]] = {
     service.ToastLoginRejectedError: (
         status.HTTP_400_BAD_REQUEST,
@@ -91,7 +92,8 @@ def connect_toast(
 
 @router.delete("/connection", response_model=SetPosResponse)
 def disconnect_toast(user: OwnerDep, db: DbSession) -> SetPosResponse:
-    """Remove the restaurant's Toast restaurant GUID and the saved Toast credentials."""
+    """Remove the restaurant's Toast GUID, and the saved Toast credentials if no other
+    restaurant still uses them."""
     try:
         service.disconnect_toast(db, restaurant_id=user.restaurant_id)
     except service.ConnectionStorageError as exc:
