@@ -141,6 +141,27 @@ cannot reach PostgreSQL; see [Troubleshooting](#troubleshooting).
 Interactive API documentation is at <http://localhost:8000/docs>, and the frontend is at
 <http://localhost:5173>.
 
+### Mock POS data
+
+To test without a POS, generate mock menu items and sales in the same shape the POS adapters
+return. Run from `backend/` with the virtual environment active. Generate the menu first; sales
+only use that restaurant's menu items:
+
+```bash
+python -m app.integrations.pos.mock --restaurant <restaurant-uuid> --type menu
+python -m app.integrations.pos.mock --restaurant <restaurant-uuid> --type sales \
+  --start 2026-08-01 --end 2026-10-31 --seed 42
+```
+
+Files are written to `mock_data/<restaurant-uuid>/` (gitignored; change with `--out-dir`). Every
+record has `is_mock: true`, the same `--seed` gives the same data, and the script refuses to run
+when `ENVIRONMENT=production`.
+
+Each menu is the real menu of one restaurant from the MIT-licensed
+[New York Restaurant Menus and Details](https://www.kaggle.com/datasets/anoopjohny/new-york-restaurant-menus-and-details)
+dataset (allmenus.com, 2024). The cleaned extract is `backend/app/integrations/pos/data/mock_menu_items.csv`;
+rebuild it with `scripts/build_mock_menu_dataset.py` (steps in its docstring).
+
 ### POS credential encryption
 
 POS client secrets and access tokens are stored using AES-256-GCM. Set
