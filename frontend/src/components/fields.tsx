@@ -68,6 +68,24 @@ export function TextField(props: BaseProps & { placeholder?: string; type?: 'tex
   )
 }
 
+export function DateField(props: BaseProps & { min?: string; max?: string }) {
+  const id = useId()
+  const { value, onChange, min, max, compact } = props
+  return (
+    <FieldShell id={id} {...props}>
+      <input
+        {...controlProps(id, props)}
+        type="date"
+        className={`input${compact ? ' input-compact' : ''}`}
+        value={value}
+        min={min}
+        max={max}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </FieldShell>
+  )
+}
+
 // Right-aligned number with an optional unit suffix inside the box.
 export function NumberField(props: BaseProps & { unit?: string; placeholder?: string }) {
   const id = useId()
