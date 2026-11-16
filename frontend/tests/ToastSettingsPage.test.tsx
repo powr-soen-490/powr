@@ -118,6 +118,23 @@ describe('Toast connection form', () => {
     expect(screen.getByRole('button', { name: 'Disconnect Toast' })).toBeTruthy()
   })
 
+  it('falls back to a generic name when the connected restaurant has no saved name', async () => {
+    const unnamed = { location_id: 'guid-1', location_name: null }
+    serve({
+      [CREDENTIALS]: [json({}, 404), json(metadata)],
+      [CONNECTION]: [json({}, 404), json(unnamed)],
+      [CONNECT]: [json(unnamed)],
+    })
+    show()
+    await screen.findByText('Not connected')
+    fill()
+    fireEvent.click(screen.getByRole('button', { name: 'Connect Toast' }))
+    await screen.findByText('Connected')
+
+    expect(screen.getByText(/Connected to your Toast restaurant\./)).toBeTruthy()
+    expect(screen.getByText('your Toast restaurant')).toBeTruthy()
+  })
+
   it('does not expose the form or call owner APIs for a kitchen manager', () => {
     show('kitchen_manager')
     expect(screen.getByText(/Only restaurant owners/)).toBeTruthy()

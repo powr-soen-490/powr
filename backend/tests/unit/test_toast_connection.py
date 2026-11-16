@@ -58,6 +58,8 @@ class FakeDatabase:
         self.user = user
         self.connection: dict[str, Any] | None = None
         self.pos_queries: list[tuple[str, dict[str, Any]]] = []
+        # When set, every POS query fails as if the database were down.
+        self.pos_error: SQLAlchemyError | None = None
         self.session = Mock(spec=Session)
         self.session.execute.side_effect = self._execute
 
@@ -67,6 +69,8 @@ class FakeDatabase:
         if "restaurant_memberships" in sql:
             result.first.return_value = self.user
         else:
+            if self.pos_error is not None:
+                raise self.pos_error
             self.pos_queries.append((sql, params or {}))
             result.mappings.return_value.first.return_value = self.connection
         return result
@@ -192,6 +196,20 @@ def test_database_errors_roll_back_and_return_a_safe_500(
     assert response.status_code == 500
     assert SECRET not in response.text
     owner.session.rollback.assert_called_once()
+
+
+@pytest.mark.parametrize("method", ["GET", "DELETE"])
+def test_reading_or_disconnecting_returns_a_safe_500_when_the_database_fails(
+    client: TestClient, owner: FakeDatabase, method: str
+) -> None:
+    owner.pos_error = SQLAlchemyError(SECRET)
+
+    response = client.request(method, CONNECTION)
+
+    assert response.status_code == 500
+    assert SECRET not in response.text
+    owner.session.rollback.assert_called_once()
+    owner.session.commit.assert_not_called()
 
 
 def test_get_returns_the_connected_restaurant_or_404(
