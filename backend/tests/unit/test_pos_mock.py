@@ -4,6 +4,7 @@
 
 import random
 from datetime import date
+from decimal import Decimal
 from pathlib import Path
 from statistics import mean
 from types import SimpleNamespace
@@ -73,11 +74,31 @@ def test_sales_without_menu_fails_clearly(tmp_path: Path) -> None:
         run_sales(tmp_path)
 
 
-def test_menu_matches_domain_model(tmp_path: Path) -> None:
-    run(tmp_path, "--type", "menu")
+def test_menu_is_one_real_restaurant_menu(tmp_path: Path) -> None:
+    run(tmp_path, "--type", "menu", "--seed", "1")
     menu = read_menu(tmp_path)
-    assert len(menu) == len(mock.MOCK_MENU)
+    names = [(item.item_name, item.price) for item in menu]
+    assert names in mock._dataset_menus().values()
     assert all(item.is_mock and item.restaurant_id == RESTAURANT for item in menu)
+
+
+def test_menu_depends_on_seed() -> None:
+    def names(seed: int) -> list[str]:
+        return [item.item_name for item in mock.generate_menu(RESTAURANT, random.Random(seed))]
+
+    assert names(1) == names(1)
+    assert len({tuple(names(seed)) for seed in range(10)}) > 1
+
+
+def test_popularity_is_stable_and_favours_cheaper_items() -> None:
+    menu = mock.generate_menu(RESTAURANT, random.Random(1))
+    weights = mock.popularity_weights(menu)
+    assert weights == mock.popularity_weights(menu)
+    # Same item at two prices: the random score cancels out and only the price differs.
+    cheap, pricey = mock.popularity_weights(
+        [menu[0].model_copy(update={"price": Decimal(p)}) for p in ("2", "8")]
+    )
+    assert cheap > pricey
 
 
 def test_sales_match_domain_model_and_menu(tmp_path: Path) -> None:
@@ -100,7 +121,7 @@ def test_same_seed_gives_same_output(tmp_path: Path) -> None:
 
 
 def test_sales_have_weekend_and_meal_peaks() -> None:
-    menu = mock.generate_menu(RESTAURANT)
+    menu = mock.generate_menu(RESTAURANT, random.Random(7))
     sales = mock.generate_sales(menu, date(2026, 9, 7), date(2026, 10, 4), random.Random(7))
     orders_by_day: dict[date, set[str]] = {}
     for line in sales:

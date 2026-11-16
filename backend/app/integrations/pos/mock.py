@@ -9,11 +9,13 @@ From backend/:
 """
 
 import argparse
+import csv
 import random
 import sys
 from collections.abc import Sequence
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
+from functools import cache
 from pathlib import Path
 from uuid import NAMESPACE_URL, UUID, uuid5
 from zoneinfo import ZoneInfo
@@ -23,19 +25,8 @@ from pydantic import TypeAdapter
 from app.core.config import get_settings
 from app.integrations.pos.models import MenuItem, SaleLine
 
-# (name, price, popularity weight)
-MOCK_MENU: tuple[tuple[str, str, int], ...] = (
-    ("Chicken Gyro", "12.95", 10),
-    ("Lamb Gyro", "13.95", 7),
-    ("Falafel Wrap", "11.50", 5),
-    ("Greek Salad", "10.95", 6),
-    ("Chicken Souvlaki Plate", "17.95", 6),
-    ("Moussaka", "18.50", 3),
-    ("Spanakopita", "8.95", 4),
-    ("Hummus & Pita", "7.95", 5),
-    ("Greek Fries", "5.95", 8),
-    ("Baklava", "5.50", 4),
-)
+# Real New York restaurant menus (MIT), rebuilt by scripts/build_mock_menu_dataset.py.
+MENU_DATASET = Path(__file__).parent / "data" / "mock_menu_items.csv"
 MOCK_TIMEZONE = ZoneInfo("America/New_York")
 # Calibrated to a real 30-day Toast pull: about 55 orders and 2.4 items per order a day.
 BASE_ORDERS_PER_DAY = 55
@@ -50,19 +41,46 @@ def mock_connection_id(restaurant_id: UUID) -> UUID:
     return uuid5(NAMESPACE_URL, f"mock:{restaurant_id}")
 
 
-def generate_menu(restaurant_id: UUID) -> list[MenuItem]:
+@cache
+def _dataset_menus() -> dict[str, list[tuple[str, Decimal]]]:
+    """Real menus by restaurant name, as (item name, price) pairs."""
+    menus: dict[str, list[tuple[str, Decimal]]] = {}
+    with MENU_DATASET.open(encoding="utf-8", newline="") as file:
+        for row in csv.DictReader(file):
+            menus.setdefault(row["restaurant"], []).append(
+                (row["item_name"], Decimal(row["price"]))
+            )
+    return menus
+
+
+def generate_menu(restaurant_id: UUID, rng: random.Random) -> list[MenuItem]:
+    """The full menu of one real restaurant from the dataset, chosen by the generator."""
+    menus = _dataset_menus()
+    dishes = menus[rng.choice(sorted(menus))]
     return [
         MenuItem(
             connection_id=mock_connection_id(restaurant_id),
             restaurant_id=restaurant_id,
             item_id=f"mock-item-{index}",
             item_name=name,
-            price=Decimal(price),
+            price=price,
             currency="USD",
             is_mock=True,
         )
-        for index, (name, price, _) in enumerate(MOCK_MENU, start=1)
+        for index, (name, price) in enumerate(dishes, start=1)
     ]
+
+
+def popularity_weights(menu: Sequence[MenuItem]) -> list[float]:
+    """Cheaper items sell more, times a random score that is fixed per item across runs."""
+    prices = sorted(float(item.price) for item in menu if item.price is not None)
+    median = prices[len(prices) // 2] if prices else 1.0
+    weights = []
+    for item in menu:
+        score = random.Random(f"{item.restaurant_id}:{item.item_id}").uniform(0.1, 1.0)
+        price_factor = (median / float(item.price)) ** 0.5 if item.price else 1.0
+        weights.append(score * price_factor)
+    return weights
 
 
 def _order_time(day: date, rng: random.Random) -> datetime:
@@ -76,7 +94,7 @@ def _order_time(day: date, rng: random.Random) -> datetime:
 
 
 def _order_lines(
-    menu: Sequence[MenuItem], weights: Sequence[int], order_id: str, day: date, rng: random.Random
+    menu: Sequence[MenuItem], weights: Sequence[float], order_id: str, day: date, rng: random.Random
 ) -> list[SaleLine]:
     timestamp = _order_time(day, rng)
     line_count = rng.choices((1, 2, 3), weights=(3, 4, 3))[0]
@@ -107,8 +125,7 @@ def generate_sales(
     """Sale lines for each business day in the inclusive range, using only the given menu."""
     if not menu:
         raise ValueError("Cannot generate sales without menu items")
-    popularity = {name: weight for name, _, weight in MOCK_MENU}
-    weights = [popularity.get(item.item_name, 1) for item in menu]
+    weights = popularity_weights(menu)
     lines: list[SaleLine] = []
     day = start
     while day <= end:
@@ -146,7 +163,8 @@ def main(argv: Sequence[str] | None = None) -> None:
     menu_path = out_dir / "menu.json"
     if args.data_type == "menu":
         out_dir.mkdir(parents=True, exist_ok=True)
-        menu_path.write_bytes(MENU_ADAPTER.dump_json(generate_menu(args.restaurant), indent=2))
+        menu = generate_menu(args.restaurant, random.Random(args.seed))
+        menu_path.write_bytes(MENU_ADAPTER.dump_json(menu, indent=2))
         print(f"Wrote {menu_path}")
         return
     if not menu_path.is_file():

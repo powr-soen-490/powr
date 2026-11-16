@@ -157,6 +157,11 @@ Files are written to `mock_data/<restaurant-uuid>/` (gitignored; change with `--
 record has `is_mock: true`, the same `--seed` gives the same data, and the script refuses to run
 when `ENVIRONMENT=production`.
 
+Each menu is the real menu of one restaurant from the MIT-licensed
+[New York Restaurant Menus and Details](https://www.kaggle.com/datasets/anoopjohny/new-york-restaurant-menus-and-details)
+dataset (allmenus.com, 2024). The cleaned extract is `backend/app/integrations/pos/data/mock_menu_items.csv`;
+rebuild it with `scripts/build_mock_menu_dataset.py` (steps in its docstring).
+
 ### POS credential encryption
 
 POS client secrets and access tokens are stored using AES-256-GCM. Set
