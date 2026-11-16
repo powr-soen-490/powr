@@ -11,7 +11,7 @@ import httpx2
 
 from app.integrations.pos.models import PosConnection
 from app.integrations.pos.toast.adapter import ToastAdapter
-from app.integrations.pos.toast.client import LOGIN_PATH, ToastCredentials
+from app.integrations.pos.toast.client import LOGIN_PATH, ToastClient, ToastCredentials
 from app.integrations.pos.toast.retry import RetryPolicy
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "toast"
@@ -84,6 +84,17 @@ class FakeToast:
             base_url=BASE_URL,
             transport=httpx2.MockTransport(self._handle),
             retry_policy=retry_policy,
+            sleep=self.sleep,
+            clock=self.clock,
+        )
+
+    def client(self) -> ToastClient:
+        credentials = ToastCredentials(client_id="test-client-id", client_secret=CLIENT_SECRET)
+        return ToastClient(
+            credentials,
+            RESTAURANT_GUID,
+            base_url=BASE_URL,
+            transport=httpx2.MockTransport(self._handle),
             sleep=self.sleep,
             clock=self.clock,
         )
