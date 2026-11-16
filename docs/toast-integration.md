@@ -6,12 +6,93 @@ powr integrates with Toast via the **Toast Standard API** to import sales data, 
 
 ## Table of Contents
 
-1. [Credentials and Setup](#credentials-and-setup)
-2. [Scopes](#scopes)
-3. [Endpoints](#endpoints)
-4. [Field Mappings](#field-mappings)
-5. [Known Limitations](#known-limitations)
-6. [Version History](#version-history)
+1. [Getting Started](#getting-started)
+2. [Credentials and Setup](#credentials-and-setup)
+3. [Scopes](#scopes)
+4. [Endpoints](#endpoints)
+5. [Field Mappings](#field-mappings)
+6. [Known Limitations](#known-limitations)
+7. [Version History](#version-history)
+
+## Getting Started
+
+### Prerequisites
+
+Before you can use the Toast integration, ensure:
+
+1. **Backend is running** (Docker or local Python setup)
+   - See [README.md](../README.md) for setup instructions
+2. **Database is initialized** with migrations
+   - `pos_connections` table created by `backend/db/04_pos_connections.sql`
+3. **Encryption key is configured** (POS_CREDENTIALS_ENCRYPTION_KEY in .env)
+
+### Step 1: Generate the POS Encryption Key
+
+The backend encrypts Toast credentials at rest using AES-256-GCM. Generate a new encryption key:
+
+**On macOS/Linux:**
+```bash
+openssl rand -base64 32
+```
+
+**On Windows (PowerShell):**
+```powershell
+$key = [System.Convert]::ToBase64String((1..32 | ForEach-Object {[byte](Get-Random -Maximum 256)}))
+$key
+```
+
+**In your `.env` file:**
+```
+POS_CREDENTIALS_ENCRYPTION_KEY=<paste-the-base64-string-here>
+```
+
+### Step 2: Get Toast Credentials
+
+See [How to Create Toast Credentials](#how-to-create-toast-credentials) below.
+
+Save the credentials:
+- **Client ID** (e.g., `abc123def456`)
+- **Client Secret** (e.g., `secret_xyz789`)
+- **Restaurant GUID** (e.g., `rest-guid-123`)
+
+### Step 3: Test Locally (Optional)
+
+To test the 30-day pull script locally, add credentials to your `.env`:
+
+```env
+TOAST_CLIENT_ID=<your-client-id>
+TOAST_CLIENT_SECRET=<your-client-secret>
+TOAST_RESTAURANT_GUID=<your-restaurant-guid>
+TOAST_API_BASE_URL=https://ws-api.toasttab.com
+```
+
+Run the pull script:
+
+```bash
+cd backend
+python ../scripts/pull_toast_sales.py
+```
+
+This script pulls the last 30 days of sales and prints a summary.
+
+### Step 4: Use the REST Endpoints
+
+Both endpoints require **owner authentication**. Credentials are stored encrypted in the database, not in `.env`.
+
+The owner enters Toast credentials through the UI (Integrations page), which encrypts and stores them before making API calls.
+
+**Test with curl:**
+
+```bash
+# After authenticating as owner, get auth token from response headers
+curl -H "Authorization: Bearer <your-auth-token>" \
+  http://localhost:8000/api/pos/toast/sales-summary?days=7
+
+curl -H "Authorization: Bearer <your-auth-token>" \
+  http://localhost:8000/api/pos/toast/menu
+```
+
+See [Endpoints](#endpoints) for full documentation.
 
 ## Credentials and Setup
 
