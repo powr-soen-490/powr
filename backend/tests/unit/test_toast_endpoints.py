@@ -5,7 +5,7 @@
 import importlib.util
 import sys
 from collections.abc import Iterator
-from datetime import UTC, datetime, tzinfo
+from datetime import UTC, date, datetime, tzinfo
 from decimal import Decimal
 from pathlib import Path
 from typing import Any, Self
@@ -31,6 +31,7 @@ from app.integrations.pos.toast.client import LOGIN_PATH, ToastCredentials
 from app.integrations.pos.toast.menus import MENUS_PATH
 from app.integrations.pos.toast.orders import ORDERS_PATH
 from app.modules.pos import repository, service
+from app.modules.pos.sales_repository import DailySales
 from tests.unit.toast_fakes import BASE_URL, FakeToast, load_fixture
 
 SALES = "/api/pos/toast/sales-summary"
@@ -124,88 +125,56 @@ def owner_client(
     app.dependency_overrides.pop(get_db, None)
 
 
-def order(order_id: str, business_date: int, selections: list[dict[str, Any]]) -> dict[str, Any]:
-    return {
-        "guid": order_id,
-        "openedDate": "2026-10-10T12:00:00.000+0000",
-        "businessDate": business_date,
-        "checks": [{"guid": f"check-{order_id}", "selections": selections}],
-    }
-
-
-def selection(line_id: str, quantity: int, price: int, *, voided: bool = False) -> dict[str, Any]:
-    return {
-        "guid": line_id,
-        "item": {"guid": f"item-{line_id}"},
-        "displayName": line_id,
-        "quantity": quantity,
-        "price": price,
-        "voided": voided,
-    }
-
-
-def test_sales_totals_exclude_voids_and_out_of_range_dates(
-    owner_client: TestClient, toast: FakeToast
-) -> None:
-    toast.reply(
-        ORDERS_PATH,
-        httpx2.Response(
-            200,
-            json=[
-                order(
-                    "one",
-                    20261009,
-                    [
-                        selection("a", 2, 20),
-                        selection("b", 1, 5),
-                        selection("void", 1, 7, voided=True),
-                    ],
-                ),
-                order("two", 20261010, [selection("c", 3, 30)]),
-                order("old", 20261008, [selection("old", 1, 99)]),
-                order("future", 20261011, [selection("future", 1, 99)]),
-            ],
-        ),
+def no_sales(
+    db: Session, *, restaurant_id: UUID, start_date: date, end_date: date
+) -> service.SalesSummary:
+    return service.SalesSummary(
+        daily=[], total_orders=0, total_items=Decimal("0"), total_revenue=Decimal("0")
     )
-    response = owner_client.get(f"{SALES}?days=1")
-    assert response.status_code == 200
-    body = response.json()
-    assert (body["start_date"], body["end_date"]) == ("2026-10-09", "2026-10-10")
-    assert (body["total_orders"], body["total_items"]) == (2, "6")
-    assert Decimal(body["total_revenue"]) == Decimal("55")
-    assert [
-        (day["date"], day["orders"], Decimal(day["items"]), Decimal(day["revenue"]))
-        for day in body["daily_stats"]
-    ] == [
-        ("2026-10-09", 1, Decimal("3"), Decimal("25")),
-        ("2026-10-10", 1, Decimal("3"), Decimal("30")),
-    ]
-    assert len(toast.requests_to(ORDERS_PATH)) == 1
 
 
-def test_fractional_item_quantities_are_preserved(
-    owner_client: TestClient, toast: FakeToast
+def test_sales_summary_reads_imported_sales_without_calling_toast(
+    owner_client: TestClient, toast: FakeToast, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    toast.reply(
-        ORDERS_PATH,
-        httpx2.Response(
-            200,
-            text="""[{
-                "guid": "order",
-                "openedDate": "2026-10-10T12:00:00.000+0000",
-                "businessDate": 20261010,
-                "checks": [{"guid": "check", "selections": [
-                    {"guid": "a", "item": {"guid": "item-a"}, "quantity": 0.35, "price": 4},
-                    {"guid": "b", "item": {"guid": "item-b"}, "quantity": 1.20, "price": 5}
-                ]}]
-            }]""",
-        ),
-    )
+    asked: list[tuple[date, date]] = []
+
+    def imported_sales(
+        db: Session, *, restaurant_id: UUID, start_date: date, end_date: date
+    ) -> service.SalesSummary:
+        asked.append((start_date, end_date))
+        day = DailySales(date(2026, 10, 10), 2, Decimal("1.55"), Decimal("9.00"))
+        return service.SalesSummary(
+            daily=[day], total_orders=2, total_items=Decimal("1.55"), total_revenue=Decimal("9")
+        )
+
+    monkeypatch.setattr(service, "get_sales_summary", imported_sales)
     response = owner_client.get(f"{SALES}?days=1")
+
     assert response.status_code == 200
-    body = response.json()
-    assert body["total_items"] == "1.55"
-    assert body["daily_stats"][0]["items"] == "1.55"
+    assert response.json() == {
+        "days": 1,
+        "start_date": "2026-10-09",
+        "end_date": "2026-10-10",
+        "total_orders": 2,
+        "total_items": "1.55",
+        "total_revenue": "9",
+        "daily_stats": [{"date": "2026-10-10", "orders": 2, "items": "1.55", "revenue": "9.00"}],
+    }
+    assert asked == [(date(2026, 10, 9), date(2026, 10, 10))]
+    assert not toast.requests
+
+
+def test_sales_summary_database_error_returns_safe_500(
+    owner_client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def fail(db: Session, **_: object) -> service.SalesSummary:
+        raise SQLAlchemyError("private database detail")
+
+    monkeypatch.setattr(service, "get_sales_summary", fail)
+    response = owner_client.get(SALES)
+
+    assert response.status_code == 500
+    assert response.json()["detail"] == "Failed to read imported sales."
 
 
 @pytest.mark.parametrize("days", [0, -5, 366, 999])
@@ -215,20 +184,19 @@ def test_invalid_days_are_rejected_for_owner(owner_client: TestClient, days: int
 
 @pytest.mark.parametrize(("query", "days"), [("", 30), ("?days=1", 1), ("?days=365", 365)])
 def test_valid_days_for_owner(
-    owner_client: TestClient, toast: FakeToast, query: str, days: int
+    owner_client: TestClient, monkeypatch: pytest.MonkeyPatch, query: str, days: int
 ) -> None:
-    toast.reply(ORDERS_PATH, httpx2.Response(200, json=[]))
+    monkeypatch.setattr(service, "get_sales_summary", no_sales)
     response = owner_client.get(f"{SALES}{query}")
     assert response.status_code == 200
     assert response.json()["days"] == days
 
 
-@pytest.mark.parametrize("path", [SALES, MENU])
-def test_missing_connection_returns_404(
-    owner_client: TestClient, monkeypatch: pytest.MonkeyPatch, path: str
+def test_menu_without_a_connection_returns_404(
+    owner_client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(service, "get_connection", lambda db, restaurant_id, provider: None)
-    response = owner_client.get(path)
+    response = owner_client.get(MENU)
     assert response.status_code == 404
     assert response.json()["detail"] == "Toast connection not configured for this restaurant."
 
@@ -240,17 +208,14 @@ def test_connection_database_error_returns_safe_500(
         raise SQLAlchemyError("private database detail")
 
     monkeypatch.setattr(repository, "get_connection", fail)
-    response = owner_client.get(SALES)
+    response = owner_client.get(MENU)
     assert response.status_code == 500
     assert response.json()["detail"] == "Failed to retrieve Toast connection."
 
 
-@pytest.mark.parametrize("path", [SALES, MENU])
-def test_rejected_toast_credentials_return_502(
-    owner_client: TestClient, toast: FakeToast, path: str
-) -> None:
+def test_rejected_toast_credentials_return_502(owner_client: TestClient, toast: FakeToast) -> None:
     toast.reply(LOGIN_PATH, httpx2.Response(401))
-    response = owner_client.get(path)
+    response = owner_client.get(MENU)
     assert response.status_code == 502
     assert response.json()["detail"] == "Toast authentication failed. Check credentials."
     assert len(toast.requests_to(LOGIN_PATH)) == 1

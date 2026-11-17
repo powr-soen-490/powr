@@ -1,6 +1,6 @@
 # Source-File AI Declaration
 # AI contribution: 50% or more AI-generated
-"""Toast-specific API endpoints for fetching sales summaries and menus."""
+"""Toast endpoints: imported sales by day, and the live Toast menu."""
 
 import logging
 from datetime import UTC, datetime, timedelta
@@ -8,6 +8,7 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.core.auth import OwnerDep
@@ -87,65 +88,40 @@ def get_sales_summary(
     db: DbSession,
     days: int = Query(30, ge=1, le=365, description="Number of days to pull"),
 ) -> SalesSummaryResponse:
-    """Fetch and summarize sales data for the past N days from Toast.
+    """Imported sales for the past N days, by business day.
 
-    Only owners may call this endpoint. Returns orders, items, and revenue aggregated by day.
+    Only owners may call this endpoint. Reads the sales that Toast imports have saved, so it
+    never calls Toast; days before the first import simply have no sales.
     """
-    adapter = _get_toast_adapter(db, user.restaurant_id)
-
+    end_date = datetime.now(UTC).date()
+    start_date = end_date - timedelta(days=days)
     try:
-        if not adapter.authenticate():
-            raise ToastAuthenticationError("Toast rejected the credentials.")
-
-        # Calculate time window
-        end_time = datetime.now(UTC)
-        start_time = end_time - timedelta(days=days)
-
-        # Fetch orders
-        orders = adapter.fetch_orders(start_time, end_time)
-
-        # Aggregate by business date
-        summary = service.aggregate_sales(orders, start_time.date(), end_time.date())
-
-        # Build response
-        daily_list: list[DailySalesStats] = []
-        for date_str in sorted(summary.daily):
-            stat = summary.daily[date_str]
-            orders_set = stat["orders"]
-            items_count = stat["items"]
-            revenue_amount = stat["revenue"]
-            daily_list.append(
-                DailySalesStats(
-                    date=date_str,
-                    orders=len(orders_set),
-                    items=items_count,
-                    revenue=revenue_amount,
-                )
-            )
-        return SalesSummaryResponse(
-            days=days,
-            start_date=str(start_time.date()),
-            end_date=str(end_time.date()),
-            total_orders=summary.total_orders,
-            total_items=summary.total_items,
-            total_revenue=summary.total_revenue,
-            daily_stats=daily_list,
+        summary = service.get_sales_summary(
+            db, restaurant_id=user.restaurant_id, start_date=start_date, end_date=end_date
         )
-
-    except ToastAuthenticationError as exc:
-        logger.warning("Toast authentication failed for restaurant %s", user.restaurant_id)
+    except SQLAlchemyError as exc:
+        logger.exception("Failed to read imported sales for restaurant %s", user.restaurant_id)
         raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Toast authentication failed. Check credentials.",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to read imported sales.",
         ) from exc
-    except ToastApiError as exc:
-        logger.exception("Toast API error for restaurant %s", user.restaurant_id)
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Toast API error. Please try again later.",
-        ) from exc
-    finally:
-        adapter.close()
+    return SalesSummaryResponse(
+        days=days,
+        start_date=start_date.isoformat(),
+        end_date=end_date.isoformat(),
+        total_orders=summary.total_orders,
+        total_items=summary.total_items,
+        total_revenue=summary.total_revenue,
+        daily_stats=[
+            DailySalesStats(
+                date=day.business_date.isoformat(),
+                orders=day.orders,
+                items=day.items,
+                revenue=day.revenue,
+            )
+            for day in summary.daily
+        ],
+    )
 
 
 @router.get("/menu", response_model=MenuResponse)
