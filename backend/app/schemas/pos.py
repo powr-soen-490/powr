@@ -1,13 +1,13 @@
 # Source-File AI Declaration
 # AI contribution: 50% or more AI-generated
-"""Pydantic request and response models for POS credentials endpoints."""
+"""Pydantic request and response models for the POS endpoints."""
 
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 PosProvider = Literal["TOAST", "SQUARE"]
 
@@ -103,3 +103,32 @@ class ToastConnectionResponse(BaseModel):
     location_id: str
     # None for connections saved before the name was stored.
     location_name: str | None
+
+
+class SalesImportRequest(BaseModel):
+    """The business days to import; both are optional (see the import endpoint)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    start_date: date | None = None
+    end_date: date | None = None
+
+
+class SalesImportResponse(BaseModel):
+    """A sales import job, as the Sales Import page shows it."""
+
+    id: UUID
+    status: Literal["running", "failed", "done"]
+    start_date: date
+    end_date: date
+    # Every business day up to this one is saved; null before the first day is done.
+    last_completed_date: date | None
+    days_completed: int = Field(..., ge=0)
+    total_days: int = Field(..., ge=1)
+    percent: int = Field(..., ge=0, le=100, description="Business days done, out of 100")
+    orders_imported: int = Field(..., ge=0)
+    items_imported: int = Field(..., ge=0, description="Sale lines saved")
+    # Why the import stopped, written for the owner; null unless it failed.
+    error: str | None
+    created_at: datetime
+    finished_at: datetime | None
