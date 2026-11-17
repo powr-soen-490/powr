@@ -335,6 +335,54 @@ def update_credentials(
         raise CredentialsStorageError from exc
 
 
+def save_access_token(
+    db: Session,
+    *,
+    pos_name: str,
+    client_id: str,
+    access_token: str,
+    expires_at: datetime | None,
+) -> bool:
+    """Encrypt and save the token from a login with ``client_id``, so later requests reuse it.
+
+    ``expires_at`` is when the token stops working (UTC-aware), or None when the provider did
+    not say. Returns False, saving nothing, when those credentials were replaced or removed
+    in the meantime.
+    """
+    if expires_at is not None and expires_at.tzinfo is None:
+        raise ValueError("expires_at must be timezone-aware.")
+    try:
+        saved = repository.save_access_token(
+            db,
+            pos_name=pos_name,
+            client_id=client_id,
+            encrypted_access_token=encrypt_secret(
+                access_token, context=f"pos_credentials:{pos_name}:access_token"
+            ),
+            expires_at=expires_at,
+        )
+        db.commit()
+    except (SQLAlchemyError, SecretEncryptionError) as exc:
+        db.rollback()
+        raise CredentialsStorageError from exc
+    return saved
+
+
+def mark_needs_reconnect(db: Session, *, pos_name: str, client_id: str) -> bool:
+    """Record that the provider rejected ``client_id``'s secret, so the owner must reconnect.
+
+    Only for rejected credentials: an expired token or a busy provider never calls this.
+    Returns False, changing nothing, when those credentials were replaced or removed.
+    """
+    try:
+        marked = repository.mark_needs_reconnect(db, pos_name=pos_name, client_id=client_id)
+        db.commit()
+    except SQLAlchemyError as exc:
+        db.rollback()
+        raise CredentialsStorageError from exc
+    return marked
+
+
 def _encrypt_field(value: str | None, pos_name: str, field: str) -> str | None:
     if value is None:
         return None

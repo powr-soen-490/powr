@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import text
+from sqlalchemy import CursorResult, Result, text
 from sqlalchemy.orm import Session
 
 from app.integrations.pos.models import PosConnection
@@ -90,23 +90,84 @@ def delete_connection(db: Session, *, restaurant_id: UUID, provider: str) -> Non
 
 
 def replace_credentials(
-    db: Session, *, pos_name: str, client_id: str, encrypted_client_secret: str
+    db: Session,
+    *,
+    pos_name: str,
+    client_id: str,
+    encrypted_client_secret: str,
+    encrypted_access_token: str | None = None,
+    expires_at: datetime | None = None,
 ) -> None:
-    """Save new credentials and forget the old access token, which belonged to the old ones."""
+    """Save new credentials with the token from the login that checked them, if any.
+
+    The old access token belonged to the old credentials, so it is always replaced, and the
+    new credentials start out working (needs_reconnect is cleared).
+    """
     db.execute(
         text("""
-            INSERT INTO pos_credentials (pos_name, client_id, client_secret)
-            VALUES (:pos_name, :client_id, :client_secret)
+            INSERT INTO pos_credentials
+                (pos_name, client_id, client_secret, access_token, expires_at)
+            VALUES (:pos_name, :client_id, :client_secret, :access_token, :expires_at)
             ON CONFLICT (pos_name) DO UPDATE
             SET client_id = EXCLUDED.client_id, client_secret = EXCLUDED.client_secret,
-                access_token = NULL, expires_at = NULL
+                access_token = EXCLUDED.access_token, expires_at = EXCLUDED.expires_at,
+                needs_reconnect = FALSE
         """),
         {
             "pos_name": pos_name,
             "client_id": client_id,
             "client_secret": encrypted_client_secret,
+            "access_token": encrypted_access_token,
+            "expires_at": expires_at,
         },
     )
+
+
+def save_access_token(
+    db: Session,
+    *,
+    pos_name: str,
+    client_id: str,
+    encrypted_access_token: str,
+    expires_at: datetime | None,
+) -> bool:
+    """Save the token from a login with ``client_id``; False if those credentials were replaced.
+
+    Matching on client_id keeps a login that started before a reconnect from overwriting
+    the token of the newer credentials.
+    """
+    result = db.execute(
+        text("""
+            UPDATE pos_credentials
+            SET access_token = :access_token, expires_at = :expires_at
+            WHERE pos_name = :pos_name AND client_id = :client_id
+        """),
+        {
+            "pos_name": pos_name,
+            "client_id": client_id,
+            "access_token": encrypted_access_token,
+            "expires_at": expires_at,
+        },
+    )
+    return _changed_one_row(result)
+
+
+def mark_needs_reconnect(db: Session, *, pos_name: str, client_id: str) -> bool:
+    """Flag that Toast rejected ``client_id``'s secret and drop its token; False if replaced."""
+    result = db.execute(
+        text("""
+            UPDATE pos_credentials
+            SET needs_reconnect = TRUE, access_token = NULL, expires_at = NULL
+            WHERE pos_name = :pos_name AND client_id = :client_id
+        """),
+        {"pos_name": pos_name, "client_id": client_id},
+    )
+    return _changed_one_row(result)
+
+
+def _changed_one_row(result: Result[Any]) -> bool:
+    # A plain UPDATE always returns a CursorResult, which knows how many rows it changed.
+    return isinstance(result, CursorResult) and result.rowcount == 1
 
 
 def credentials_exist(db: Session, pos_name: str) -> bool:
@@ -121,7 +182,8 @@ def get_credentials(db: Session, pos_name: str) -> dict[str, Any] | None:
     row = (
         db.execute(
             text("""
-            SELECT id, pos_name, client_id, client_secret, access_token, expires_at
+            SELECT id, pos_name, client_id, client_secret, access_token, expires_at,
+                needs_reconnect
             FROM pos_credentials
             WHERE pos_name = :pos_name
         """),
@@ -137,7 +199,7 @@ def list_credentials(db: Session) -> list[dict[str, Any]]:
     rows = (
         db.execute(
             text("""
-            SELECT id, pos_name, client_id, expires_at
+            SELECT id, pos_name, client_id, expires_at, needs_reconnect
             FROM pos_credentials
             ORDER BY pos_name, id
         """)

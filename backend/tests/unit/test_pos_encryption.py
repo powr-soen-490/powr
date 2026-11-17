@@ -4,6 +4,7 @@
 
 import base64
 from collections.abc import Iterator
+from datetime import datetime
 
 import pytest
 from pydantic import PostgresDsn, SecretStr, ValidationError
@@ -48,7 +49,8 @@ def db() -> Iterator[Session]:
                 client_id TEXT NOT NULL,
                 client_secret TEXT NOT NULL,
                 access_token TEXT,
-                expires_at TEXT
+                expires_at TEXT,
+                needs_reconnect BOOLEAN NOT NULL DEFAULT 0
             )
         """)
         )
@@ -180,3 +182,70 @@ def test_tampered_database_values_fail_closed(db: Session) -> None:
     db.commit()
     with pytest.raises(service.CredentialsStorageError):
         service.get_credentials(db, "TOAST")
+
+
+def test_a_login_token_is_saved_encrypted(db: Session) -> None:
+    # The expiry's time zone needs PostgreSQL; see tests/integration/test_toast_token_storage.py.
+    service.save_credentials(db, pos_name="TOAST", client_id="client", client_secret="secret")
+
+    saved = service.save_access_token(
+        db, pos_name="TOAST", client_id="client", access_token="token", expires_at=None
+    )
+
+    assert saved is True
+    stored = db.execute(text("SELECT access_token FROM pos_credentials")).scalar_one()
+    assert stored.startswith(encryption.ENVELOPE_PREFIX)
+    decrypted = service.get_credentials(db, "TOAST")
+    assert decrypted is not None
+    assert decrypted["access_token"] == "token"
+
+
+def test_a_token_from_replaced_credentials_is_not_saved(db: Session) -> None:
+    service.save_credentials(
+        db, pos_name="TOAST", client_id="new-client", client_secret="secret", access_token="new"
+    )
+
+    saved = service.save_access_token(
+        db, pos_name="TOAST", client_id="old-client", access_token="old", expires_at=None
+    )
+
+    assert saved is False
+    decrypted = service.get_credentials(db, "TOAST")
+    assert decrypted is not None
+    assert decrypted["access_token"] == "new"
+
+
+def test_an_expiry_without_a_time_zone_is_refused(db: Session) -> None:
+    service.save_credentials(db, pos_name="TOAST", client_id="client", client_secret="secret")
+
+    with pytest.raises(ValueError, match="timezone-aware"):
+        service.save_access_token(
+            db,
+            pos_name="TOAST",
+            client_id="client",
+            access_token="token",
+            expires_at=datetime(2026, 11, 17, 20, 0),
+        )
+
+
+def test_rejected_credentials_need_a_reconnect_and_lose_their_token(db: Session) -> None:
+    service.save_credentials(
+        db, pos_name="TOAST", client_id="client", client_secret="secret", access_token="token"
+    )
+
+    assert service.mark_needs_reconnect(db, pos_name="TOAST", client_id="client") is True
+
+    stored = service.get_credentials(db, "TOAST")
+    assert stored is not None
+    assert stored["needs_reconnect"]
+    assert stored["access_token"] is None
+
+
+def test_replaced_credentials_are_not_flagged_by_an_old_login(db: Session) -> None:
+    service.save_credentials(db, pos_name="TOAST", client_id="new-client", client_secret="secret")
+
+    assert service.mark_needs_reconnect(db, pos_name="TOAST", client_id="old-client") is False
+
+    stored = service.get_credentials(db, "TOAST")
+    assert stored is not None
+    assert not stored["needs_reconnect"]
