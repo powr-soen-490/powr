@@ -76,13 +76,16 @@ def add_restaurant(db: Session, *, connected: bool = True) -> uuid.UUID:
 
 
 def recorded_day(day: date) -> httpx2.Response:
-    return httpx2.Response(200, text=(RECORDED_WEEK_DIR / f"orders/{day}.json").read_text())
+    return httpx2.Response(
+        200, text=(RECORDED_WEEK_DIR / f"orders/{day}.json").read_text(encoding="utf-8")
+    )
 
 
 def fake_toast(*order_replies: httpx2.Response) -> FakeToast:
     toast = FakeToast()
     toast.reply(
-        MENUS_PATH, httpx2.Response(200, text=(RECORDED_WEEK_DIR / "menus.json").read_text())
+        MENUS_PATH,
+        httpx2.Response(200, text=(RECORDED_WEEK_DIR / "menus.json").read_text(encoding="utf-8")),
     )
     toast.reply(ORDERS_PATH, *order_replies)
     return toast
