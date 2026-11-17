@@ -28,6 +28,11 @@ DROP_AUTH_TABLES = "DROP TABLE IF EXISTS eula_acceptances, invites, restaurant_m
 DROP_SALES_IMPORT_TABLES = (
     "DROP TABLE IF EXISTS sync_jobs, sales_order_lines, sales_orders, menu_modifiers, menu_items"
 )
+# Undo db/07_recipes.sql's tables. Its new ingredients columns stay: that table comes from
+# 01_init.sql, which down never undoes.
+DROP_RECIPE_TABLES = (
+    "DROP TABLE IF EXISTS recipe_modifier_lines, recipe_lines, recipe_versions, recipes"
+)
 
 
 def create_session_factory(database_url: str) -> sessionmaker[Session]:
@@ -75,9 +80,10 @@ def migrate_up(engine: Engine) -> None:
 
 
 def migrate_down(engine: Engine) -> None:
-    """Undoes db/02_auth_tables.sql and db/06_pos_sales_import.sql: drops their tables and
-    everything in them."""
+    """Undoes db/02_auth_tables.sql, db/06_pos_sales_import.sql and db/07_recipes.sql: drops
+    their tables and everything in them."""
     with engine.begin() as connection:
+        connection.execute(text(DROP_RECIPE_TABLES))
         connection.execute(text(DROP_SALES_IMPORT_TABLES))
         connection.execute(text(DROP_AUTH_TABLES))
 
