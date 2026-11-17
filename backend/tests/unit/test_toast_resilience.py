@@ -10,7 +10,6 @@ import pytest
 
 from app.integrations.pos.toast.client import (
     LOGIN_PATH,
-    TOKEN_REFRESH_MARGIN_SECONDS,
     ToastApiError,
     ToastAuthenticationError,
     ToastClient,
@@ -116,15 +115,20 @@ class TestRateLimits:
         assert 0 <= first <= 2.0
         assert 0 <= second <= 4.0
 
-    def test_login_is_retried_when_rate_limited(self, toast: FakeToast) -> None:
+    def test_a_rate_limited_login_is_not_retried(self, toast: FakeToast) -> None:
+        # Retrying would only ask Toast for more logins while it is already limiting them.
         toast.reply(
             LOGIN_PATH,
             load_response("rate_limited.json"),
             httpx2.Response(200, json=load_fixture("login_success.json")),
         )
 
-        assert toast.adapter().authenticate() is True
-        assert len(toast.requests_to(LOGIN_PATH)) == 2
+        with pytest.raises(ToastRateLimitError) as error:
+            toast.adapter().authenticate()
+
+        assert error.value.retry_after_seconds is None
+        assert toast.logins() == 1
+        assert toast.sleeps == []
 
 
 class TestServerErrors:
@@ -213,12 +217,13 @@ class TestExpiredTokens:
         assert toast.adapter().authenticate() is False
         assert len(toast.requests_to(LOGIN_PATH)) == 1
 
-    def test_logs_in_again_shortly_before_the_token_expires(self, toast: FakeToast) -> None:
+    def test_logs_in_again_only_once_the_token_has_expired(self, toast: FakeToast) -> None:
+        # No early renewal: until it expires, Toast would hand back the same token anyway.
         toast.reply(MENUS_PATH, ok())
         toast_client = client(toast)
         toast_client.get(MENUS_PATH)
 
-        toast.now += TOKEN_LIFETIME_SECONDS - TOKEN_REFRESH_MARGIN_SECONDS - 1
+        toast.now += TOKEN_LIFETIME_SECONDS - 1
         toast_client.get(MENUS_PATH)
         assert len(toast.requests_to(LOGIN_PATH)) == 1
 

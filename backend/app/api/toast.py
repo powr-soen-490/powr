@@ -12,15 +12,15 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.core.auth import OwnerDep
-from app.core.config import get_settings
 from app.core.database import get_db
 from app.integrations.pos.toast.adapter import ToastAdapter
 from app.integrations.pos.toast.client import (
     ToastApiError,
     ToastAuthenticationError,
-    ToastCredentials,
+    ToastRateLimitError,
 )
 from app.modules.pos import service
+from app.modules.pos.toast_tokens import saved_toast_adapter
 from app.schemas.pos import (
     DailySalesStats,
     MenuItemResponse,
@@ -31,12 +31,13 @@ from app.schemas.pos import (
 )
 
 router = APIRouter(prefix="/api/pos/toast", tags=["toast"])
+LOGIN_REJECTED = "Toast rejected the saved login. Reconnect Toast."
 DbSession = Annotated[Session, Depends(get_db)]
 logger = logging.getLogger(__name__)
 
 
 def _get_toast_adapter(db: Session, restaurant_id: UUID) -> ToastAdapter:
-    """Create a ToastAdapter instance for a restaurant, or raise HTTPException if not configured."""
+    """A ToastAdapter that reuses the saved Toast token, or HTTPException if not configured."""
     # Get Toast credentials
     try:
         credentials_data = service.get_credentials(db, "TOAST")
@@ -68,18 +69,11 @@ def _get_toast_adapter(db: Session, restaurant_id: UUID) -> ToastAdapter:
             detail="Toast connection not configured for this restaurant.",
         )
 
-    credentials = ToastCredentials(
-        client_id=credentials_data["client_id"],
-        client_secret=credentials_data["client_secret"],
-    )
+    if credentials_data["needs_reconnect"]:
+        # Toast already rejected these credentials; asking again would only waste a login.
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=LOGIN_REJECTED)
 
-    return ToastAdapter(
-        connection,
-        credentials,
-        currency="USD",
-        base_url=get_settings().toast_api_base_url,
-        transport=service.toast_transport(),
-    )
+    return saved_toast_adapter(db, connection, credentials_data, currency="USD")
 
 
 @router.get("/sales-summary", response_model=SalesSummaryResponse)
@@ -132,14 +126,11 @@ def get_menu(
     """Fetch the restaurant's menu items from Toast.
 
     Only owners may call this endpoint. Returns all menu items with prices and modifiers.
+    Reuses the saved Toast token, so it only logs in when that token has expired.
     """
     adapter = _get_toast_adapter(db, user.restaurant_id)
 
     try:
-        if not adapter.authenticate():
-            raise ToastAuthenticationError("Toast rejected the credentials.")
-
-        # Fetch menu items
         menu_items = adapter.fetch_menu_items()
 
         # Convert to response models
@@ -183,9 +174,12 @@ def get_menu(
 
     except ToastAuthenticationError as exc:
         logger.warning("Toast authentication failed for restaurant %s", user.restaurant_id)
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=LOGIN_REJECTED) from exc
+    except ToastRateLimitError as exc:
+        logger.warning("Toast is limiting requests for restaurant %s", user.restaurant_id)
         raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Toast authentication failed. Check credentials.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Toast is limiting requests right now. Try again in a few minutes.",
         ) from exc
     except ToastApiError as exc:
         logger.exception("Toast API error for restaurant %s", user.restaurant_id)

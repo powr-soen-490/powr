@@ -13,19 +13,26 @@ PosProvider = Literal["TOAST", "SQUARE"]
 
 
 class PosCredentialsRequest(BaseModel):
+    """A client ID and secret. An access token only ever comes from the server's own login
+    to the provider, so a request that sends one (or any other field) is rejected."""
+
+    model_config = ConfigDict(extra="forbid")
+
     pos_name: PosProvider
     client_id: str = Field(..., min_length=1)
     client_secret: str = Field(..., min_length=1)
-    # On PATCH, omitted/null token and expiry leave the stored values unchanged.
-    access_token: str | None = Field(default=None, min_length=1)
-    expires_at: datetime | None = None
 
 
 class PosCredentialsResponse(BaseModel):
+    """What the browser may see of the saved login: never the secret, the access token or its
+    expiry. A token expiring on its own is routine (powr logs in again by itself), so only
+    needs_reconnect tells the owner to act."""
+
     id: UUID
     pos_name: str
     client_id: str
-    expires_at: datetime | None
+    # True when Toast rejected the saved client ID or secret; reconnecting clears it.
+    needs_reconnect: bool
 
 
 class SetPosResponse(BaseModel):

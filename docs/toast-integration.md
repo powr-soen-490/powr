@@ -8,13 +8,14 @@ powr integrates with Toast via the **Toast Standard API** to import sales histor
 
 1. [Getting Started](#getting-started)
 2. [Credentials and Setup](#credentials-and-setup)
-3. [Scopes](#scopes)
-4. [Endpoints](#endpoints)
-5. [Importing Sales History](#importing-sales-history)
-6. [Running Without Toast](#running-without-toast)
-7. [Field Mappings](#field-mappings)
-8. [Known Limitations](#known-limitations)
-9. [Version History](#version-history)
+3. [Toast Logins and the Saved Token](#toast-logins-and-the-saved-token)
+4. [Scopes](#scopes)
+5. [Endpoints](#endpoints)
+6. [Importing Sales History](#importing-sales-history)
+7. [Running Without Toast](#running-without-toast)
+8. [Field Mappings](#field-mappings)
+9. [Known Limitations](#known-limitations)
+10. [Version History](#version-history)
 
 ## Getting Started
 
@@ -130,9 +131,11 @@ Toast Standard API requires **OAuth 2.0 Machine Client** credentials:
 
 The owner enters only the client ID and secret. When they click **Connect Toast**, `PUT /api/pos/toast/connection`:
 
-1. Logs in to Toast with the credentials.
+1. Logs in to Toast with the credentials. This login's access token is saved with them (step 3),
+   so the next import or menu request needs no login of its own.
 2. Calls `GET /partners/v1/restaurants`, which lists the restaurants the credentials can access. This is the only Toast call made without the `Toast-Restaurant-External-ID` header, since no GUID is known yet.
-3. If exactly one restaurant comes back, saves the credentials (encrypted) and links the owner's restaurant to that restaurant's GUID and name in `pos_connections`, in one transaction.
+3. If exactly one restaurant comes back, saves the credentials and the access token (encrypted),
+   clears [Needs reconnect](#needs-reconnect), and links the owner's restaurant to that restaurant's GUID and name in `pos_connections`, in one transaction.
 
 Nothing is saved when the check fails:
 
@@ -156,6 +159,76 @@ Credentials are stored in the `pos_credentials` table and encrypted at rest. The
 - **Only** accessible to endpoints marked as owner-only
 - **Automatically** decrypted when needed for API calls
 - **Validated** with Toast before they are saved
+
+The access token from the latest Toast login is stored next to them, encrypted the same way, with
+`expires_at` (when it stops working, UTC) and the `needs_reconnect` flag. The browser gets only
+the client ID and `needs_reconnect`: never the secret, the token or its expiry.
+`POST`/`PATCH /api/pos/credentials` take only a client ID and secret; a token can only come from
+powr's own login.
+
+## Toast Logins and the Saved Token
+
+### Toast's login limit (a recommendation, not a block)
+
+Toast asks integrations **not to request a new access token more than twice per hour**, to aim
+for one or two a day, and to reuse each token until it expires
+([Authentication rate limit](https://doc.toasttab.com/doc/devguide/apiAuthenticationRateLimit.html)).
+"Requesting a token" and "logging in" are the same call: `POST
+/authentication/v1/authentication/login` with the client ID and secret.
+
+This is **not an automatic limit**. Toast does not block the third login in an hour, and repeated
+logins while a token is still valid just return the same token. But Toast says its team may cut
+off API access for integrations that request too many tokens, so powr follows the
+recommendation anyway. A login can still get HTTP 429 under Toast's global rate limit (by IP
+address) if it is sent many times per second.
+
+Do not mix this up with the **API rate limits**, which are automatic: 20 requests per second and
+10,000 per 15 minutes across all API calls, answered with HTTP 429
+([Rate limiting](https://doc.toasttab.com/doc/devguide/apiRateLimiting.html)). Those count every
+request made with a token, and `retry.py` handles them (see [Retry Strategy](#retry-strategy)).
+
+### How powr reuses the token
+
+- **Connect** saves the token from the login that checks the credentials.
+- **Imports, the menu endpoint and the Toast scripts** start from the saved token and make no
+  login while it is valid. One import uses no login, or one if the token expires mid-import.
+- powr logs in again **only** when the saved token has expired (by `expires_at`) or Toast answers
+  401 for it. It then saves the new token and resends the request. It never renews early: until
+  a token expires, Toast hands back the same one, so an early login would be wasted.
+- How long a token lasts comes from `expiresIn` in each login response, never a fixed number.
+  Toast says about a day; the tokens we saw on 2026-11-17 lasted 3 hours (10,800 seconds).
+  Each login logs the lifetime (never the token).
+- A login answered with 429 is **not retried**. The import stops with "Toast is limiting logins
+  right now. Retry in a few minutes", and the menu endpoint returns 429. The saved login stays
+  as it is.
+- An import started before a reconnect never overwrites the newer login: a token or flag is only
+  saved if the client ID it was made with is still the saved one.
+
+Connect, then import, then the menu: **one** login in total
+(`backend/tests/integration/test_toast_login_count.py` checks this).
+
+### Needs reconnect
+
+`needs_reconnect` turns on only when Toast rejects the saved client ID or secret (HTTP 401 or 403
+on login). The saved token is dropped, and later imports and menu requests stop without asking
+Toast again, so a broken login costs no more logins. The Toast connection page shows
+**Needs reconnect** and asks for working credentials. Reconnecting clears it.
+
+A token that expires on its own, or Toast being busy or down, never turns it on: powr renews the
+token by itself, and the owner has nothing to do.
+
+### Rules for new code that calls Toast
+
+- Build the adapter with `saved_toast_adapter` (`app/modules/pos/toast_tokens.py`), or give
+  `ToastClient`/`ToastAdapter` a token store. Never create one without a store in the app: it
+  would start without a token and log in on every request.
+- Call `adapter.authenticate()` or `client.ensure_token()`, never `client.login()`: they log in
+  only when there is no usable token.
+- Read data powr already imported (like `sales-summary`) from the database instead of calling
+  Toast when you can.
+- Test with fake Toast responses, and develop with `TOAST_USE_RECORDED_DATA=true`
+  ([Running Without Toast](#running-without-toast)), which makes no real logins. Use real Toast
+  only on purpose.
 
 ## Scopes
 
@@ -330,9 +403,12 @@ Sales Import page polls this every 2 seconds while an import runs.
 **Error Responses**:
 - `401 Unauthorized`: No valid powr session
 - `404 Not Found`: Toast credentials or restaurant connection not configured
-- `502 Bad Gateway`: Toast authentication or API error
+- `429 Too Many Requests`: Toast is limiting requests or logins; try again in a few minutes
+- `502 Bad Gateway`: Toast rejected the saved login ("Reconnect Toast"; see
+  [Needs reconnect](#needs-reconnect)), or another Toast API error
 
 **Notes**:
+- Reuses the saved Toast token, so it only logs in when that token has expired
 - Returns all menu items visible to the Standard API
 - Currency defaults to USD until it is stored on the POS connection
 - Prices are base menu prices; dynamic pricing (by size, etc.) appears only at sale time
@@ -349,7 +425,9 @@ Story #52: the owner imports the restaurant's menu and full Toast sales history 
 1. `POST /imports` checks the dates and the Toast connection and saves a `sync_jobs` row with
    `status = running`. A partial unique index allows only one running import per restaurant.
 2. A FastAPI background task runs the job after the response is sent. It creates **one**
-   `ToastAdapter`, so the whole import uses one Toast login.
+   `ToastAdapter` that starts from the saved token, so an import usually needs no Toast login,
+   and at most one if the token expires mid-import (see
+   [Toast Logins](#toast-logins-and-the-saved-token)).
 3. It saves the current menu first, so sales of current items find them.
 4. It then goes **one business day at a time**, from the day after the bookmark to the end date.
    Each day is fetched with `ordersBulk?businessDate=YYYYMMDD` (every page), then saved **in one
@@ -363,7 +441,8 @@ Story #52: the owner imports the restaurant's menu and full Toast sales history 
 | Toast answers 429 or 5xx | The client retries with exponential backoff (see [Retry Strategy](#retry-strategy)) |
 | Toast asks to wait more than 30s | The job waits that long, if it is 10 minutes or less, up to 3 times per day; otherwise it fails |
 | Toast is disconnected mid-import | Checked before each day: the job fails ("Toast was disconnected"); saved sales are kept |
-| Toast rejects the saved login | The job fails and asks the owner to reconnect Toast |
+| Toast rejects the saved login | The job fails and asks the owner to reconnect Toast; [Needs reconnect](#needs-reconnect) turns on, and later imports stop without asking Toast |
+| Toast is limiting logins (429 on login) | The job fails and asks to retry in a few minutes; the login is not retried |
 | The server restarts mid-import | At startup, jobs still `running` from before the restart are marked failed, so they can be retried |
 
 Imports run inside the web server process. On Render's free plan the server sleeps after
@@ -437,12 +516,16 @@ days have no orders. The backend refuses to start with the setting on when `ENVI
 `staging` or `production`.
 
 Connecting in this mode replaces the Toast login saved in your local database (there is one for
-the whole app), so reconnect your real login after turning the setting off.
+the whole app), so reconnect your real login after turning the setting off. This mode makes no
+real Toast logins, so use it by default while developing.
 
 ### Recording a new week
 
-`scripts/record_toast_fixtures.py` records the menu and a week of orders with one Toast login,
-using `TOAST_CLIENT_ID`, `TOAST_CLIENT_SECRET` and `TOAST_RESTAURANT_GUID` from `.env`:
+`scripts/record_toast_fixtures.py` records the menu and a week of orders using
+`TOAST_CLIENT_ID`, `TOAST_CLIENT_SECRET` and `TOAST_RESTAURANT_GUID` from `.env`. When the app
+in your local database is connected with the same client ID, it reuses the app's saved token
+(no login) and saves any new one back; otherwise it logs in once. `scripts/pull_toast_sales.py`
+works the same way:
 
 ```bash
 cd backend
@@ -498,8 +581,9 @@ number. The repository is public, so read the files before committing them.
    7-day windows of modification dates.
 2. **Page Size**: Maximum 100 orders per page; pagination is automatic.
 3. **Rate Limiting**: Toast enforces rate limits; powr retries with exponential backoff.
-4. **Logins**: Toast allows only a few logins per hour. Each import uses one, as does each menu
-   request; the access token is not saved between requests yet.
+4. **Logins**: Toast recommends at most two logins per hour. It is not an automatic block, but
+   powr follows it by reusing the saved token; see
+   [Toast Logins](#toast-logins-and-the-saved-token).
 
 ### Data Gaps
 
@@ -519,6 +603,18 @@ apart by ID. Sale lines keep the typed name.
 If Toast returns an order or menu item without a name, powr uses the constant `MISSING_NAME` ("Missing name") as a placeholder.
 
 ## Version History
+
+### Version 1.3 (November 2026)
+
+**Features** (#173, which also finishes the token refresh and Needs-reconnect parts of #48):
+- The access token is saved (encrypted) and reused by connect, imports, the menu and the scripts;
+  powr logs in only when it expires or Toast rejects it
+- Connect, then import, then the menu use one Toast login in total
+- `needs_reconnect`: set when Toast rejects the saved client ID or secret, shown on the Toast
+  page, cleared by reconnecting
+- A rate-limited login is not retried
+- The browser no longer receives `expires_at`; `POST`/`PATCH /api/pos/credentials` no longer
+  accept a token
 
 ### Version 1.2 (November 2026)
 
@@ -589,13 +685,15 @@ backend/app/
 │       ├── locations.py      # Restaurants a login can access (finds the GUID)
 │       ├── recording.py      # Scrubs recorded Toast responses (allow-list)
 │       ├── recorded.py       # Answers Toast requests from the recorded week
-│       └── retry.py          # Retry policy (rate limit, backoff)
+│       ├── retry.py          # Retry policy (rate limit, backoff)
+│       └── token_store.py    # Where a client keeps its token between requests
 ├── api/
 │   ├── toast.py              # Sales summary and menu endpoints
 │   ├── toast_connection.py   # Connect, view and disconnect Toast
 │   └── toast_import.py       # Start, follow and retry imports
 ├── modules/pos/
 │   ├── service.py            # Credentials, connection and sales summary
+│   ├── toast_tokens.py       # Adapters that reuse the saved Toast token
 │   ├── repository.py         # Credential and connection queries
 │   ├── import_service.py     # Runs imports, day by day
 │   ├── import_mapper.py      # Adapter models -> rows to save (allow-list)
@@ -608,7 +706,7 @@ backend/app/
 ### Retry Strategy
 
 Toast client implements exponential backoff for:
-- HTTP 429 (rate limit)
+- HTTP 429 (rate limit), except on the login: a rate-limited login is not retried
 - HTTP 5xx (server errors)
 - Network timeouts
 
@@ -622,6 +720,7 @@ Toast client implements exponential backoff for:
 ### Encryption
 
 Toast credentials are encrypted at rest in the `pos_credentials` table:
-- **Storage**: encrypted_client_secret, encrypted_access_token
+- **Storage**: `client_secret` and `access_token` columns, both encrypted; `expires_at` and
+  `needs_reconnect` are stored as plain values
 - **Context**: Unique encryption context per credential (`pos_credentials:<pos_name>:<field>`)
 - **Decryption**: Automatic on retrieval for server-side use; never sent to frontend

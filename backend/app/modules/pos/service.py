@@ -23,6 +23,7 @@ from app.integrations.pos.toast.client import (
     ToastRateLimitError,
 )
 from app.integrations.pos.toast.recorded import recorded_toast_transport
+from app.integrations.pos.toast.token_store import MemoryTokenStore, ToastTokenStore
 from app.modules.pos import repository, sales_repository
 from app.modules.pos.sales_repository import DailySales
 
@@ -37,8 +38,9 @@ def toast_transport() -> httpx2.BaseTransport | None:
     return None
 
 
-# Lists the Toast restaurants some credentials can access (see integrations/pos/toast).
-ToastLocationFinder = Callable[[ToastCredentials], list[PosLocation]]
+# Lists the Toast restaurants some credentials can access (see integrations/pos/toast),
+# handing the token from its login to the store.
+ToastLocationFinder = Callable[[ToastCredentials, ToastTokenStore], list[PosLocation]]
 
 
 class DailyAggregation(TypedDict):
@@ -161,11 +163,14 @@ def connect_toast(
     """Check the credentials with Toast, then save them with the restaurant they can access.
 
     Nothing is saved unless Toast accepts the credentials and they can access exactly one
-    restaurant.
+    restaurant. The token from that login is saved with them, so the next import or menu
+    request needs no login of its own.
     """
+    login = MemoryTokenStore()
     location = _find_one_toast_location(
-        find_locations, ToastCredentials(client_id=client_id, client_secret=client_secret)
+        find_locations, ToastCredentials(client_id=client_id, client_secret=client_secret), login
     )
+    token = login.token
     try:
         # pos_credentials holds one Toast login for the whole app, so connecting replaces it.
         # Per-restaurant logins are part of the connection model planned in #161.
@@ -176,6 +181,10 @@ def connect_toast(
             encrypted_client_secret=encrypt_secret(
                 client_secret, context=f"pos_credentials:{TOAST}:client_secret"
             ),
+            encrypted_access_token=_encrypt_field(
+                token.access_token if token else None, TOAST, "access_token"
+            ),
+            expires_at=token.expires_at if token else None,
         )
         repository.save_connection(
             db,
@@ -208,10 +217,12 @@ def disconnect_toast(db: Session, *, restaurant_id: UUID) -> None:
 
 
 def _find_one_toast_location(
-    find_locations: ToastLocationFinder, credentials: ToastCredentials
+    find_locations: ToastLocationFinder,
+    credentials: ToastCredentials,
+    token_store: ToastTokenStore,
 ) -> PosLocation:
     try:
-        locations = find_locations(credentials)
+        locations = find_locations(credentials, token_store)
     except ToastAuthenticationError as exc:
         raise ToastLoginRejectedError from exc
     except ToastRateLimitError as exc:
@@ -267,15 +278,9 @@ def list_credentials(db: Session) -> list[dict[str, Any]]:
         raise CredentialsStorageError from exc
 
 
-def save_credentials(
-    db: Session,
-    *,
-    pos_name: str,
-    client_id: str,
-    client_secret: str,
-    access_token: str | None = None,
-    expires_at: datetime | None = None,
-) -> None:
+def save_credentials(db: Session, *, pos_name: str, client_id: str, client_secret: str) -> None:
+    """Save a provider's client ID and secret. They start without an access token: the first
+    request that needs one logs in and saves it (see save_access_token)."""
     try:
         if repository.credentials_exist(db, pos_name):
             raise CredentialsAlreadyExistError
@@ -286,8 +291,6 @@ def save_credentials(
             encrypted_client_secret=encrypt_secret(
                 client_secret, context=f"pos_credentials:{pos_name}:client_secret"
             ),
-            encrypted_access_token=_encrypt_field(access_token, pos_name, "access_token"),
-            expires_at=expires_at,
         )
         db.commit()
     except CredentialsAlreadyExistError:
@@ -301,15 +304,9 @@ def save_credentials(
         raise CredentialsStorageError from exc
 
 
-def update_credentials(
-    db: Session,
-    *,
-    pos_name: str,
-    client_id: str,
-    client_secret: str,
-    access_token: str | None = None,
-    expires_at: datetime | None = None,
-) -> None:
+def update_credentials(db: Session, *, pos_name: str, client_id: str, client_secret: str) -> None:
+    """Replace a provider's client ID and secret, like reconnecting: the old access token
+    belonged to the old credentials, so it is forgotten, and needs_reconnect is cleared."""
     try:
         if not repository.credentials_exist(db, pos_name):
             raise CredentialsNotFoundError
@@ -320,8 +317,6 @@ def update_credentials(
             encrypted_client_secret=encrypt_secret(
                 client_secret, context=f"pos_credentials:{pos_name}:client_secret"
             ),
-            encrypted_access_token=_encrypt_field(access_token, pos_name, "access_token"),
-            expires_at=expires_at,
         )
         db.commit()
     except CredentialsNotFoundError:
@@ -333,6 +328,54 @@ def update_credentials(
     except (SQLAlchemyError, SecretEncryptionError) as exc:
         db.rollback()
         raise CredentialsStorageError from exc
+
+
+def save_access_token(
+    db: Session,
+    *,
+    pos_name: str,
+    client_id: str,
+    access_token: str,
+    expires_at: datetime | None,
+) -> bool:
+    """Encrypt and save the token from a login with ``client_id``, so later requests reuse it.
+
+    ``expires_at`` is when the token stops working (UTC-aware), or None when the provider did
+    not say. Returns False, saving nothing, when those credentials were replaced or removed
+    in the meantime.
+    """
+    if expires_at is not None and expires_at.tzinfo is None:
+        raise ValueError("expires_at must be timezone-aware.")
+    try:
+        saved = repository.save_access_token(
+            db,
+            pos_name=pos_name,
+            client_id=client_id,
+            encrypted_access_token=encrypt_secret(
+                access_token, context=f"pos_credentials:{pos_name}:access_token"
+            ),
+            expires_at=expires_at,
+        )
+        db.commit()
+    except (SQLAlchemyError, SecretEncryptionError) as exc:
+        db.rollback()
+        raise CredentialsStorageError from exc
+    return saved
+
+
+def mark_needs_reconnect(db: Session, *, pos_name: str, client_id: str) -> bool:
+    """Record that the provider rejected ``client_id``'s secret, so the owner must reconnect.
+
+    Only for rejected credentials: an expired token or a busy provider never calls this.
+    Returns False, changing nothing, when those credentials were replaced or removed.
+    """
+    try:
+        marked = repository.mark_needs_reconnect(db, pos_name=pos_name, client_id=client_id)
+        db.commit()
+    except SQLAlchemyError as exc:
+        db.rollback()
+        raise CredentialsStorageError from exc
+    return marked
 
 
 def _encrypt_field(value: str | None, pos_name: str, field: str) -> str | None:

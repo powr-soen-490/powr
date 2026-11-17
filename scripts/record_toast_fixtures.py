@@ -3,7 +3,8 @@
 # AI contribution: 50% or more AI-generated
 """Record one week of real Toast orders plus the menu as scrubbed test data.
 
-Uses a single Toast login. Needs TOAST_CLIENT_ID, TOAST_CLIENT_SECRET and
+Uses at most one Toast login, and none when the app is connected with the same client ID
+(it then reuses the app's saved token). Needs TOAST_CLIENT_ID, TOAST_CLIENT_SECRET and
 TOAST_RESTAURANT_GUID in the repository's .env. From backend/:
 
     python ../scripts/record_toast_fixtures.py                     # last full Monday-Sunday
@@ -17,6 +18,7 @@ import argparse
 import sys
 from datetime import date, timedelta
 from pathlib import Path
+from typing import Any
 from uuid import UUID
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -37,6 +39,8 @@ from app.integrations.pos.toast.recording import (  # noqa: E402
     record_days,
     to_json,
 )
+from app.integrations.pos.toast.token_store import ToastTokenStore  # noqa: E402
+from app.modules.pos.toast_tokens import script_token_store  # noqa: E402
 
 DEFAULT_OUT_DIR = REPO_ROOT / "backend" / "tests" / "fixtures" / "toast_week"
 # Only used to count sale lines in the summary; nothing is saved to the database.
@@ -70,7 +74,7 @@ def parse_args() -> argparse.Namespace:
     return args
 
 
-def toast_client() -> tuple[ToastClient, str]:
+def toast_settings() -> tuple[ToastCredentials, str]:
     settings = get_settings()
     if settings.environment == "production":
         sys.exit("Recording Toast data is disabled in production.")
@@ -79,9 +83,24 @@ def toast_client() -> tuple[ToastClient, str]:
     restaurant_guid = settings.toast_restaurant_guid
     if not (client_id and client_secret and restaurant_guid):
         sys.exit("Set TOAST_CLIENT_ID, TOAST_CLIENT_SECRET and TOAST_RESTAURANT_GUID in .env.")
-    credentials = ToastCredentials(client_id=client_id, client_secret=client_secret)
-    client = ToastClient(credentials, restaurant_guid, base_url=settings.toast_api_base_url)
-    return client, restaurant_guid
+    return ToastCredentials(client_id=client_id, client_secret=client_secret), restaurant_guid
+
+
+def record(
+    credentials: ToastCredentials, restaurant_guid: str, token_store: ToastTokenStore, args: Any
+) -> RecordedDays:
+    client = ToastClient(
+        credentials,
+        restaurant_guid,
+        base_url=get_settings().toast_api_base_url,
+        token_store=token_store,
+    )
+    try:
+        return record_days(client, args.start, args.days, restaurant_guid)
+    except ToastApiError as exc:
+        sys.exit(f"Toast request failed: {exc}")
+    finally:
+        client.close()
 
 
 def recorded_files(out_dir: Path) -> list[Path]:
@@ -112,13 +131,9 @@ def main() -> None:
     args = parse_args()
     last_day = args.start + timedelta(days=args.days - 1)
     print(f"Recording Toast orders from {args.start} to {last_day}, plus the menu...")
-    client, restaurant_guid = toast_client()
-    try:
-        recorded = record_days(client, args.start, args.days, restaurant_guid)
-    except ToastApiError as exc:
-        sys.exit(f"Toast request failed: {exc}")
-    finally:
-        client.close()
+    credentials, restaurant_guid = toast_settings()
+    with script_token_store(credentials.client_id) as token_store:
+        recorded = record(credentials, restaurant_guid, token_store, args)
 
     findings = find_personal_data(recorded.files())
     if findings:

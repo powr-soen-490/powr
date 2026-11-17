@@ -235,9 +235,12 @@ instance sharing a database. Replacing it makes existing ciphertext unreadable; 
 key securely with your database backups. Never commit a real key.
 
 
-POST and PATCH credential requests accept optional `access_token` and `expires_at` fields.
-On PATCH, an omitted or null token/expiry preserves its current value. Secrets are decrypted
-only for server-side integrations; GET responses continue to exclude secrets and tokens.
+POST and PATCH credential requests take only `pos_name`, `client_id` and `client_secret`; a
+request that sends an `access_token` or `expires_at` is rejected (422). The access token only
+comes from the backend's own Toast login, which saves it encrypted and reuses it. A PATCH
+replaces the credentials like a reconnect: it forgets the old token and clears
+`needs_reconnect`. Secrets are decrypted only for server-side integrations; GET responses
+exclude secrets, tokens and the token's expiry.
 
 ### E2E Tests
 To run the end-to-end tests, from the root directory (the first three commands are needed once):

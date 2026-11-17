@@ -6,6 +6,7 @@ import json
 import logging
 import time
 from collections.abc import Callable
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 
@@ -19,6 +20,7 @@ from app.integrations.pos.toast.retry import (
     is_retryable,
     server_wait_seconds,
 )
+from app.integrations.pos.toast.token_store import MemoryTokenStore, ToastToken, ToastTokenStore
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +29,6 @@ MACHINE_CLIENT_ACCESS_TYPE = "TOAST_MACHINE_CLIENT"
 REQUEST_TIMEOUT_SECONDS = 30.0
 REJECTED_CREDENTIALS_STATUSES = frozenset({401, 403})
 EXPIRED_TOKEN_STATUS = 401
-# Log in again this long before the token expires, so it never expires mid-request.
-TOKEN_REFRESH_MARGIN_SECONDS = 300
 
 
 class ToastCredentials(BaseModel):
@@ -62,11 +62,16 @@ class ToastRateLimitError(ToastApiError):
 
 
 class ToastClient:
-    """Sends requests to Toast for one restaurant location and keeps its access token.
+    """Sends requests to Toast for one restaurant location, reusing a saved access token.
+
+    Toast asks for at most two logins per hour, so the client logs in only when it has no
+    token, when the token has expired, or when Toast rejects it (HTTP 401). It never renews
+    early: until the last minute Toast hands back the same token, so an early login would be
+    wasted. ``token_store`` keeps the token between clients (see ``token_store.py``); without
+    one it lives only as long as this client.
 
     Rate limits, server errors and network failures are retried with backoff (see
-    ``retry.py``). The access token is renewed shortly before it expires, and once more if
-    Toast rejects it as expired.
+    ``retry.py``), except a rate-limited login: retrying it would only ask for more logins.
 
     ``restaurant_guid`` is None only for endpoints that are not about one restaurant, such
     as listing the restaurants a login can access; requests then skip the restaurant header.
@@ -82,14 +87,15 @@ class ToastClient:
         retry_policy: RetryPolicy | None = None,
         sleep: Callable[[float], None] = time.sleep,
         clock: Callable[[], float] = time.time,
+        token_store: ToastTokenStore | None = None,
     ) -> None:
         self._credentials = credentials
         self._restaurant_guid = restaurant_guid
         self._retry_policy = retry_policy or RetryPolicy()
         self._sleep = sleep
         self._clock = clock
-        self._access_token: str | None = None
-        self._token_refresh_at: float | None = None
+        self._token_store = token_store or MemoryTokenStore()
+        self._token: ToastToken | None = None
         self._http = httpx2.Client(
             base_url=base_url, timeout=REQUEST_TIMEOUT_SECONDS, transport=transport
         )
@@ -102,8 +108,31 @@ class ToastClient:
         """Close the connections kept open for reuse between requests."""
         self._http.close()
 
+    def ensure_token(self) -> None:
+        """Make sure there is an unexpired token, logging in only when there is none.
+
+        Before logging in, the token store is checked again: another import or request may
+        already have saved a fresh token, and reusing it saves a login.
+
+        Raises ToastAuthenticationError when Toast rejects the credentials, and
+        ToastRateLimitError when Toast is limiting logins.
+        """
+        if self._usable(self._token):
+            return
+        saved = self._token_store.load()
+        if self._usable(saved):
+            self._token = saved
+            return
+        if self._token is not None or saved is not None:
+            logger.info("The Toast access token expired; logging in again")
+        self.login()
+
     def login(self) -> None:
-        """Exchange the client ID and secret for an access token."""
+        """Exchange the client ID and secret for an access token, and save it.
+
+        Prefer ``ensure_token``: every call is a login, and Toast recommends at most two per
+        hour (a recommendation, not an automatic block).
+        """
         response = self._send(
             "POST",
             LOGIN_PATH,
@@ -112,29 +141,34 @@ class ToastClient:
                 "clientSecret": self._credentials.client_secret.get_secret_value(),
                 "userAccessType": MACHINE_CLIENT_ACCESS_TYPE,
             },
+            retry_rate_limits=False,
         )
         if response.status_code in REJECTED_CREDENTIALS_STATUSES:
             logger.warning("Toast rejected the credentials (HTTP %s)", response.status_code)
+            self._token = None
+            self._token_store.credentials_rejected()
             raise ToastAuthenticationError(
                 "Toast rejected the credentials.", status_code=response.status_code
             )
+        if response.status_code == RATE_LIMITED_STATUS:
+            logger.warning("Toast is limiting logins (HTTP 429); not retrying the login")
+            # No wait time: callers must not retry the login on their own either.
+            raise ToastRateLimitError("Toast is limiting logins right now.")
         body = self._decode(response, LOGIN_PATH)
         token = body.get("token") if isinstance(body, dict) else None
         access_token = token.get("accessToken") if isinstance(token, dict) else None
         if not isinstance(access_token, str) or not access_token:
             raise ToastApiError("Toast login response has no access token.")
-        self._access_token = access_token
-        self._token_refresh_at = self._refresh_time(token)
-        logger.info("Authenticated with Toast")
+        self._token = ToastToken(access_token=access_token, expires_at=self._expiry(token))
+        self._token_store.save(self._token)
 
     def get(self, path: str, params: dict[str, str | int] | None = None) -> Any:
-        """GET a Toast endpoint for this location, logging in first if needed."""
-        if self._access_token is None:
-            self.login()
-        elif self._token_expires_soon():
-            logger.info("Toast access token expires soon; logging in again")
-            self.login()
+        """GET a Toast endpoint for this location, logging in first only if needed."""
+        self.ensure_token()
         response = self._get_with_token(path, params)
+        if response.status_code == EXPIRED_TOKEN_STATUS and self._use_newer_saved_token():
+            logger.info("Toast rejected the access token for %s; using a newer saved one", path)
+            response = self._get_with_token(path, params)
         if response.status_code == EXPIRED_TOKEN_STATUS:
             logger.info("Toast rejected the access token for %s; logging in again", path)
             self.login()
@@ -148,25 +182,48 @@ class ToastClient:
         return self._decode(response, path)
 
     def _get_with_token(self, path: str, params: dict[str, str | int] | None) -> httpx2.Response:
-        headers = {"Authorization": f"Bearer {self._access_token}"}
+        if self._token is None:  # pragma: no cover - ensure_token and login always set it
+            raise AssertionError("no Toast access token")
+        headers = {"Authorization": f"Bearer {self._token.access_token}"}
         if self._restaurant_guid is not None:
             headers["Toast-Restaurant-External-ID"] = self._restaurant_guid
         return self._send("GET", path, params=params, headers=headers)
 
-    def _token_expires_soon(self) -> bool:
-        return self._token_refresh_at is not None and self._clock() >= self._token_refresh_at
+    def _usable(self, token: ToastToken | None) -> bool:
+        return token is not None and not token.is_expired(self._now())
 
-    def _refresh_time(self, token: Any) -> float | None:
-        """When to log in again; None when Toast does not say how long the token lasts."""
+    def _use_newer_saved_token(self) -> bool:
+        """After Toast rejected our token: switch to a different, unexpired token that another
+        import or request saved meanwhile. False when there is none, so we must log in."""
+        rejected = self._token
+        saved = self._token_store.load()
+        if saved is None or not self._usable(saved):
+            return False
+        if rejected is not None and saved.access_token == rejected.access_token:
+            return False
+        self._token = saved
+        return True
+
+    def _now(self) -> datetime:
+        return datetime.fromtimestamp(self._clock(), UTC)
+
+    def _expiry(self, token: Any) -> datetime | None:
+        """When the new token stops working; None when Toast does not say how long it lasts."""
         expires_in = token.get("expiresIn") if isinstance(token, dict) else None
         if isinstance(expires_in, bool) or not isinstance(expires_in, int | Decimal):
+            logger.info("Authenticated with Toast; Toast did not say how long the token lasts")
             return None
         if expires_in <= 0:
             return None
-        return self._clock() + max(0.0, float(expires_in) - TOKEN_REFRESH_MARGIN_SECONDS)
+        # Only the lifetime is logged, never the token, so the real lifetime can be checked.
+        logger.info("Authenticated with Toast; the access token lasts %s seconds", expires_in)
+        return self._now() + timedelta(seconds=float(expires_in))
 
-    def _send(self, method: str, path: str, **kwargs: Any) -> httpx2.Response:
-        """Send a request, retrying rate limits, server errors and network failures."""
+    def _send(
+        self, method: str, path: str, *, retry_rate_limits: bool = True, **kwargs: Any
+    ) -> httpx2.Response:
+        """Send a request, retrying server errors, network failures and (unless turned off)
+        rate limits."""
         attempts = self._retry_policy.max_attempts
         for attempt in range(1, attempts + 1):
             try:
@@ -189,6 +246,8 @@ class ToastClient:
                 )
                 raise ToastApiError(f"Could not reach Toast for {method} {path}.") from exc
             else:
+                if response.status_code == RATE_LIMITED_STATUS and not retry_rate_limits:
+                    return response
                 response_wait = self._wait_before_retry(response, method, path, attempt)
                 if response_wait is None:
                     return response
