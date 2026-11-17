@@ -3,10 +3,18 @@
 # Human-authored baseline: 50% or more human-written; human-authors: Yassine Hajou
 """FastAPI application entry point. uvicorn serves ``app.main:app``."""
 
+import logging
+import threading
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+from datetime import UTC, datetime
+
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session, sessionmaker
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.auth import router as auth_router
@@ -14,9 +22,13 @@ from app.api.health import router as health_router
 from app.api.pos import router as pos_router
 from app.api.toast import router as toast_router
 from app.api.toast_connection import router as toast_connection_router
+from app.api.toast_import import router as toast_import_router
 from app.core.config import Settings, get_settings
-from app.core.database import create_session_factory
+from app.core.database import CONNECT_TIMEOUT_SECONDS, create_session_factory
 from app.core.logging_config import configure_logging
+from app.modules.pos import import_service
+
+logger = logging.getLogger(__name__)
 
 
 async def http_exception_handler(_request: Request, exc: StarletteHTTPException) -> JSONResponse:
@@ -46,11 +58,36 @@ async def validation_exception_handler(
     )
 
 
+def fail_interrupted_imports(session_factory: sessionmaker[Session], started_at: datetime) -> None:
+    """Mark sales imports cut off by a restart as failed, so the owner can retry them."""
+    try:
+        with session_factory() as db:
+            import_service.fail_interrupted_imports(db, started_at=started_at)
+    except SQLAlchemyError:
+        logger.warning("Could not check for interrupted sales imports", exc_info=True)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    # In a background thread, so a sleeping database never delays startup.
+    check = threading.Thread(
+        target=fail_interrupted_imports,
+        args=(app.state.session_factory, datetime.now(UTC)),
+        daemon=True,
+    )
+    check.start()
+    yield
+    # Let the check finish before shutdown, so it never logs after the app has stopped.
+    check.join(timeout=CONNECT_TIMEOUT_SECONDS + 1)
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     configure_logging(settings.log_level)
 
-    app = FastAPI(title="powr API", version="0.1.0")
+    app = FastAPI(title="powr API", version="0.1.0", lifespan=lifespan)
+    if settings.toast_use_recorded_data:
+        logger.warning("TOAST_USE_RECORDED_DATA is on: Toast answers come from the recorded week")
     app.state.session_factory = create_session_factory(str(settings.database_url))
     app.add_exception_handler(
         StarletteHTTPException,
@@ -72,6 +109,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(pos_router)
     app.include_router(toast_router)
     app.include_router(toast_connection_router)
+    app.include_router(toast_import_router)
     return app
 
 

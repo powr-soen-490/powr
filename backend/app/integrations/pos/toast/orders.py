@@ -8,10 +8,13 @@ from decimal import Decimal
 from typing import Any
 
 from app.integrations.pos.models import PosConnection, SaleLine, SaleModifier
+from app.integrations.pos.toast.client import ToastApiError, ToastClient
 from app.integrations.pos.toast.menus import MISSING_NAME
 
 ORDERS_PATH = "/orders/v2/ordersBulk"
 ORDERS_PAGE_SIZE = 100  # Toast's maximum page size for ordersBulk.
+# A safety stop: 1000 full pages is 100,000 orders in one day, far beyond one restaurant.
+MAX_ORDER_PAGES_PER_DAY = 1000
 # Toast rejects date ranges longer than one month; a week stays well inside that.
 ORDERS_WINDOW = timedelta(days=7)
 # Gift card and house account lines move money but sell no food.
@@ -36,6 +39,30 @@ def order_windows(start: datetime, end: datetime) -> Iterator[tuple[datetime, da
 def toast_datetime(value: datetime) -> str:
     """Format as Toast expects in query strings, e.g. 2026-10-01T04:00:00.000+0000."""
     return value.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+0000"
+
+
+def toast_business_date(value: date) -> str:
+    """Format as Toast's businessDate query parameter, e.g. 20261001."""
+    return value.strftime("%Y%m%d")
+
+
+def orders_on_business_date(client: ToastClient, business_date: date) -> Iterator[dict[str, Any]]:
+    """Raw orders of one business day, page by page until a page comes back short."""
+    for page in range(1, MAX_ORDER_PAGES_PER_DAY + 1):
+        orders = client.get(
+            ORDERS_PATH,
+            params={
+                "businessDate": toast_business_date(business_date),
+                "pageSize": ORDERS_PAGE_SIZE,
+                "page": page,
+            },
+        )
+        if not isinstance(orders, list):
+            raise ToastApiError("Toast orders response is not a JSON array.")
+        yield from orders
+        if len(orders) < ORDERS_PAGE_SIZE:
+            return
+    raise ToastApiError(f"Toast returned more than {MAX_ORDER_PAGES_PER_DAY} order pages.")
 
 
 def sale_lines_from_order(order: dict[str, Any], connection: PosConnection) -> Iterator[SaleLine]:

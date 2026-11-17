@@ -47,7 +47,11 @@ CONNECT_ERRORS: dict[type[service.ToastConnectError], tuple[int, str]] = {
 
 
 def _find_locations(credentials: ToastCredentials) -> list[PosLocation]:
-    return find_toast_locations(credentials, base_url=get_settings().toast_api_base_url)
+    return find_toast_locations(
+        credentials,
+        base_url=get_settings().toast_api_base_url,
+        transport=service.toast_transport(),
+    )
 
 
 def _storage_error(exc: Exception) -> NoReturn:

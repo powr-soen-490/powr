@@ -39,7 +39,9 @@ def fake_toast_and_key(monkeypatch: pytest.MonkeyPatch) -> None:
         ),
     )
 
-    def find_with_fake_toast(credentials: ToastCredentials, *, base_url: str) -> list[PosLocation]:
+    def find_with_fake_toast(
+        credentials: ToastCredentials, *, base_url: str, transport: object = None
+    ) -> list[PosLocation]:
         return find_toast_locations(
             credentials,
             base_url=BASE_URL,

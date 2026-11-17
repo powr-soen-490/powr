@@ -130,14 +130,11 @@ jobs:
         working-directory: backend
         run: pip install -r requirements-dev.txt
 
-      # Coverage counts unit tests only; integration tests still run and must pass
-      - name: Run unit tests with coverage
+      # Coverage counts unit and integration tests: code that talks to the database (SQL,
+      # import jobs) can only be tested against the PostgreSQL service above.
+      - name: Run unit and integration tests with coverage
         working-directory: backend
-        run: pytest tests/unit --cov=app --cov-report=xml
-
-      - name: Run integration tests
-        working-directory: backend
-        run: pytest tests/integration
+        run: pytest --cov=app --cov-report=xml
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5

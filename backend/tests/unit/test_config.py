@@ -95,3 +95,22 @@ def test_git_commit_is_unset_outside_render(monkeypatch: pytest.MonkeyPatch) -> 
     settings = Settings(_env_file=None, database_url=DATABASE_URL)
 
     assert settings.git_commit is None
+
+
+@pytest.mark.parametrize("environment", ["staging", "production"])
+def test_rejects_recorded_toast_data_when_deployed(environment: str) -> None:
+    with pytest.raises(ValidationError, match="TOAST_USE_RECORDED_DATA"):
+        Settings(
+            _env_file=None,
+            database_url=DATABASE_URL,
+            environment=environment,
+            session_secret_key=PRIVATE_SECRET,
+            cookie_secure=True,
+            toast_use_recorded_data=True,
+        )
+
+
+def test_recorded_toast_data_is_off_unless_asked_for() -> None:
+    assert Settings(_env_file=None, database_url=DATABASE_URL).toast_use_recorded_data is False
+    local = Settings(_env_file=None, database_url=DATABASE_URL, toast_use_recorded_data=True)
+    assert local.toast_use_recorded_data is True

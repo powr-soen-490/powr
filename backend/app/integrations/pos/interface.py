@@ -2,7 +2,7 @@
 # AI contribution: 50% or more AI-generated
 
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import date, datetime
 from typing import Self
 
 from app.integrations.pos.models import MenuItem, PosConnection, SaleLine, StockItem
@@ -27,6 +27,13 @@ class PosAdapter(ABC):
     @abstractmethod
     def fetch_orders(self, start_time: datetime, end_time: datetime) -> list[SaleLine]:
         """Fetch orders from the POS system"""
+        pass
+
+    @abstractmethod
+    def fetch_orders_for_business_date(self, business_date: date) -> list[SaleLine]:
+        """Every sale line of one business day, the restaurant's day rather than the calendar
+        day (a 1am sale belongs to the night before). Imports save one day at a time, so a
+        failed import can continue from the last saved day."""
         pass
 
     @abstractmethod
