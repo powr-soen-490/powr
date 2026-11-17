@@ -8,6 +8,7 @@ from decimal import Decimal
 from uuid import uuid4
 
 import pytest
+from pydantic import ValidationError
 
 from app.integrations.pos.models import (
     MenuItem,
@@ -103,6 +104,30 @@ def test_a_line_sent_twice_is_saved_once() -> None:
 
     assert len(order.lines) == 1
     assert order.lines[0].is_voided
+
+
+def test_repeated_order_payload_does_not_create_duplicate_order_rows() -> None:
+    lines = [
+        sale_line("order-1", "line-1"),
+        sale_line("order-1", "line-2"),
+        sale_line("order-1", "line-1"),
+        sale_line("order-1", "line-2"),
+    ]
+
+    orders = order_rows(lines, CONNECTION.restaurant_id)
+
+    assert [order.pos_order_id for order in orders] == ["order-1"]
+    assert [line.pos_line_id for line in orders[0].lines] == ["line-1", "line-2"]
+
+
+def test_provider_personal_data_is_rejected_before_it_reaches_the_mapper() -> None:
+    with pytest.raises(ValidationError):
+        SaleLine.model_validate(
+            {
+                **sale_line("order-1", "line-1").model_dump(),
+                "customer": {"email": "guest@example.com", "phone": "555-0100"},
+            }
+        )
 
 
 def test_mock_sales_stay_marked_as_mock() -> None:
