@@ -24,7 +24,7 @@ from app.api.toast import router as toast_router
 from app.api.toast_connection import router as toast_connection_router
 from app.api.toast_import import router as toast_import_router
 from app.core.config import Settings, get_settings
-from app.core.database import create_session_factory
+from app.core.database import CONNECT_TIMEOUT_SECONDS, create_session_factory
 from app.core.logging_config import configure_logging
 from app.modules.pos import import_service
 
@@ -70,12 +70,15 @@ def fail_interrupted_imports(session_factory: sessionmaker[Session], started_at:
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # In a background thread, so a sleeping database never delays startup.
-    threading.Thread(
+    check = threading.Thread(
         target=fail_interrupted_imports,
         args=(app.state.session_factory, datetime.now(UTC)),
         daemon=True,
-    ).start()
+    )
+    check.start()
     yield
+    # Let the check finish before shutdown, so it never logs after the app has stopped.
+    check.join(timeout=CONNECT_TIMEOUT_SECONDS + 1)
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
