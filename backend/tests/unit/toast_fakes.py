@@ -13,6 +13,7 @@ from app.integrations.pos.models import PosConnection
 from app.integrations.pos.toast.adapter import ToastAdapter
 from app.integrations.pos.toast.client import LOGIN_PATH, ToastClient, ToastCredentials
 from app.integrations.pos.toast.retry import RetryPolicy
+from app.integrations.pos.toast.token_store import ToastTokenStore
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "toast"
 # A real week of Toast data (Nov 9-15, 2026), scrubbed by scripts/record_toast_fixtures.py.
@@ -78,7 +79,10 @@ class FakeToast:
         return self.now
 
     def adapter(
-        self, retry_policy: RetryPolicy | None = None, connection: PosConnection = CONNECTION
+        self,
+        retry_policy: RetryPolicy | None = None,
+        connection: PosConnection = CONNECTION,
+        token_store: ToastTokenStore | None = None,
     ) -> ToastAdapter:
         credentials = ToastCredentials(client_id="test-client-id", client_secret=CLIENT_SECRET)
         return ToastAdapter(
@@ -90,9 +94,10 @@ class FakeToast:
             retry_policy=retry_policy,
             sleep=self.sleep,
             clock=self.clock,
+            token_store=token_store,
         )
 
-    def client(self) -> ToastClient:
+    def client(self, token_store: ToastTokenStore | None = None) -> ToastClient:
         credentials = ToastCredentials(client_id="test-client-id", client_secret=CLIENT_SECRET)
         return ToastClient(
             credentials,
@@ -101,7 +106,12 @@ class FakeToast:
             transport=httpx2.MockTransport(self._handle),
             sleep=self.sleep,
             clock=self.clock,
+            token_store=token_store,
         )
+
+    def logins(self) -> int:
+        """How many times powr asked Toast for a token."""
+        return len(self.requests_to(LOGIN_PATH))
 
     def _handle(self, request: httpx2.Request) -> httpx2.Response:
         self.requests.append(request)

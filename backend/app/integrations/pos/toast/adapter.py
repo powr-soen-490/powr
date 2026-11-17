@@ -29,6 +29,7 @@ from app.integrations.pos.toast.orders import (
 )
 from app.integrations.pos.toast.retry import RetryPolicy
 from app.integrations.pos.toast.stock import STOCK_PATH, stock_items_from_toast
+from app.integrations.pos.toast.token_store import ToastTokenStore
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,7 @@ class ToastAdapter(PosAdapter):
         retry_policy: RetryPolicy | None = None,
         sleep: Callable[[float], None] = time.sleep,
         clock: Callable[[], float] = time.time,
+        token_store: ToastTokenStore | None = None,
     ) -> None:
         super().__init__(connection)
         self.currency = currency
@@ -61,11 +63,14 @@ class ToastAdapter(PosAdapter):
             retry_policy=retry_policy,
             sleep=sleep,
             clock=clock,
+            token_store=token_store,
         )
 
     def authenticate(self) -> bool:
+        """Make sure there is a usable token; logs in only when the saved one is missing or
+        expired. Raises ToastRateLimitError when Toast is limiting logins."""
         try:
-            self._client.login()
+            self._client.ensure_token()
         except ToastAuthenticationError:
             logger.warning("Toast authentication failed for connection %s", self.connection.id)
             return False

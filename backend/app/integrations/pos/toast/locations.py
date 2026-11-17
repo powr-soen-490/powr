@@ -13,6 +13,7 @@ from app.integrations.pos.models import PosLocation
 from app.integrations.pos.toast.client import ToastApiError, ToastClient, ToastCredentials
 from app.integrations.pos.toast.menus import MISSING_NAME
 from app.integrations.pos.toast.retry import RetryPolicy
+from app.integrations.pos.toast.token_store import ToastTokenStore
 
 logger = logging.getLogger(__name__)
 
@@ -29,11 +30,16 @@ def find_toast_locations(
     retry_policy: RetryPolicy | None = None,
     sleep: Callable[[float], None] = time.sleep,
     clock: Callable[[], float] = time.time,
+    token_store: ToastTokenStore | None = None,
 ) -> list[PosLocation]:
     """Log in with the credentials and list the restaurants they can access.
 
-    Raises ToastAuthenticationError when Toast rejects the credentials, and ToastApiError when
-    Toast cannot be reached or answers with an error.
+    The login's token goes to ``token_store``, so whoever saves the credentials can save the
+    token with them and the next request needs no login of its own.
+
+    Raises ToastAuthenticationError when Toast rejects the credentials, ToastRateLimitError
+    when Toast is limiting logins, and ToastApiError when Toast cannot be reached or answers
+    with an error.
     """
     client = ToastClient(
         credentials,
@@ -43,6 +49,7 @@ def find_toast_locations(
         retry_policy=retry_policy,
         sleep=sleep,
         clock=clock,
+        token_store=token_store,
     )
     try:
         locations = locations_from_toast(client.get(RESTAURANTS_PATH))
