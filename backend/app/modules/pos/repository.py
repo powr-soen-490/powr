@@ -211,54 +211,29 @@ def list_credentials(db: Session) -> list[dict[str, Any]]:
 
 
 def insert_credentials(
-    db: Session,
-    *,
-    pos_name: str,
-    client_id: str,
-    encrypted_client_secret: str,
-    encrypted_access_token: str | None = None,
-    expires_at: datetime | None = None,
+    db: Session, *, pos_name: str, client_id: str, encrypted_client_secret: str
 ) -> None:
     db.execute(
         text("""
-            INSERT INTO pos_credentials
-                (pos_name, client_id, client_secret, access_token, expires_at)
-            VALUES (:pos_name, :client_id, :client_secret, :access_token, :expires_at)
+            INSERT INTO pos_credentials (pos_name, client_id, client_secret)
+            VALUES (:pos_name, :client_id, :client_secret)
         """),
-        {
-            "pos_name": pos_name,
-            "client_id": client_id,
-            "client_secret": encrypted_client_secret,
-            "access_token": encrypted_access_token,
-            "expires_at": expires_at,
-        },
+        {"pos_name": pos_name, "client_id": client_id, "client_secret": encrypted_client_secret},
     )
 
 
 def update_credentials(
-    db: Session,
-    *,
-    pos_name: str,
-    client_id: str,
-    encrypted_client_secret: str,
-    encrypted_access_token: str | None = None,
-    expires_at: datetime | None = None,
+    db: Session, *, pos_name: str, client_id: str, encrypted_client_secret: str
 ) -> None:
+    """Replace the client ID and secret; the old token belonged to the old ones."""
     db.execute(
         text("""
             UPDATE pos_credentials
             SET client_id = :client_id, client_secret = :client_secret,
-                access_token = COALESCE(:access_token, access_token),
-                expires_at = COALESCE(:expires_at, expires_at)
+                access_token = NULL, expires_at = NULL, needs_reconnect = FALSE
             WHERE pos_name = :pos_name
         """),
-        {
-            "pos_name": pos_name,
-            "client_id": client_id,
-            "client_secret": encrypted_client_secret,
-            "access_token": encrypted_access_token,
-            "expires_at": expires_at,
-        },
+        {"pos_name": pos_name, "client_id": client_id, "client_secret": encrypted_client_secret},
     )
 
 

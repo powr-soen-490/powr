@@ -32,13 +32,7 @@ ENDPOINTS = [
     ("PATCH", ENDPOINT),
     ("DELETE", f"{ENDPOINT}?pos_name=TOAST"),
 ]
-PAYLOAD = {
-    "pos_name": "TOAST",
-    "client_id": "test-client",
-    "client_secret": "test-secret",
-    "access_token": "test-token",
-    "expires_at": "2026-10-26T12:00:00Z",
-}
+PAYLOAD = {"pos_name": "TOAST", "client_id": "test-client", "client_secret": "test-secret"}
 EXPIRY = datetime(2026, 10, 26, 12, tzinfo=UTC)
 
 
@@ -212,14 +206,14 @@ def test_owner_writes_encrypt_secrets(
     assert response.json() == {"message": message}
     written = db.execute.call_args.args[1]
     assert written["pos_name"] == "TOAST" and written["client_id"] == "test-client"
-    assert written["expires_at"] == EXPIRY
-    for field in ("client_secret", "access_token"):
-        assert written[field] != PAYLOAD[field]
-        assert (
-            encryption.decrypt_secret(written[field], context=f"pos_credentials:TOAST:{field}")
-            == PAYLOAD[field]
+    assert written["client_secret"] != PAYLOAD["client_secret"]
+    assert (
+        encryption.decrypt_secret(
+            written["client_secret"], context="pos_credentials:TOAST:client_secret"
         )
-        assert PAYLOAD[field] not in response.text
+        == PAYLOAD["client_secret"]
+    )
+    assert PAYLOAD["client_secret"] not in response.text
     db.commit.assert_called_once_with()
     db.rollback.assert_not_called()
 
@@ -306,8 +300,9 @@ def test_duplicate_provider_returns_400_without_writing(owner_client: TestClient
         ("pos_name", "UNKNOWN"),
         ("client_id", ""),
         ("client_secret", ""),
-        ("access_token", ""),
-        ("expires_at", "not-a-date"),
+        # Access tokens only come from the server's own Toast login, never from a request.
+        ("access_token", "made-up-token"),
+        ("expires_at", "2026-10-26T12:00:00Z"),
     ],
 )
 def test_invalid_write_requests_return_422(

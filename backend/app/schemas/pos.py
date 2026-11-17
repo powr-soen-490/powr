@@ -13,12 +13,14 @@ PosProvider = Literal["TOAST", "SQUARE"]
 
 
 class PosCredentialsRequest(BaseModel):
+    """A client ID and secret. An access token only ever comes from the server's own login
+    to the provider, so a request that sends one (or any other field) is rejected."""
+
+    model_config = ConfigDict(extra="forbid")
+
     pos_name: PosProvider
     client_id: str = Field(..., min_length=1)
     client_secret: str = Field(..., min_length=1)
-    # On PATCH, omitted/null token and expiry leave the stored values unchanged.
-    access_token: str | None = Field(default=None, min_length=1)
-    expires_at: datetime | None = None
 
 
 class PosCredentialsResponse(BaseModel):

@@ -69,8 +69,6 @@ def set_pos_credentials(
             pos_name=payload.pos_name,
             client_id=payload.client_id,
             client_secret=payload.client_secret,
-            access_token=payload.access_token,
-            expires_at=payload.expires_at,
         )
     except service.CredentialsAlreadyExistError as exc:
         raise HTTPException(
@@ -104,8 +102,6 @@ def update_pos_credentials(
             pos_name=payload.pos_name,
             client_id=payload.client_id,
             client_secret=payload.client_secret,
-            access_token=payload.access_token,
-            expires_at=payload.expires_at,
         )
     except service.CredentialsNotFoundError as exc:
         raise HTTPException(

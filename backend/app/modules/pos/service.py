@@ -278,15 +278,9 @@ def list_credentials(db: Session) -> list[dict[str, Any]]:
         raise CredentialsStorageError from exc
 
 
-def save_credentials(
-    db: Session,
-    *,
-    pos_name: str,
-    client_id: str,
-    client_secret: str,
-    access_token: str | None = None,
-    expires_at: datetime | None = None,
-) -> None:
+def save_credentials(db: Session, *, pos_name: str, client_id: str, client_secret: str) -> None:
+    """Save a provider's client ID and secret. They start without an access token: the first
+    request that needs one logs in and saves it (see save_access_token)."""
     try:
         if repository.credentials_exist(db, pos_name):
             raise CredentialsAlreadyExistError
@@ -297,8 +291,6 @@ def save_credentials(
             encrypted_client_secret=encrypt_secret(
                 client_secret, context=f"pos_credentials:{pos_name}:client_secret"
             ),
-            encrypted_access_token=_encrypt_field(access_token, pos_name, "access_token"),
-            expires_at=expires_at,
         )
         db.commit()
     except CredentialsAlreadyExistError:
@@ -312,15 +304,9 @@ def save_credentials(
         raise CredentialsStorageError from exc
 
 
-def update_credentials(
-    db: Session,
-    *,
-    pos_name: str,
-    client_id: str,
-    client_secret: str,
-    access_token: str | None = None,
-    expires_at: datetime | None = None,
-) -> None:
+def update_credentials(db: Session, *, pos_name: str, client_id: str, client_secret: str) -> None:
+    """Replace a provider's client ID and secret, like reconnecting: the old access token
+    belonged to the old credentials, so it is forgotten, and needs_reconnect is cleared."""
     try:
         if not repository.credentials_exist(db, pos_name):
             raise CredentialsNotFoundError
@@ -331,8 +317,6 @@ def update_credentials(
             encrypted_client_secret=encrypt_secret(
                 client_secret, context=f"pos_credentials:{pos_name}:client_secret"
             ),
-            encrypted_access_token=_encrypt_field(access_token, pos_name, "access_token"),
-            expires_at=expires_at,
         )
         db.commit()
     except CredentialsNotFoundError:

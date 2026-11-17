@@ -122,8 +122,9 @@ def test_invalid_keys_are_rejected_without_exposing_the_key(value: str) -> None:
 
 
 def test_insert_and_get_encrypt_storage_and_keep_http_responses_secret_free(db: Session) -> None:
-    service.save_credentials(
-        db, pos_name="TOAST", client_id="client", client_secret="secret", access_token="token"
+    service.save_credentials(db, pos_name="TOAST", client_id="client", client_secret="secret")
+    service.save_access_token(
+        db, pos_name="TOAST", client_id="client", access_token="token", expires_at=None
     )
     stored = db.execute(text("SELECT * FROM pos_credentials")).mappings().one()
     assert stored["client_secret"] != "secret"
@@ -137,26 +138,22 @@ def test_insert_and_get_encrypt_storage_and_keep_http_responses_secret_free(db: 
     assert set(response) == {"id", "pos_name", "client_id", "needs_reconnect"}
 
 
-def test_edit_encrypts_new_values_and_preserves_an_omitted_token(db: Session) -> None:
-    service.save_credentials(
-        db, pos_name="TOAST", client_id="client", client_secret="secret", access_token="token"
+def test_edit_encrypts_the_new_secret_and_forgets_the_old_login(db: Session) -> None:
+    service.save_credentials(db, pos_name="TOAST", client_id="client", client_secret="secret")
+    service.save_access_token(
+        db, pos_name="TOAST", client_id="client", access_token="token", expires_at=None
     )
-    service.update_credentials(
-        db,
-        pos_name="TOAST",
-        client_id="updated",
-        client_secret="new-secret",
-        access_token="new-token",
-    )
+    service.mark_needs_reconnect(db, pos_name="TOAST", client_id="client")
+
     service.update_credentials(db, pos_name="TOAST", client_id="updated", client_secret="latest")
 
     stored = db.execute(text("SELECT * FROM pos_credentials")).mappings().one()
     assert stored["client_secret"].startswith(encryption.ENVELOPE_PREFIX)
-    assert stored["access_token"].startswith(encryption.ENVELOPE_PREFIX)
     decrypted = service.get_credentials(db, "TOAST")
     assert decrypted is not None
     assert decrypted["client_secret"] == "latest"
-    assert decrypted["access_token"] == "new-token"
+    assert decrypted["access_token"] is None
+    assert not decrypted["needs_reconnect"]
 
 
 def test_null_access_token_is_supported(db: Session) -> None:
@@ -201,8 +198,9 @@ def test_a_login_token_is_saved_encrypted(db: Session) -> None:
 
 
 def test_a_token_from_replaced_credentials_is_not_saved(db: Session) -> None:
-    service.save_credentials(
-        db, pos_name="TOAST", client_id="new-client", client_secret="secret", access_token="new"
+    service.save_credentials(db, pos_name="TOAST", client_id="new-client", client_secret="secret")
+    service.save_access_token(
+        db, pos_name="TOAST", client_id="new-client", access_token="new", expires_at=None
     )
 
     saved = service.save_access_token(
@@ -229,8 +227,9 @@ def test_an_expiry_without_a_time_zone_is_refused(db: Session) -> None:
 
 
 def test_rejected_credentials_need_a_reconnect_and_lose_their_token(db: Session) -> None:
-    service.save_credentials(
-        db, pos_name="TOAST", client_id="client", client_secret="secret", access_token="token"
+    service.save_credentials(db, pos_name="TOAST", client_id="client", client_secret="secret")
+    service.save_access_token(
+        db, pos_name="TOAST", client_id="client", access_token="token", expires_at=None
     )
 
     assert service.mark_needs_reconnect(db, pos_name="TOAST", client_id="client") is True
