@@ -66,7 +66,8 @@ From the repository root:
 docker compose up --build
 ```
 
-This starts PostgreSQL on port 5432, the backend on port 8000 and the frontend on port 5173,
+This starts PostgreSQL on port 5432, the backend on port 8000, the frontend on port 5173,
+and pgAdmin on port 5050,
 reloading when you edit code. Stop with `Ctrl+C`, then `docker compose down`. To reset the
 database completely (deletes all local data), run `docker compose down -v`. After changing
 frontend dependencies, run `docker compose up --build -V` so the container reinstalls them.
@@ -140,6 +141,52 @@ cannot reach PostgreSQL; see [Troubleshooting](#troubleshooting).
 
 Interactive API documentation is at <http://localhost:8000/docs>, and the frontend is at
 <http://localhost:5173>.
+
+
+### Accessing PostgreSQL with pgAdmin (Docker)
+
+pgAdmin provides a web-based interface for managing the PostgreSQL database, browsing tables, inspecting records, and executing SQL queries.
+
+#### 1. Access pgAdmin
+
+Start the Docker containers if they are not already running:
+
+```bash
+docker compose up -d
+```
+
+Open <http://localhost:5050> in your browser.
+
+Log in using the default credentials:
+
+- **Email:** `admin@admin.com`
+- **Password:** `admin`
+
+These credentials can be overridden using `PGADMIN_EMAIL` and `PGADMIN_PASSWORD` in your `.env` file.
+
+#### 2. Connect to PostgreSQL
+
+1. Right-click **Servers** in the pgAdmin sidebar.
+2. Select **Register → Server**.
+3. Under the **General** tab, enter a name (e.g., `POWR Development`).
+4. Under the **Connection** tab, enter:
+
+   | Field | Value |
+   |---|---|
+   | Host name/address | `db` |
+   | Port | `5432` |
+   | Maintenance database | `powr_dev` |
+   | Username | `powr_user` |
+   | Password | `powr_password` |
+
+5. Click **Save**.
+
+**Important:** Use `db` as the hostname, not `localhost` or `127.0.0.1`. Since pgAdmin runs inside Docker, it connects to PostgreSQL through the internal Docker Compose network using the `db` service name.
+
+The database credentials shown above are defaults. If you modified `POSTGRES_USER`, `POSTGRES_PASSWORD`, or `POSTGRES_DB` in `.env`, use those values instead.
+
+Once connected, you can browse the database under **Servers → POWR Development → Databases → powr_dev → Schemas → public → Tables**.
+
 
 ### Mock POS data
 
@@ -357,7 +404,7 @@ frontend/                  React + TypeScript app
 e2e/                       Playwright end-to-end tests
 scripts/check_headers.py   Source-File AI Declaration check
 scripts/report_vulnerabilities.py   Dependency scan; opens issues on its daily run
-docker-compose.yml         Local PostgreSQL + backend + frontend
+docker-compose.yml         Local PostgreSQL + pgAdmin + backend + frontend
 ```
 
 ### Troubleshooting
