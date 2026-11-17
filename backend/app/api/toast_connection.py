@@ -13,6 +13,7 @@ from app.core.database import get_db
 from app.integrations.pos.models import PosLocation
 from app.integrations.pos.toast.client import ToastCredentials
 from app.integrations.pos.toast.locations import find_toast_locations
+from app.integrations.pos.toast.token_store import ToastTokenStore
 from app.modules.pos import service
 from app.schemas.pos import SetPosResponse, ToastConnectionResponse, ToastConnectRequest
 
@@ -46,11 +47,14 @@ CONNECT_ERRORS: dict[type[service.ToastConnectError], tuple[int, str]] = {
 }
 
 
-def _find_locations(credentials: ToastCredentials) -> list[PosLocation]:
+def _find_locations(
+    credentials: ToastCredentials, token_store: ToastTokenStore
+) -> list[PosLocation]:
     return find_toast_locations(
         credentials,
         base_url=get_settings().toast_api_base_url,
         transport=service.toast_transport(),
+        token_store=token_store,
     )
 
 

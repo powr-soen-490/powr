@@ -20,6 +20,7 @@ from app.core.encryption import decrypt_secret
 from app.integrations.pos.models import PosLocation
 from app.integrations.pos.toast.client import ToastCredentials
 from app.integrations.pos.toast.locations import RESTAURANTS_PATH, find_toast_locations
+from app.integrations.pos.toast.token_store import ToastTokenStore
 from tests.unit.toast_fakes import BASE_URL, FakeToast
 
 CONNECTION = "/api/pos/toast/connection"
@@ -40,7 +41,11 @@ def fake_toast_and_key(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
     def find_with_fake_toast(
-        credentials: ToastCredentials, *, base_url: str, transport: object = None
+        credentials: ToastCredentials,
+        *,
+        base_url: str,
+        transport: object = None,
+        token_store: ToastTokenStore | None = None,
     ) -> list[PosLocation]:
         return find_toast_locations(
             credentials,
@@ -48,6 +53,7 @@ def fake_toast_and_key(monkeypatch: pytest.MonkeyPatch) -> None:
             transport=httpx2.MockTransport(toast._handle),
             sleep=toast.sleep,
             clock=toast.clock,
+            token_store=token_store,
         )
 
     monkeypatch.setattr(toast_connection, "find_toast_locations", find_with_fake_toast)

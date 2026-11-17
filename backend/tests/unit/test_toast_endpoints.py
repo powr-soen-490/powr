@@ -52,12 +52,25 @@ def toast() -> FakeToast:
 
 
 @pytest.fixture
+def saved_login() -> dict[str, Any]:
+    """What service.get_credentials returns: the decrypted pos_credentials row."""
+    return {
+        "client_id": "test-client",
+        "client_secret": "test-secret",
+        "access_token": None,
+        "expires_at": None,
+        "needs_reconnect": False,
+    }
+
+
+@pytest.fixture
 def owner_client(
     app: FastAPI,
     client: TestClient,
     settings: Settings,
     monkeypatch: pytest.MonkeyPatch,
     toast: FakeToast,
+    saved_login: dict[str, Any],
 ) -> Iterator[TestClient]:
     user = CurrentUser(uuid4(), "owner@example.com", uuid4(), "Restaurant", "owner")
     connection = PosConnection(
@@ -95,23 +108,16 @@ def owner_client(
             secret_key=settings.session_secret_key,
         ),
     )
-    monkeypatch.setattr(
-        service,
-        "get_credentials",
-        lambda db, provider: {"client_id": "test-client", "client_secret": "test-secret"},
-    )
+    monkeypatch.setattr(service, "get_credentials", lambda db, provider: dict(saved_login))
 
     def adapter(
-        connection: PosConnection,
-        credentials: ToastCredentials,
-        *,
-        currency: str,
-        base_url: str,
-        transport: object = None,
+        db: Session, connection: PosConnection, credentials: dict[str, Any], *, currency: str
     ) -> ToastAdapter:
         return ToastAdapter(
             connection,
-            credentials,
+            ToastCredentials(
+                client_id=credentials["client_id"], client_secret=credentials["client_secret"]
+            ),
             currency=currency,
             base_url=BASE_URL,
             transport=httpx2.MockTransport(toast._handle),
@@ -119,7 +125,7 @@ def owner_client(
             clock=toast.clock,
         )
 
-    monkeypatch.setattr(toast_api, "ToastAdapter", adapter)
+    monkeypatch.setattr(toast_api, "saved_toast_adapter", adapter)
     monkeypatch.setattr(toast_api, "datetime", FrozenDateTime)
     yield client
     app.dependency_overrides.pop(get_db, None)
@@ -217,10 +223,32 @@ def test_rejected_toast_credentials_return_502(owner_client: TestClient, toast: 
     toast.reply(LOGIN_PATH, httpx2.Response(401))
     response = owner_client.get(MENU)
     assert response.status_code == 502
-    assert response.json()["detail"] == "Toast authentication failed. Check credentials."
+    assert response.json()["detail"] == "Toast rejected the saved login. Reconnect Toast."
     assert len(toast.requests_to(LOGIN_PATH)) == 1
     assert not toast.requests_to(ORDERS_PATH)
     assert not toast.requests_to(MENUS_PATH)
+
+
+def test_a_login_already_rejected_is_not_tried_again(
+    owner_client: TestClient, toast: FakeToast, saved_login: dict[str, Any]
+) -> None:
+    saved_login["needs_reconnect"] = True
+
+    response = owner_client.get(MENU)
+
+    assert response.status_code == 502
+    assert response.json()["detail"] == "Toast rejected the saved login. Reconnect Toast."
+    assert toast.requests == []
+
+
+def test_a_rate_limited_login_returns_429(owner_client: TestClient, toast: FakeToast) -> None:
+    toast.reply(LOGIN_PATH, httpx2.Response(429))
+
+    response = owner_client.get(MENU)
+
+    assert response.status_code == 429
+    assert "few minutes" in response.json()["detail"]
+    assert len(toast.requests_to(LOGIN_PATH)) == 1
 
 
 def test_menu_uses_usd_and_includes_modifiers(owner_client: TestClient, toast: FakeToast) -> None:

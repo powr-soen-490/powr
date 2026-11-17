@@ -18,19 +18,18 @@ from uuid import UUID
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.core.config import get_settings
 from app.integrations.pos.interface import PosAdapter
 from app.integrations.pos.models import SaleLine
-from app.integrations.pos.toast.adapter import ToastAdapter
 from app.integrations.pos.toast.client import (
     ToastApiError,
-    ToastCredentials,
+    ToastAuthenticationError,
     ToastRateLimitError,
 )
 from app.modules.pos import import_repository, repository, service
 from app.modules.pos import sync_job_repository as jobs
 from app.modules.pos.import_mapper import menu_rows, order_rows
 from app.modules.pos.sync_job_repository import SyncJob
+from app.modules.pos.toast_tokens import saved_toast_adapter
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +45,11 @@ DEFAULT_CURRENCY = "USD"
 MAX_RATE_LIMIT_WAIT_SECONDS = 600
 MAX_RATE_LIMIT_WAITS = 3
 RESTARTED_ERROR = "The server restarted during the import. Retry to continue."
+LOGIN_REJECTED_ERROR = "Toast rejected the saved login. Reconnect Toast, then retry."
+LOGINS_LIMITED_ERROR = (
+    "Toast is limiting logins right now. Retry in a few minutes: the days already imported "
+    "are kept."
+)
 
 type AdapterFactory = Callable[[Session, UUID], PosAdapter]
 type SessionFactory = Callable[[], AbstractContextManager[Session]]
@@ -187,20 +191,15 @@ def fail_interrupted_imports(db: Session, *, started_at: datetime) -> int:
 
 
 def toast_adapter(db: Session, restaurant_id: UUID) -> PosAdapter:
-    """A ToastAdapter for the restaurant's saved Toast connection."""
+    """A ToastAdapter for the restaurant's saved Toast connection, reusing the saved token."""
     credentials = service.get_credentials(db, TOAST)
     connection = service.get_connection(db, restaurant_id, TOAST)
     if credentials is None or connection is None:
         raise _ImportStoppedError("Toast is not connected. Connect Toast, then retry the import.")
-    return ToastAdapter(
-        connection,
-        ToastCredentials(
-            client_id=credentials["client_id"], client_secret=credentials["client_secret"]
-        ),
-        currency=DEFAULT_CURRENCY,
-        base_url=get_settings().toast_api_base_url,
-        transport=service.toast_transport(),
-    )
+    if credentials["needs_reconnect"]:
+        # Toast already rejected these credentials; asking again would only waste a login.
+        raise _ImportStoppedError(LOGIN_REJECTED_ERROR)
+    return saved_toast_adapter(db, connection, credentials, currency=DEFAULT_CURRENCY)
 
 
 def _run(
@@ -215,10 +214,10 @@ def _run(
         return
     first_day = (job.last_completed_date or job.start_date - timedelta(days=1)) + timedelta(days=1)
     logger.info("Sales import %s running from %s to %s", job_id, first_day, job.end_date)
-    # One adapter, so one Toast login, for the whole job.
+    # One adapter for the whole job. It reuses the saved token, so a job usually needs no
+    # Toast login at all, and at most one when the token expires during the job.
     with make_adapter(db, restaurant_id) as adapter:
-        if not adapter.authenticate():
-            raise _ImportStoppedError("Toast rejected the saved login. Reconnect Toast and retry.")
+        _authenticate(adapter)
         currency = _save_menu(db, adapter, restaurant_id)
         day = first_day
         while day <= job.end_date:
@@ -244,6 +243,15 @@ def _run(
     jobs.finish_job(db, job_id=job_id, restaurant_id=restaurant_id)
     db.commit()
     logger.info("Sales import %s finished", job_id)
+
+
+def _authenticate(adapter: PosAdapter) -> None:
+    try:
+        authenticated = adapter.authenticate()
+    except ToastRateLimitError as exc:
+        raise _ImportStoppedError(LOGINS_LIMITED_ERROR) from exc
+    if not authenticated:
+        raise _ImportStoppedError(LOGIN_REJECTED_ERROR)
 
 
 def _save_menu(db: Session, adapter: PosAdapter, restaurant_id: UUID) -> str:
@@ -293,6 +301,9 @@ def _require_still_connected(db: Session, restaurant_id: UUID) -> None:
 def _error_message(exc: Exception) -> str:
     if isinstance(exc, _ImportStoppedError):
         return str(exc)
+    if isinstance(exc, ToastAuthenticationError):
+        # Toast rejected the saved login while the job was running.
+        return LOGIN_REJECTED_ERROR
     if isinstance(exc, ToastApiError):
         return "Toast could not be reached. Retry later: the days already imported are kept."
     return "Something went wrong during the import. Retry to continue where it stopped."
