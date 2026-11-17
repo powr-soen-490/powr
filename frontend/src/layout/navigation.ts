@@ -35,3 +35,24 @@ export function getVisibleNavigation(
 ): NavigationItem[] {
   return NAV.filter(({ flag }) => isEnabled(flag))
 }
+
+// Settings shows its main list, or the POS view (Import sales history).
+export type SettingsView = 'main' | 'pos'
+
+// Router state for a link to "/" that opens the dashboard on a given page, e.g. the Toast
+// connection page's link back to Import sales history. The dashboard has no URL per page.
+export interface DashboardLinkState {
+  page: PageId
+  settingsView: SettingsView
+}
+
+export const SALES_IMPORT_LINK: DashboardLinkState = { page: 'settings', settingsView: 'pos' }
+
+// Router state can hold anything (an old tab, another link), so only trust a known page.
+export function readDashboardLinkState(state: unknown): DashboardLinkState | null {
+  if (typeof state !== 'object' || state === null) return null
+  const { page, settingsView } = state as Record<string, unknown>
+  const item = NAV.find(({ id }) => id === page)
+  if (!item) return null
+  return { page: item.id, settingsView: settingsView === 'pos' ? 'pos' : 'main' }
+}

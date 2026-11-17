@@ -5,7 +5,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router'
 import App from './App'
-import { PAGE_FLAG_NAMES, type PageFlag } from './layout/navigation'
+import { PAGE_FLAG_NAMES, SALES_IMPORT_LINK, type PageFlag } from './layout/navigation'
 
 const flagHooks = vi.hoisted(() => ({
   useFlags: vi.fn(),
@@ -20,9 +20,10 @@ function makeFlags(enabled: PageFlag[] = []) {
   )
 }
 
-function renderDashboard() {
+// state is what a link sent along, e.g. SALES_IMPORT_LINK from the Toast connection page.
+function renderDashboard(state?: unknown) {
   return render(
-    <MemoryRouter initialEntries={['/mockup']}>
+    <MemoryRouter initialEntries={[{ pathname: '/mockup', state }]}>
       <App />
     </MemoryRouter>,
   )
@@ -100,6 +101,29 @@ describe('feature-flagged dashboard', () => {
 
     expect(screen.getByRole('heading', { name: 'Forecast' })).not.toBeNull()
     expect(screen.getByRole('button', { name: 'Forecast' }).getAttribute('aria-current')).toBe(
+      'page',
+    )
+  })
+
+  it('opens Import sales history when a link asks for it, then Settings as usual', async () => {
+    renderDashboard(SALES_IMPORT_LINK)
+
+    expect(await screen.findByRole('heading', { name: 'Import sales history' })).not.toBeNull()
+    expect(screen.getByRole('button', { name: 'Settings' }).getAttribute('aria-current')).toBe(
+      'page',
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Home' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }))
+
+    expect(screen.getByRole('heading', { name: 'Settings' })).not.toBeNull()
+    expect(screen.queryByRole('heading', { name: 'Import sales history' })).toBeNull()
+  })
+
+  it('opens Home when a link asks for a page it does not know', async () => {
+    renderDashboard({ page: 'admin', settingsView: 'pos' })
+
+    expect((await screen.findByRole('button', { name: 'Home' })).getAttribute('aria-current')).toBe(
       'page',
     )
   })

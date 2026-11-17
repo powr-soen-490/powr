@@ -4,7 +4,8 @@
 
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { MemoryRouter } from 'react-router'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
+import { SALES_IMPORT_LINK } from '../src/layout/navigation'
 import ToastSettingsPage from '../src/pages/ToastSettingsPage'
 
 const owner = { user_id: 'user', restaurant_id: 'restaurant', email: 'owner@example.com', role: 'owner' }
@@ -188,5 +189,37 @@ describe('Toast connection form', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }))
     await screen.findByText('Connected')
     await waitFor(() => expect((screen.getByLabelText('Client ID') as HTMLInputElement).value).toBe('saved-client'))
+  })
+})
+
+// Stands in for the dashboard: shows the state the back link sent along.
+function DashboardStandIn() {
+  return <p>Dashboard opened with {JSON.stringify(useLocation().state)}</p>
+}
+
+describe('Back link to Import sales history', () => {
+  it.each([
+    { status: 'Not connected', credentials: json({}, 404), connection: json({}, 404) },
+    { status: 'Connected', credentials: json(metadata), connection: json(mykonos) },
+  ])('shows when the page says $status', async ({ status, credentials, connection }) => {
+    serve({ [CREDENTIALS]: [credentials], [CONNECTION]: [connection] })
+    show()
+    await screen.findByText(status)
+    expect(screen.getByRole('link', { name: '‹ Back to Import sales history' })).toBeTruthy()
+  })
+
+  it('opens the dashboard asking for Import sales history', async () => {
+    serve({ [CREDENTIALS]: [json({}, 404)], [CONNECTION]: [json({}, 404)] })
+    render(
+      <MemoryRouter initialEntries={['/settings/pos']}>
+        <Routes>
+          <Route path="/settings/pos" element={<ToastSettingsPage user={owner} />} />
+          <Route path="/" element={<DashboardStandIn />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+    await screen.findByText('Not connected')
+    fireEvent.click(screen.getByRole('link', { name: '‹ Back to Import sales history' }))
+    expect(screen.getByText(`Dashboard opened with ${JSON.stringify(SALES_IMPORT_LINK)}`)).toBeTruthy()
   })
 })
