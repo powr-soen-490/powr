@@ -22,10 +22,15 @@ class PosCredentialsRequest(BaseModel):
 
 
 class PosCredentialsResponse(BaseModel):
+    """What the browser may see of the saved login: never the secret, the access token or its
+    expiry. A token expiring on its own is routine (powr logs in again by itself), so only
+    needs_reconnect tells the owner to act."""
+
     id: UUID
     pos_name: str
     client_id: str
-    expires_at: datetime | None
+    # True when Toast rejected the saved client ID or secret; reconnecting clears it.
+    needs_reconnect: bool
 
 
 class SetPosResponse(BaseModel):

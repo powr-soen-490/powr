@@ -134,7 +134,7 @@ def test_insert_and_get_encrypt_storage_and_keep_http_responses_secret_free(db: 
     assert decrypted["client_secret"] == "secret"
     assert decrypted["access_token"] == "token"
     response = PosCredentialsResponse.model_validate(decrypted).model_dump()
-    assert set(response) == {"id", "pos_name", "client_id", "expires_at"}
+    assert set(response) == {"id", "pos_name", "client_id", "needs_reconnect"}
 
 
 def test_edit_encrypts_new_values_and_preserves_an_omitted_token(db: Session) -> None:

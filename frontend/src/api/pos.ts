@@ -5,7 +5,8 @@ export interface PosCredentials {
   id: string
   pos_name: string
   client_id: string
-  expires_at: string | null
+  // True when Toast rejected the saved client ID or secret; reconnecting clears it.
+  needs_reconnect: boolean
 }
 
 export class PosError extends Error {
@@ -72,7 +73,10 @@ export async function getToastCredentials(): Promise<PosCredentials | null> {
   if (response.status === 404) return null
   const body = await response.json() as PosCredentials
   // Only keep the public metadata, even if the server adds other fields later.
-  return { id: body.id, pos_name: body.pos_name, client_id: body.client_id, expires_at: body.expires_at }
+  return {
+    id: body.id, pos_name: body.pos_name, client_id: body.client_id,
+    needs_reconnect: body.needs_reconnect === true,
+  }
 }
 
 export async function getToastConnection(): Promise<ToastConnection | null> {

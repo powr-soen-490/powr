@@ -24,7 +24,6 @@ function ToastSettingsPage({ user }: { user: AuthUser }) {
   const [error, setError] = useState<PosError | null>(null)
   const [notice, setNotice] = useState('')
   const [confirmDisconnect, setConfirmDisconnect] = useState(false)
-  const [checkedAt, setCheckedAt] = useState(0)
   const working = useRef(false)
 
   useEffect(() => {
@@ -34,7 +33,6 @@ function ToastSettingsPage({ user }: { user: AuthUser }) {
       if (!active) return
       setSaved(credentials)
       setConnection(restaurant)
-      setCheckedAt(Date.now())
       setClientId(ownClientId(credentials, restaurant))
       setLoaded(true)
     }).catch((failure: unknown) => {
@@ -52,7 +50,6 @@ function ToastSettingsPage({ user }: { user: AuthUser }) {
       const [credentials, restaurant] = await Promise.all([getToastCredentials(), getToastConnection()])
       setSaved(credentials)
       setConnection(restaurant)
-      setCheckedAt(Date.now())
       setClientId(ownClientId(credentials, restaurant))
       setLoaded(true)
     } catch (failure) {
@@ -110,8 +107,10 @@ function ToastSettingsPage({ user }: { user: AuthUser }) {
   }
 
   const connected = saved !== null && connection !== null
-  const expired = saved?.expires_at ? new Date(saved.expires_at).getTime() <= checkedAt : false
-  const status = connected ? (expired ? 'Needs reconnect' : 'Connected') : 'Not connected'
+  // Only Toast rejecting the saved client ID or secret needs the owner. An access token that
+  // expires on its own is renewed by the server, so it never shows here.
+  const needsReconnect = connected && saved.needs_reconnect
+  const status = connected ? (needsReconnect ? 'Needs reconnect' : 'Connected') : 'Not connected'
 
   return (
     <AuthLayout title="Toast connection"
@@ -126,6 +125,9 @@ function ToastSettingsPage({ user }: { user: AuthUser }) {
         </p>
         {loaded && connected && <p className="toast-status">
           Connected to: <strong>{connection.location_name ?? 'your Toast restaurant'}</strong>
+        </p>}
+        {loaded && needsReconnect && <p className="toast-error" role="alert">
+          Toast rejected the saved client ID or secret. Enter working ones below to reconnect.
         </p>}
         {error && <div className="toast-error" role="alert">
           <p>{error.message}</p>

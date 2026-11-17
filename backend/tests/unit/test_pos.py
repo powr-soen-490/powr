@@ -114,6 +114,7 @@ def stored_credentials() -> dict[str, Any]:
             "test-token", context="pos_credentials:TOAST:access_token"
         ),
         "expires_at": EXPIRY,
+        "needs_reconnect": False,
     }
 
 
@@ -234,7 +235,7 @@ def test_owner_get_returns_metadata_without_secrets(owner_client: TestClient, db
         "id": str(row["id"]),
         "pos_name": "TOAST",
         "client_id": "test-client",
-        "expires_at": PAYLOAD["expires_at"],
+        "needs_reconnect": False,
     }
     db.commit.assert_not_called()
 
@@ -257,7 +258,7 @@ def test_owner_list_returns_all_metadata_or_empty_list(
                 "id": str(row["id"]),
                 "pos_name": "TOAST",
                 "client_id": "test-client",
-                "expires_at": PAYLOAD["expires_at"],
+                "needs_reconnect": False,
             }
         ]
     )
@@ -405,4 +406,4 @@ def test_openapi_has_dedicated_read_models_and_no_list_request_body(app: FastAPI
     assert response["type"] == "array"
     assert response["items"]["$ref"].endswith("/PosCredentialsResponse")
     fields = schema["components"]["schemas"]["PosCredentialsResponse"]["properties"]
-    assert set(fields) == {"id", "pos_name", "client_id", "expires_at"}
+    assert set(fields) == {"id", "pos_name", "client_id", "needs_reconnect"}

@@ -9,7 +9,7 @@ import { SALES_IMPORT_LINK } from '../src/layout/navigation'
 import ToastSettingsPage from '../src/pages/ToastSettingsPage'
 
 const owner = { user_id: 'user', restaurant_id: 'restaurant', email: 'owner@example.com', role: 'owner' }
-const metadata = { id: 'credential', pos_name: 'TOAST', client_id: 'saved-client', expires_at: null }
+const metadata = { id: 'credential', pos_name: 'TOAST', client_id: 'saved-client', needs_reconnect: false }
 const mykonos = { location_id: 'guid-1', location_name: 'Mykonos Grill - Boca NEW' }
 const CREDENTIALS = 'GET /api/pos/credentials?pos_name=TOAST'
 const CONNECTION = 'GET /api/pos/toast/connection'
@@ -88,18 +88,20 @@ describe('Toast connection form', () => {
 
   it('updates the connection and disconnects only after confirmation', async () => {
     serve({
-      [CREDENTIALS]: [json({ ...metadata, expires_at: '2020-01-01T00:00:00Z' }), json(metadata)],
+      [CREDENTIALS]: [json({ ...metadata, needs_reconnect: true }), json(metadata)],
       [CONNECTION]: [json(mykonos)],
       [CONNECT]: [json(mykonos)],
       [DISCONNECT]: [json({ message: 'Toast disconnected.' })],
     })
     show()
     await screen.findByText('Needs reconnect')
+    expect(screen.getByText(/Toast rejected the saved client ID or secret/)).toBeTruthy()
     expect(screen.getByText('Mykonos Grill - Boca NEW')).toBeTruthy()
     expect((screen.getByLabelText('Client secret') as HTMLInputElement).value).toBe('')
     fill('updated-client', 'new-secret')
     fireEvent.click(screen.getByRole('button', { name: 'Update connection' }))
     await screen.findByText('Connected')
+    expect(screen.queryByText(/Toast rejected the saved client ID or secret/)).toBeNull()
     expect(calls(CONNECT)).toHaveLength(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'Disconnect Toast' }))
@@ -109,6 +111,17 @@ describe('Toast connection form', () => {
     expect(calls(DISCONNECT)).toEqual([['/api/pos/toast/connection', { method: 'DELETE', credentials: 'include' }]])
     expect(screen.queryByText('Mykonos Grill - Boca NEW')).toBeNull()
     expect((screen.getByLabelText('Client ID') as HTMLInputElement).value).toBe('')
+  })
+
+  it('stays connected when the server reports an old token expiry', async () => {
+    // A token expiring on its own is renewed by the server; only needs_reconnect matters.
+    serve({
+      [CREDENTIALS]: [json({ ...metadata, expires_at: '2020-01-01T00:00:00Z' })],
+      [CONNECTION]: [json(mykonos)],
+    })
+    show()
+    await screen.findByText('Connected')
+    expect(screen.queryByText('Needs reconnect')).toBeNull()
   })
 
   it('asks to reconnect when the restaurant is linked but the saved login is gone', async () => {
