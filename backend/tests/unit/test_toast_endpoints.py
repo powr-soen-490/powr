@@ -101,7 +101,12 @@ def owner_client(
     )
 
     def adapter(
-        connection: PosConnection, credentials: ToastCredentials, *, currency: str, base_url: str
+        connection: PosConnection,
+        credentials: ToastCredentials,
+        *,
+        currency: str,
+        base_url: str,
+        transport: object = None,
     ) -> ToastAdapter:
         return ToastAdapter(
             connection,

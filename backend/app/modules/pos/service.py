@@ -9,9 +9,11 @@ from decimal import Decimal
 from typing import Any, TypedDict
 from uuid import UUID
 
+import httpx2
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.core.encryption import SecretEncryptionError, decrypt_secret, encrypt_secret
 from app.integrations.pos.models import PosConnection, PosLocation, SaleLine
 from app.integrations.pos.toast.client import (
@@ -20,9 +22,19 @@ from app.integrations.pos.toast.client import (
     ToastCredentials,
     ToastRateLimitError,
 )
+from app.integrations.pos.toast.recorded import recorded_toast_transport
 from app.modules.pos import repository
 
 TOAST = "TOAST"
+
+
+def toast_transport() -> httpx2.BaseTransport | None:
+    """How requests reach Toast: None for the real API, or the recorded week when
+    TOAST_USE_RECORDED_DATA is on for local development."""
+    if get_settings().toast_use_recorded_data:
+        return recorded_toast_transport()
+    return None
+
 
 # Lists the Toast restaurants some credentials can access (see integrations/pos/toast).
 ToastLocationFinder = Callable[[ToastCredentials], list[PosLocation]]

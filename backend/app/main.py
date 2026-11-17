@@ -83,6 +83,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     configure_logging(settings.log_level)
 
     app = FastAPI(title="powr API", version="0.1.0", lifespan=lifespan)
+    if settings.toast_use_recorded_data:
+        logger.warning("TOAST_USE_RECORDED_DATA is on: Toast answers come from the recorded week")
     app.state.session_factory = create_session_factory(str(settings.database_url))
     app.add_exception_handler(
         StarletteHTTPException,

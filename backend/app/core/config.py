@@ -52,6 +52,9 @@ class Settings(BaseSettings):
     toast_client_id: str | None = None
     toast_client_secret: str | None = None
     toast_restaurant_guid: str | None = None
+    # Local development without Toast: answer every Toast request from the recorded week in
+    # backend/tests/fixtures/toast_week instead of calling Toast. Refused when deployed.
+    toast_use_recorded_data: bool = False
 
     # Session & Cookie Security Settings
     session_secret_key: str = DEV_SESSION_SECRET_KEY
@@ -80,6 +83,10 @@ class Settings(BaseSettings):
             )
         if not self.cookie_secure:
             raise ValueError(f"COOKIE_SECURE must be true when ENVIRONMENT={self.environment}")
+        if self.toast_use_recorded_data:
+            raise ValueError(
+                f"TOAST_USE_RECORDED_DATA must be false when ENVIRONMENT={self.environment}"
+            )
         return self
 
 

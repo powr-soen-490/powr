@@ -99,7 +99,12 @@ def test_owner_connection_and_sales(
     )
 
     def adapter(
-        connection: PosConnection, credentials: ToastCredentials, *, currency: str, base_url: str
+        connection: PosConnection,
+        credentials: ToastCredentials,
+        *,
+        currency: str,
+        base_url: str,
+        transport: object = None,
     ) -> ToastAdapter:
         return ToastAdapter(
             connection,

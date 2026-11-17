@@ -199,6 +199,7 @@ def toast_adapter(db: Session, restaurant_id: UUID) -> PosAdapter:
         ),
         currency=DEFAULT_CURRENCY,
         base_url=get_settings().toast_api_base_url,
+        transport=service.toast_transport(),
     )
 
 
