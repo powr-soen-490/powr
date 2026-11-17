@@ -85,9 +85,7 @@ def fake_toast(*order_replies: httpx2.Response) -> FakeToast:
     toast = FakeToast()
     toast.reply(
         MENUS_PATH,
-        httpx2.Response(
-            200, text=(RECORDED_WEEK_DIR / "menus.json").read_text(encoding="utf-8")
-        ),
+        httpx2.Response(200, text=(RECORDED_WEEK_DIR / "menus.json").read_text(encoding="utf-8")),
     )
     toast.reply(ORDERS_PATH, *order_replies)
     return toast
