@@ -79,3 +79,14 @@ Before finishing a task:
 4. Preserve every human-authored baseline unless a human explicitly authorized its exact replacement.
 5. Report each AI-contribution band changed during the task and confirm that its human-authored baseline was preserved.
 6. Confirm that empty files remain untouched unless the task requires content and that commentless formats remain syntactically valid.
+
+## Toast API Calls
+
+Toast recommends requesting a new access token (logging in) at most twice per hour, and one or two times a day. It is a recommendation, not an automatic block, but Toast may cut off API access for integrations that ignore it. powr follows it by saving the access token and reusing it everywhere:
+
+- Never log in to Toast per request. Build Toast adapters with `saved_toast_adapter` in `backend/app/modules/pos/toast_tokens.py`, or give `ToastClient`/`ToastAdapter` a token store; scripts use `script_token_store`.
+- Call `authenticate()` or `ensure_token()`, never `login()`. They log in only when there is no usable token: it expired, or Toast answered 401.
+- Read data powr already imported from the database instead of calling Toast when you can.
+- Tests use fake or recorded Toast responses and never call the real Toast API. Develop with `TOAST_USE_RECORDED_DATA=true`, which makes no real logins.
+
+Details: `docs/toast-integration.md`, section "Toast Logins and the Saved Token".

@@ -39,6 +39,11 @@ Setup and run instructions are in `README.md`.
   business logic or SQL; services never import FastAPI.
 - Modules call each other only through services, never another module's repository or models.
 - Every restaurant-owned table has a `restaurant_id`, and every query filters by it.
+- Toast calls reuse the saved access token; never log in per request. Build adapters with
+  `saved_toast_adapter` (`modules/pos/toast_tokens.py`) and call `authenticate()`/`ensure_token()`,
+  never `login()`. Toast recommends at most 2 logins per hour (a recommendation, not an automatic
+  block; Toast may cut off API access if it is ignored). Develop with
+  `TOAST_USE_RECORDED_DATA=true` (no real logins). See `docs/toast-integration.md`.
 - Raw POS payloads never leave `integrations/pos/<provider>/`; adapters return the internal
   models in `integrations/pos/models.py`.
 - Configuration comes from environment variables only. Never commit `.env` or secrets.

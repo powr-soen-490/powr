@@ -125,7 +125,8 @@ class ToastClient:
     def login(self) -> None:
         """Exchange the client ID and secret for an access token, and save it.
 
-        Prefer ``ensure_token``: every call is one of the few logins Toast allows per hour.
+        Prefer ``ensure_token``: every call is a login, and Toast recommends at most two per
+        hour (a recommendation, not an automatic block).
         """
         response = self._send(
             "POST",
