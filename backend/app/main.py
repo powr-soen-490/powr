@@ -21,6 +21,7 @@ from app.api.auth import router as auth_router
 from app.api.health import router as health_router
 from app.api.ingredients import router as ingredients_router
 from app.api.pos import router as pos_router
+from app.api.recipes import router as recipes_router
 from app.api.toast import router as toast_router
 from app.api.toast_connection import router as toast_connection_router
 from app.api.toast_import import router as toast_import_router
@@ -112,6 +113,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(toast_connection_router)
     app.include_router(toast_import_router)
     app.include_router(ingredients_router)
+    app.include_router(recipes_router)
     return app
 
 

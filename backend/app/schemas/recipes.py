@@ -2,11 +2,12 @@
 # AI contribution: 50% or more AI-generated
 """Pydantic request and response models for units, vendors, ingredients and recipes."""
 
+from datetime import datetime
 from decimal import Decimal
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, Field, StringConstraints
+from pydantic import AwareDatetime, BaseModel, Field, StringConstraints
 
 Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=255)]
 UnitName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=20)]
@@ -68,3 +69,72 @@ class IngredientResponse(BaseModel):
     pack_price: Decimal | None
     unit_cost: Decimal | None = Field(description="Price of one base unit; null without a pack.")
     is_active: bool
+
+
+class RecipeLineRequest(BaseModel):
+    ingredient_id: UUID
+    quantity: Quantity
+    unit: UnitName = Field(description="Any unit of the ingredient's kind, e.g. g, kg, oz.")
+
+
+class ModifierLineRequest(BaseModel):
+    """What a POS modifier does to the dish: "Extra feta" adds 30 g of feta."""
+
+    menu_modifier_id: UUID
+    ingredient_id: UUID
+    effect: Literal["add", "remove"]
+    quantity: Quantity
+    unit: UnitName
+
+
+class RecipeSaveRequest(BaseModel):
+    effective_from: AwareDatetime | None = Field(
+        default=None, description="When this version starts: now when omitted, never the past."
+    )
+    lines: list[RecipeLineRequest] = Field(min_length=1, max_length=100)
+    modifier_lines: list[ModifierLineRequest] = Field(default_factory=list, max_length=200)
+
+
+class RecipeLineResponse(BaseModel):
+    ingredient_id: UUID
+    ingredient_name: str
+    quantity: Decimal = Field(description="In base_unit.")
+    base_unit: str
+    entered_quantity: Decimal
+    entered_unit: str
+    cost: Decimal | None = Field(description="At today's prices; null when unpriced.")
+
+
+class ModifierLineResponse(RecipeLineResponse):
+    menu_modifier_id: UUID
+    modifier_name: str
+    effect: Literal["add", "remove"]
+
+
+class RecipeVersionResponse(BaseModel):
+    id: UUID
+    effective_from: datetime
+    status: Literal["past", "current", "scheduled"] | None = None
+    menu_item_name: str = Field(description="The item's name when this version was saved.")
+    menu_item_price: Decimal | None
+    created_by_email: str | None
+    created_at: datetime
+
+
+class RecipeResponse(BaseModel):
+    menu_item_id: UUID
+    menu_item_name: str
+    version: RecipeVersionResponse
+    lines: list[RecipeLineResponse]
+    modifier_lines: list[ModifierLineResponse]
+    total_cost: Decimal | None = Field(
+        description="Cost of the base dish at today's prices; null if an ingredient is unpriced."
+    )
+
+
+class MenuItemModifierResponse(BaseModel):
+    id: UUID
+    name: str
+    group_name: str
+    price: Decimal | None
+    sold_with_item: int = Field(description="Times sold with this item in the last 90 days.")
