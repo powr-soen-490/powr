@@ -1,0 +1,3548 @@
+[
+  {
+    "guid": "4bb49e75-21bf-4bf8-9133-d28bbddbf77f",
+    "openedDate": "2026-11-11T16:32:08.854+0000",
+    "modifiedDate": "2026-11-11T22:51:29.038+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "aa9d8659-35d3-49fd-aa5c-0bfdb458a031",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "bf32437e-e186-4143-aaa5-cf105b77c2f0",
+            "item": {
+              "guid": "d47daa97-83c8-4111-9533-874ad9c6fc17"
+            },
+            "displayName": "2 Souvlaki stick Platter",
+            "selectionType": "NONE",
+            "quantity": 2,
+            "price": 43.9,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "c7565fc0-ed37-452b-bf4d-61b703b3556a",
+                "item": {
+                  "guid": "ce886ef0-bccb-4279-9315-78f4d5afdd77"
+                },
+                "displayName": "Lemon Potatoes",
+                "quantity": 2,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "460c1df3-467c-4939-82cc-f2cf7eeedeef",
+                "item": {
+                  "guid": "b40cbe6d-ceed-488b-b131-8ca5f0f75c7c"
+                },
+                "displayName": "Combo 1 chicken & 1 Pork souvlaki stick",
+                "quantity": 2,
+                "price": 43.9,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "88c0bc47-0585-4fb1-8b54-c7d253481403",
+    "openedDate": "2026-11-11T16:42:07.967+0000",
+    "modifiedDate": "2026-11-11T17:08:57.116+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "4bee65b4-2ecb-4ab2-b057-4ad7cf5e67eb",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "1e81b209-e9d2-4187-b27e-b098feef3aaa",
+            "item": {
+              "guid": "96d5b8ab-2aff-4225-9eed-bc4c43255124"
+            },
+            "displayName": "BEEF AND LAMB GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 17.9,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "5bf97229-2590-4f1c-9bf4-3251ee4dd598",
+                "item": {
+                  "guid": "8dae9422-7fda-4682-88b3-9aa1bfb1bb08"
+                },
+                "displayName": "French Fries & Drink",
+                "quantity": 1,
+                "price": 4.95,
+                "voided": false
+              },
+              {
+                "guid": "2bedd779-fa8c-4ae6-84e1-51f5f20ee756",
+                "item": {
+                  "guid": "cb1267f8-51ea-421d-9287-9ffcd33df50f"
+                },
+                "displayName": "NO Onions",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "69f95c25-2bcd-4ab3-8bb4-66bf496d6ae1",
+                "item": {
+                  "guid": "4f2d1ccd-3b7b-4fbd-abd4-51931dd4fefe"
+                },
+                "displayName": "Light On SAUCE",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "fd288d9d-c109-498a-9ad1-f37fcb178702",
+                "item": {
+                  "guid": "f6a98fce-164c-4259-8f67-0dfc784b3184"
+                },
+                "displayName": "NO Tomatoes",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "da8e187b-6e39-49c1-ae51-5b06052147f4",
+    "openedDate": "2026-11-11T16:50:50.082+0000",
+    "modifiedDate": "2026-11-11T17:08:52.667+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "8acb5a94-c28b-4963-b527-30e0b51cbc40",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "d3b87679-a34c-4b83-869f-fc22a0f32075",
+            "item": {
+              "guid": "96d5b8ab-2aff-4225-9eed-bc4c43255124"
+            },
+            "displayName": "BEEF AND LAMB GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 2,
+            "price": 25.9,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "11ee4c31-5b4b-48b6-bb30-ac47aeacb9ac",
+    "openedDate": "2026-11-11T17:04:06.554+0000",
+    "modifiedDate": "2026-11-11T17:07:01.911+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "bc8957de-8ece-4c54-8cae-ce0f0c545137",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "9dc3c847-09c2-4428-851f-8cd89543f699",
+            "item": {
+              "guid": "b705e84b-735a-40dc-a475-a6808f056f09"
+            },
+            "displayName": "Gyro Beef/Lamb Pita Wrap Plater",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 17.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "aa1a9bbc-fd08-44f3-b478-c060081b21e3",
+                "item": {
+                  "guid": "847f6068-40f7-46e2-9862-39dc2e77b85b"
+                },
+                "displayName": "Mykonos Salad",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "f6cc8b8e-4b04-4f05-bbbb-3b5ff502832d",
+                "item": {
+                  "guid": "e85fcf66-f8cd-4a38-9972-9975ff6e89ae"
+                },
+                "displayName": "Rice",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "c0f07c45-ea13-4bce-b17e-8ea1ee99528f",
+                "item": {
+                  "guid": "e848914f-8503-4550-9360-bf818e410f5b"
+                },
+                "displayName": "Lemon  Potatoes",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "ca9b1e7e-e234-499b-abbd-548bb71b85e1",
+    "openedDate": "2026-11-11T17:07:04.871+0000",
+    "modifiedDate": "2026-11-11T17:08:17.083+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "52486bef-04c2-472d-9001-8ce694058a7b",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "e2f28bcd-7f00-4236-abb7-decc50be97c0",
+            "item": {
+              "guid": "cc33bf15-795e-4646-be9f-0cd09568e6b9"
+            },
+            "displayName": "Chicken Souvlaki Stick",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 7.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "7d71bf86-be94-4963-b578-0fd4775fcc83",
+            "item": {
+              "guid": "1ab31742-5780-4c47-a55a-56b92879a34e"
+            },
+            "displayName": "Rice",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 3.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "2ac47865-735a-4f3f-b1e9-4fafbf54a72a",
+    "openedDate": "2026-11-11T16:34:24.145+0000",
+    "modifiedDate": "2026-11-11T17:18:28.874+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "f9c3642a-d638-4e2d-a4e1-7483c0cfdc08",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "ec9cdb6c-1777-4ad6-85ff-58e7082f1606",
+            "item": {
+              "guid": "4f503dfd-e235-4f58-a565-3a8c8dfa9861"
+            },
+            "displayName": "BEEF AND LAMB GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 9.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "11f5979e-085a-45f6-b408-b4a598f69c80",
+    "openedDate": "2026-11-11T17:15:12.283+0000",
+    "modifiedDate": "2026-11-11T17:16:52.251+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "4e01a73c-3f22-4855-b760-de734671766f",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "c4d4209d-d820-40e7-9f18-4f6816cd5501",
+            "item": {
+              "guid": "58b80a4a-529b-4fea-bf7c-267dd2ff0d77"
+            },
+            "displayName": "Chicken Gyro Loose Meat Platter",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 22.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "25b5d6a0-5777-486f-9e41-080c5d461bd0",
+                "item": {
+                  "guid": "6828fec7-e22c-41ac-b204-16e597cf5b7d"
+                },
+                "displayName": "Rice",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "2b973cb5-258f-4706-9a9a-55c33bd97631",
+                "item": {
+                  "guid": "650a0c20-6cbc-457f-aa20-b17130c53f37"
+                },
+                "displayName": "Greek Horiatiki Salad",
+                "quantity": 1,
+                "price": 2,
+                "voided": false
+              },
+              {
+                "guid": "7008ca1b-51c2-4cd2-903c-faa4d16f7abe",
+                "item": {
+                  "guid": "bb140af0-2291-4566-82fe-2348d1391514"
+                },
+                "displayName": "Lemon Potatoes",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "814de075-a115-4bda-a207-a8237c385c60",
+    "openedDate": "2026-11-11T17:26:51.803+0000",
+    "modifiedDate": "2026-11-11T18:08:39.766+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "311b2b21-db4f-44ba-be9d-4e5f6d5475d5",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "3f3f3e9b-f462-4ec1-8d83-610713e7ead5",
+            "item": {
+              "guid": "090501c1-200e-43a5-a9ea-edbd76b3738f"
+            },
+            "displayName": "GREEK CLUB SANDWICH",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 23.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "0fb0b7b1-2a24-43c5-96d9-36ce7be057bd",
+                "item": {
+                  "guid": "cea0d6ab-dd7d-46d3-a3f7-15091998fa5f"
+                },
+                "displayName": "ADD Feta cheese",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "50afbcb0-771c-4122-8215-3e5f4902c2e7",
+                "item": {
+                  "guid": "02fbefdf-4fce-4619-a94e-b7069f463d7b"
+                },
+                "displayName": "Beef and Lamb Gyro",
+                "quantity": 1,
+                "price": 23.95,
+                "voided": false
+              },
+              {
+                "guid": "638253d5-10de-4cf3-b453-491a9cf7bef4",
+                "item": {
+                  "guid": "04544182-045c-4d33-9e7b-e8380ebaaad9"
+                },
+                "displayName": "NO Tomatoes",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "43623301-4673-4459-b72a-5a48c5f62670",
+                "item": {
+                  "guid": "a3320a5c-40a8-46be-b0bb-696c53180a1e"
+                },
+                "displayName": "ADD Tzatziki",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "55d49e51-304e-47d2-a9c8-f3dd7b924a4d",
+            "item": {
+              "guid": "409badb9-1b13-440f-bb3b-2153fdbc1863"
+            },
+            "displayName": "HUMMUS - HOMEMADE",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 8.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "b789a69a-cac4-459e-afc9-42ab7ef23efe",
+    "openedDate": "2026-11-11T17:19:40.526+0000",
+    "modifiedDate": "2026-11-11T17:24:49.875+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "a2d6c0ec-aeef-49f9-808a-7bcdaa780f6f",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "d4bc547c-8776-4b21-a64d-5c3e82f3f9ff",
+            "item": {
+              "guid": "67f0881f-b242-40f3-b250-6b434b9d452f"
+            },
+            "displayName": "Greek Club Sandwich ",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 19.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "24ad7582-737f-4f66-8ee1-6acba20d2765",
+                "item": {
+                  "guid": "503aac0f-17ce-454d-9de2-efe711dd9ef3"
+                },
+                "displayName": "ADD Onions",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "736d97ac-70fa-477d-a5b1-39f54b4bfed5",
+                "item": {
+                  "guid": "f8b5b489-17d7-4c06-b3b6-23f827919615"
+                },
+                "displayName": "Gyro Chicken",
+                "quantity": 1,
+                "price": 19.95,
+                "voided": false
+              },
+              {
+                "guid": "e9aaef9f-f310-454b-8ee2-7397f79baf22",
+                "item": {
+                  "guid": "fcb1972b-d1ad-48d1-9815-2e25f894bf5e"
+                },
+                "displayName": "NO Tomatoes",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "4d7f952f-3cec-4047-85c6-2594e271e7ec",
+            "item": {
+              "guid": "2ea5dfde-62f9-47fd-9ec6-79c36c06bd5f"
+            },
+            "displayName": "CHICKEN GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 9.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "7ea23898-3cfd-400f-9ada-d165fc15f42c",
+            "item": {
+              "guid": "202070c4-a0a8-4477-950a-78a97de42f83"
+            },
+            "displayName": "Gyro Loose Meat Beef/Lamb  Platter",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 19.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "ddd2284e-003c-4fce-8aec-ffe3812c767d",
+                "item": {
+                  "guid": "e72e2ace-d8b5-481d-99af-c8498b1602a1"
+                },
+                "displayName": "French Fries",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "af9e693e-a163-43b9-af6d-d265f4f8ff10",
+                "item": {
+                  "guid": "b2b2d55c-ab4b-4d25-8d9a-61cef1cfdd6e"
+                },
+                "displayName": "Lemon Potatoes",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "52b39dbf-ff42-4779-aafb-b3ac0c85743a",
+                "item": {
+                  "guid": "ededde35-c437-43f4-9ad4-c735efd18a83"
+                },
+                "displayName": "Mykonos Salad",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "788722d0-018f-4500-971b-a9854ad8dc05",
+            "item": {
+              "guid": "b860974b-be75-4f03-ad7f-befd5d6f41f5"
+            },
+            "displayName": "5 Lamb Chop Platter",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 33.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "04295005-cd1c-4c71-ade0-1f78e9d1cf54",
+                "item": {
+                  "guid": "39dec17e-a6c0-475f-ba62-3110dfe280b6"
+                },
+                "displayName": "Greek Horiatiki Salad",
+                "quantity": 1,
+                "price": 2,
+                "voided": false
+              },
+              {
+                "guid": "414ddb73-4891-4707-b315-ecfd52472958",
+                "item": {
+                  "guid": "55ad56ac-5baa-4f60-b998-8bd6ed638480"
+                },
+                "displayName": "Lemon Potatoes",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "698ca2d9-7c33-4773-8293-b70be0b1ddc2",
+                "item": {
+                  "guid": "d700be45-910a-4d24-80db-2c43cb5d4ddc"
+                },
+                "displayName": "Mykonos Salad",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "30f01be5-8b39-4a3e-ba0f-f40c571b4c12",
+            "item": {
+              "guid": "edf90565-f81c-4049-962d-d4d0db17cd8b"
+            },
+            "displayName": "Greek Village",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 21.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "12b27b0c-a36a-41cd-8a04-f7384caf01c7",
+                "item": {
+                  "guid": "1df7d090-e16c-4b9a-8d70-49db34500d6c"
+                },
+                "displayName": "Chicken Gyro",
+                "quantity": 1,
+                "price": 6,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "c069d849-df42-487d-b7e4-358cca24821e",
+            "item": {
+              "guid": "bb5f3ae6-3301-4053-a96c-a60f905d56b8"
+            },
+            "displayName": "Falafel Platter",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 17.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "19821daa-cc7b-4937-b363-b0d550fb4faf",
+                "item": {
+                  "guid": "3783b5f5-4962-4296-9f66-370d5b7fdab5"
+                },
+                "displayName": "Mykonos Salad",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "5122b505-67de-4a15-92b9-72128b00a42e",
+                "item": {
+                  "guid": "db0b86ca-ed54-49fc-b40f-77740923a4f3"
+                },
+                "displayName": "Lemon  Potatoes",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "01d0a7c5-5f68-4e23-92f4-f8961992116c",
+                "item": {
+                  "guid": "c10bc187-5a93-4543-9c61-881d13cac199"
+                },
+                "displayName": "Rice",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "9acb6e81-8df8-46e6-9409-ad357bf5422c",
+            "item": {
+              "guid": "edf90565-f81c-4049-962d-d4d0db17cd8b"
+            },
+            "displayName": "Greek Village",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 15.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "0a36933e-1ffa-4eef-8a9b-1efce9e72708",
+            "item": {
+              "guid": "4f503dfd-e235-4f58-a565-3a8c8dfa9861"
+            },
+            "displayName": "BEEF AND LAMB GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 9.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "b3c99963-e9b6-40ee-b30f-5009ff820e4b",
+                "item": {
+                  "guid": "1686c6c8-c8aa-4ada-aa39-b078290ab0f4"
+                },
+                "displayName": "NO Tomatoes",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "cc23ce1e-7ede-49c6-ad94-521948881f88",
+                "item": {
+                  "guid": "c1dd875c-dc70-4d08-aca4-12b8a893939d"
+                },
+                "displayName": "NO Onions",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "1252390e-17ca-420c-b268-603a84c53a03",
+            "item": {
+              "guid": "202f901c-eb29-42ea-8cec-7098438fc433"
+            },
+            "displayName": "TZATZIKI (HOMEMADE)",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 6.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "1977d756-d3c5-4f4f-a359-785719a0225a",
+            "item": {
+              "guid": "bc039385-9e1a-465f-a541-920e11760733"
+            },
+            "displayName": "SPINACH PIE (SPANAKOPITA)",
+            "selectionType": "NONE",
+            "quantity": 2,
+            "price": 17.9,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "6d16141d-8f71-408a-8705-6a113f3a3ccb",
+            "item": {
+              "guid": "4f503dfd-e235-4f58-a565-3a8c8dfa9861"
+            },
+            "displayName": "BEEF AND LAMB GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 9.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "51ec996f-9a6a-4f4a-b725-343f8d12823e",
+    "openedDate": "2026-11-11T17:24:56.038+0000",
+    "modifiedDate": "2026-11-11T17:25:40.694+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "49dd4722-affe-476e-bc0c-964ad1f3c3b1",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "563dc907-2835-4595-b5cc-4eea29919926",
+            "item": {
+              "guid": "4f503dfd-e235-4f58-a565-3a8c8dfa9861"
+            },
+            "displayName": "BEEF AND LAMB GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 9.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "f73c24c0-a7a6-48ad-a2d6-cb8c1eb906c6",
+    "openedDate": "2026-11-11T17:25:46.907+0000",
+    "modifiedDate": "2026-11-11T17:34:03.536+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "23c573a5-c901-40c6-a2f4-21c32e64a111",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "e5539944-815e-4ad8-8115-2a0998cb651a",
+            "item": {
+              "guid": "4da2ecbf-8e39-48cd-aad4-eb6187b2d350"
+            },
+            "displayName": "Beef & Lamb Pita , Fries and Soda",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 12.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "954c3318-261a-4f6e-9aae-07fc59f9eb41",
+    "openedDate": "2026-11-11T17:37:15.977+0000",
+    "modifiedDate": "2026-11-11T17:52:57.401+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "12077b20-954c-4ab3-ba4b-2aa029bb72b5",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "f97f2539-0dfa-4410-aad1-aad8c4161fb9",
+            "item": {
+              "guid": "edf90565-f81c-4049-962d-d4d0db17cd8b"
+            },
+            "displayName": "Greek Village",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 21.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "1565c7a3-7cfe-4c74-be0f-03ef94226ac4",
+                "item": {
+                  "guid": "1df7d090-e16c-4b9a-8d70-49db34500d6c"
+                },
+                "displayName": "Chicken Gyro",
+                "quantity": 1,
+                "price": 6,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "b646db24-fc53-4b75-b078-d8f21f0c12c4",
+    "openedDate": "2026-11-11T17:46:26.358+0000",
+    "modifiedDate": "2026-11-11T17:47:40.006+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "052189a8-147b-4e3f-8dc5-ee4497a3f620",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "5d28caa0-0a61-443f-9349-df9e0380bc07",
+            "item": {
+              "guid": "b4c89df5-d59a-4c85-8a5b-f575599dc6a6"
+            },
+            "displayName": "Chicken Gyro Pita , Fries and Soda",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 12.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "285a45a2-1e85-4ce8-8470-2b689f1933d7",
+    "openedDate": "2026-11-11T17:47:40.545+0000",
+    "modifiedDate": "2026-11-11T17:48:33.523+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "e9e8eb37-6b0f-47da-a1ba-25deea66e4d1",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "901c6d6f-3570-4871-9ebe-4c193a48ccdf",
+            "item": {
+              "guid": "4da2ecbf-8e39-48cd-aad4-eb6187b2d350"
+            },
+            "displayName": "Beef & Lamb Pita , Fries and Soda",
+            "selectionType": "NONE",
+            "quantity": 2,
+            "price": 25.9,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "a269ca6e-15c9-4ca2-aca0-e2e5a0c5672c",
+    "openedDate": "2026-11-11T17:48:43.276+0000",
+    "modifiedDate": "2026-11-11T17:49:36.118+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "87e1cca4-95a8-4f69-9820-edbd32e26052",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "ef84c16f-768d-417e-84a1-e4f704fab674",
+            "item": {
+              "guid": "778f4135-b8e3-4cb5-b63b-2aff839e156b"
+            },
+            "displayName": "BAKLAVA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 6.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "d1cedb03-e712-4792-bc34-048768c7509c",
+            "item": {
+              "guid": "4da2ecbf-8e39-48cd-aad4-eb6187b2d350"
+            },
+            "displayName": "Beef & Lamb Pita , Fries and Soda",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 12.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "b87edad9-815c-4237-afc5-2652af53a19a",
+    "openedDate": "2026-11-11T17:54:43.491+0000",
+    "modifiedDate": "2026-11-11T17:55:23.007+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "0ea5658b-0ff3-4792-bd41-f2862e12336f",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "07ae107c-6664-4fdb-8a84-80fa4b2277fe",
+            "item": {
+              "guid": "2ea5dfde-62f9-47fd-9ec6-79c36c06bd5f"
+            },
+            "displayName": "CHICKEN GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 9.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "0a6009eb-908a-4867-a577-14f9df699a1d",
+            "item": {
+              "guid": "36a618ca-0d9c-46e4-9408-d6471ae24779"
+            },
+            "displayName": "Small greek salad",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 7.99,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "f36017a2-43a0-49ff-9f7e-c486bf9183b3",
+    "openedDate": "2026-11-11T17:55:29.239+0000",
+    "modifiedDate": "2026-11-11T17:57:46.999+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "4ab37d93-5ed6-4101-9bd4-cc45aae943c0",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "2793f0bd-ef4c-4309-8854-d1b4a476036d",
+            "item": {
+              "guid": "202070c4-a0a8-4477-950a-78a97de42f83"
+            },
+            "displayName": "Gyro Loose Meat Beef/Lamb  Platter",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 19.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "a090060c-1557-4da3-9dc8-019368e0e344",
+                "item": {
+                  "guid": "b2b2d55c-ab4b-4d25-8d9a-61cef1cfdd6e"
+                },
+                "displayName": "Lemon Potatoes",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "40519bcf-d592-4dc1-b801-9a6afae6faf5",
+                "item": {
+                  "guid": "ededde35-c437-43f4-9ad4-c735efd18a83"
+                },
+                "displayName": "Mykonos Salad",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "8a5a75d0-b473-41e6-bc04-87949b6818b0",
+                "item": {
+                  "guid": "7bdfdfeb-cd75-424e-b0a8-62a2aad26663"
+                },
+                "displayName": "Rice",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "4e9e414d-59ed-43dc-a8b4-25af71856fe3",
+    "openedDate": "2026-11-11T17:57:50.978+0000",
+    "modifiedDate": "2026-11-11T17:58:46.719+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "969565da-dad7-4d93-84bd-d5a2dc429071",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "effaa375-a9ed-4f8b-b7f8-220e0409b1bf",
+            "item": {
+              "guid": "58b80a4a-529b-4fea-bf7c-267dd2ff0d77"
+            },
+            "displayName": "Chicken Gyro Loose Meat Platter",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 20.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "1385b94e-59cb-4837-bdfd-13c646984b54",
+                "item": {
+                  "guid": "ac64d422-3d09-4e0a-a52b-8727eb3727de"
+                },
+                "displayName": "Mykonos Salad",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "e5d2405d-0858-4c7c-b7a3-67ae4b9510e2",
+                "item": {
+                  "guid": "6828fec7-e22c-41ac-b204-16e597cf5b7d"
+                },
+                "displayName": "Rice",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "a7d4b7e6-fc52-48d4-be39-3f9f82ecf9eb",
+                "item": {
+                  "guid": "bb140af0-2291-4566-82fe-2348d1391514"
+                },
+                "displayName": "Lemon Potatoes",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "ab47ca3b-4300-4f96-94c8-967be759e437",
+    "openedDate": "2026-11-11T17:58:52.853+0000",
+    "modifiedDate": "2026-11-11T18:02:25.429+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "7a740b56-9899-40df-b106-10667608ab16",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "d6d6bfd1-28b9-4d67-8978-5cac1321e3ce",
+            "item": {
+              "guid": "24f1a97e-e518-4c8d-9a74-7a7f85d95f93"
+            },
+            "displayName": "HomeMade French Fries",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 5.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "55e571a5-bb2c-41aa-b418-94f487cee4f4",
+    "openedDate": "2026-11-11T18:02:26.083+0000",
+    "modifiedDate": "2026-11-11T18:03:11.374+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "f278eda1-2875-4460-8830-8d0fa4e6f7ab",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "43c70f40-6f77-4dd4-a5bb-e2791ca09152",
+            "item": {
+              "guid": "4f503dfd-e235-4f58-a565-3a8c8dfa9861"
+            },
+            "displayName": "BEEF AND LAMB GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 9.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "0b2562b2-fa48-447d-ae4d-6b683d3478f5",
+            "item": {
+              "guid": "2ea5dfde-62f9-47fd-9ec6-79c36c06bd5f"
+            },
+            "displayName": "CHICKEN GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 9.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "3e249f36-44b3-471b-87ee-2bf322ba5432",
+    "openedDate": "2026-11-11T18:37:04.435+0000",
+    "modifiedDate": "2026-11-11T18:37:28.442+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "ce049c98-96dc-45bc-a5be-51578beef644",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "69dcede5-bd2c-43b1-8242-263732bc17c2",
+            "item": {
+              "guid": "2ea5dfde-62f9-47fd-9ec6-79c36c06bd5f"
+            },
+            "displayName": "CHICKEN GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 9.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "5f14214e-eeec-48f0-91bb-1c1cce73ad58",
+    "openedDate": "2026-11-11T18:42:08.337+0000",
+    "modifiedDate": "2026-11-11T21:11:48.391+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "cab6e1bd-85ce-4ab6-9828-67d874f71dcf",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "8b17d122-b0d0-4085-847a-74fde2924090",
+            "item": {
+              "guid": "67f0881f-b242-40f3-b250-6b434b9d452f"
+            },
+            "displayName": "Greek Club Sandwich ",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 0,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "e578eb09-48aa-42d7-b34f-0a18862c07fd",
+                "item": {
+                  "guid": "f8b5b489-17d7-4c06-b3b6-23f827919615"
+                },
+                "displayName": "Gyro Chicken",
+                "quantity": 1,
+                "price": 19.95,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "9f9fd355-7033-45a0-856b-c1909c62ada4",
+    "openedDate": "2026-11-11T18:42:27.620+0000",
+    "modifiedDate": "2026-11-11T18:42:56.790+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "1e279621-999f-4092-ade4-f8c17a1f358d",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "038dfe98-2542-4c59-932e-cdb43b7efd2f",
+            "item": {
+              "guid": "f0260c26-7687-43e9-95d8-e5a85758c07f"
+            },
+            "displayName": "Gyro",
+            "selectionType": "OPEN_ITEM",
+            "quantity": 1,
+            "price": 10,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "8acbf85f-83fa-4a84-8b8a-c92d5f9f3a58",
+    "openedDate": "2026-11-11T19:08:49.096+0000",
+    "modifiedDate": "2026-11-11T19:16:35.677+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "da8ad9ea-1687-4870-8820-14d60ecb36fd",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "8bd9b997-1201-4aef-b6f3-ae40ce074aa2",
+            "item": {
+              "guid": "b58a93dd-5fc6-4279-aa33-c2f6178a3192"
+            },
+            "displayName": "CHICKEN SOUVLAKI PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 9.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "acdc3c3d-2661-4729-b485-236836134f03",
+    "openedDate": "2026-11-11T19:12:13.470+0000",
+    "modifiedDate": "2026-11-11T19:15:13.249+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "4c9ba928-6e30-440f-95f6-df62ca0fb0df",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "56b426b3-20bd-4079-b813-5239aa33224c",
+            "item": {
+              "guid": "f0260c26-7687-43e9-95d8-e5a85758c07f"
+            },
+            "displayName": "Falafel 3",
+            "selectionType": "OPEN_ITEM",
+            "quantity": 1,
+            "price": 1.99,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "cf492dbc-c3db-473b-aef7-4cda246dbc71",
+            "item": {
+              "guid": "4f503dfd-e235-4f58-a565-3a8c8dfa9861"
+            },
+            "displayName": "BEEF AND LAMB GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 9.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "095c8ad2-bf4d-4309-a5b2-9d135b015c49",
+    "openedDate": "2026-11-11T19:50:08.140+0000",
+    "modifiedDate": "2026-11-11T19:56:25.235+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "c57c7e1a-3d15-4b6a-ad42-2ad475efded3",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "a820b1fd-db26-436e-a35d-a7e11f39ed0e",
+            "item": {
+              "guid": "202070c4-a0a8-4477-950a-78a97de42f83"
+            },
+            "displayName": "Gyro Loose Meat Beef/Lamb  Platter",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 19.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "4592548e-bc3e-4f0e-a68b-343bbe5e53ff",
+                "item": {
+                  "guid": "ededde35-c437-43f4-9ad4-c735efd18a83"
+                },
+                "displayName": "Mykonos Salad",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "78fb2433-a790-46fe-87be-884c068b6dcf",
+                "item": {
+                  "guid": "7bdfdfeb-cd75-424e-b0a8-62a2aad26663"
+                },
+                "displayName": "Rice",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "917a8f0d-c238-42dc-805d-e75cd916b0ce",
+                "item": {
+                  "guid": "b2b2d55c-ab4b-4d25-8d9a-61cef1cfdd6e"
+                },
+                "displayName": "Lemon Potatoes",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "8143d4b3-f6cd-4afd-a1bc-91687e2ed4a5",
+            "item": {
+              "guid": "95a80718-0011-408e-a83e-dfe2cf94e796"
+            },
+            "displayName": "HUMMUS",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 6.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "e8df30d3-694e-405d-a0d6-3a80a750f485",
+            "item": {
+              "guid": "d47daa97-83c8-4111-9533-874ad9c6fc17"
+            },
+            "displayName": "2 Souvlaki stick Platter",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 22.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "a5150cf1-3611-44d9-86ab-3c05f3618270",
+                "item": {
+                  "guid": "913aeb66-a70f-4c16-8f67-a00f896e942a"
+                },
+                "displayName": "French Fries",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "932328a4-19c2-41c3-9914-5355674cfae4",
+                "item": {
+                  "guid": "ac346176-091b-47b5-8796-69b466028e15"
+                },
+                "displayName": "2 Souvlaki Chicken Sticks",
+                "quantity": 1,
+                "price": 22.95,
+                "voided": false
+              },
+              {
+                "guid": "cc19a560-c33c-498c-8df7-5eb741678f22",
+                "item": {
+                  "guid": "4360f713-0200-43f2-9330-893be40b8dd0"
+                },
+                "displayName": "Mykonos Salad",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "65c58bdc-1f76-472e-8ee4-0d8ec4bd54b3",
+                "item": {
+                  "guid": "27338590-987c-4c8c-a952-179066489481"
+                },
+                "displayName": "Rice",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "d5b0c0f1-31ce-4d87-ae84-a254b15cdbbe",
+    "openedDate": "2026-11-11T20:04:10.773+0000",
+    "modifiedDate": "2026-11-11T20:04:50.696+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "4f5b8d69-8e05-4626-9b79-2a88bb9dea88",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "2ad56991-e4cc-4411-aad8-cbff9d7a4a84",
+            "item": {
+              "guid": "4da2ecbf-8e39-48cd-aad4-eb6187b2d350"
+            },
+            "displayName": "Beef & Lamb Pita , Fries and Soda",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 12.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "40473163-2de6-4d41-aebd-3945e8f12426",
+    "openedDate": "2026-11-11T20:34:09.621+0000",
+    "modifiedDate": "2026-11-11T20:40:25.334+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "a19d7b4b-7c47-440e-9a98-6872750a033e",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "a26c984e-0770-4d00-9862-eea9211a1d86",
+            "item": {
+              "guid": "b705e84b-735a-40dc-a475-a6808f056f09"
+            },
+            "displayName": "Gyro Beef/Lamb Pita Wrap Plater",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 17.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "ded9b48e-0525-4a90-a16e-75e9ea74b622",
+                "item": {
+                  "guid": "e848914f-8503-4550-9360-bf818e410f5b"
+                },
+                "displayName": "Lemon  Potatoes",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "09697520-d20f-4b7d-8978-6623d60b4954",
+                "item": {
+                  "guid": "847f6068-40f7-46e2-9862-39dc2e77b85b"
+                },
+                "displayName": "Mykonos Salad",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "f5dc7ec2-dbeb-4a7e-a3d3-775d2433c7aa",
+                "item": {
+                  "guid": "e85fcf66-f8cd-4a38-9972-9975ff6e89ae"
+                },
+                "displayName": "Rice",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "5d450dd9-82e3-436d-9cf9-d05a969378f3",
+            "item": {
+              "guid": "4da2ecbf-8e39-48cd-aad4-eb6187b2d350"
+            },
+            "displayName": "Beef & Lamb Pita , Fries and Soda",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 12.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "1395d4ee-c8bd-4efc-ad24-74ca82ee8290",
+                "item": {
+                  "guid": "2f4e1e44-8462-4858-a970-06f90723eb21"
+                },
+                "displayName": "Tzatziki sauce on side",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "21a79a2e-2216-44d9-9cc4-96edcb175e04",
+    "openedDate": "2026-11-11T20:42:13.602+0000",
+    "modifiedDate": "2026-11-11T20:42:52.320+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "6cc4f440-f378-43ff-8666-38e26a63ad98",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "8d305c35-3942-48dd-a475-97b3589de08a",
+            "item": {
+              "guid": "4da2ecbf-8e39-48cd-aad4-eb6187b2d350"
+            },
+            "displayName": "Beef & Lamb Pita , Fries and Soda",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 12.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "77b6415d-ae89-41af-9711-767ac4887642",
+                "item": null,
+                "displayName": "Add Lettuce",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "48c68924-b8e9-49aa-bb25-78e3fcde1d86",
+                "item": {
+                  "guid": "9c27956d-1558-4f6c-b2c3-92a5185a7a14"
+                },
+                "displayName": "NO Tomatoes",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "e142b1aa-5044-4574-ae11-b3fea534024d",
+            "item": {
+              "guid": "b4c89df5-d59a-4c85-8a5b-f575599dc6a6"
+            },
+            "displayName": "Chicken Gyro Pita , Fries and Soda",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 12.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "9565904e-dbc7-483b-b4a8-3bca4b889840",
+                "item": null,
+                "displayName": "Add Lettuce",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "7b9b217b-ca77-4f8f-8ecc-40a7cab92c45",
+                "item": {
+                  "guid": "a5d2abb1-ac8d-46d2-bf6c-77dad7a43260"
+                },
+                "displayName": "NO Tomatoes",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "a4d720d6-1b8a-4503-b971-abf370ac2852",
+    "openedDate": "2026-11-11T20:53:50.081+0000",
+    "modifiedDate": "2026-11-11T21:29:58.847+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "44b50d1c-5b71-4005-93df-0b8180464152",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "0af7d6ac-f61e-4331-b23a-dd5aadade409",
+            "item": {
+              "guid": "96d5b8ab-2aff-4225-9eed-bc4c43255124"
+            },
+            "displayName": "BEEF AND LAMB GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 2,
+            "price": 19.18,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "af8dc52a-8092-484e-8da6-19647105e00c",
+                "item": {
+                  "guid": "cb1267f8-51ea-421d-9287-9ffcd33df50f"
+                },
+                "displayName": "NO Onions",
+                "quantity": 2,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "8a743828-ef2a-4f53-89a1-28f902d117aa",
+                "item": {
+                  "guid": "7cbbc1e3-16da-44cc-8923-81159f85f72f"
+                },
+                "displayName": "Extra  TZATZIKI SAUCE",
+                "quantity": 2,
+                "price": 1.5,
+                "voided": false
+              },
+              {
+                "guid": "bb26e2af-61a1-402f-add8-951bb9a0b51e",
+                "item": {
+                  "guid": "ef6df5fe-c1de-425c-a54b-35115afd2862"
+                },
+                "displayName": "Tzatziki sauce on side",
+                "quantity": 2,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "842341e9-1f81-4d6a-aed3-c9990ab1975e",
+            "item": {
+              "guid": "6afcd714-a98e-4977-960f-ea58b172cb45"
+            },
+            "displayName": "SPRITE CAN",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 2.06,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "506a8d57-ff4b-4310-8b11-d90711723614",
+    "openedDate": "2026-11-11T21:48:20.565+0000",
+    "modifiedDate": "2026-11-11T22:13:12.821+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "1f92f5e7-1bf8-4b78-ba73-eb221941fd12",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "b46b97ff-fb8a-4b79-9307-075191fc8190",
+            "item": {
+              "guid": "8c17fcdf-80b1-48e7-b124-1e7d9f49bded"
+            },
+            "displayName": "TZATZIKI - HOMEMADE",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 6.27,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "c8ff9816-7d4c-4515-8e5a-858e5f09b477",
+            "item": {
+              "guid": "eb090023-7964-4383-ac84-6687eec9f41a"
+            },
+            "displayName": "Chicken  gyro meat loose",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 6.96,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "da1e1b8e-f79c-4835-82ce-afa9e93150dd",
+            "item": {
+              "guid": "f46153ff-cce4-48b4-a82e-6345803dbadd"
+            },
+            "displayName": "GREEK VILLAGE SALAD",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 13.96,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "87a2d713-2321-4130-a2f7-5b4b88410b65",
+            "item": {
+              "guid": "33ae4043-77bd-4593-a3cf-514d76c55467"
+            },
+            "displayName": "FRENCH FRIES -HOMEMADE- WITH FETA CHEESE",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 6.97,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "3baa5428-f99d-45bb-b8a5-feccc281e987",
+    "openedDate": "2026-11-11T21:48:03.451+0000",
+    "modifiedDate": "2026-11-11T21:48:41.387+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "dadd7638-e51d-45c2-9f6d-f4445ab1e46f",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "ea018b63-bc98-4703-93c4-0e57b5943397",
+            "item": {
+              "guid": "4f503dfd-e235-4f58-a565-3a8c8dfa9861"
+            },
+            "displayName": "BEEF AND LAMB GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 11.9,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "1eac4898-b653-484e-879c-641eafa8ace9",
+                "item": {
+                  "guid": "b4aabe60-61d2-48f6-8fb8-de64501fc85f"
+                },
+                "displayName": "Fountain Soda",
+                "quantity": 1,
+                "price": 1.95,
+                "voided": false
+              },
+              {
+                "guid": "28ebae0f-49a7-40d4-ae22-53d22458f1ba",
+                "item": {
+                  "guid": "c1dd875c-dc70-4d08-aca4-12b8a893939d"
+                },
+                "displayName": "NO Onions",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "552b3220-df76-48b5-8cf3-bb0a2c3c64db",
+    "openedDate": "2026-11-11T21:49:03.725+0000",
+    "modifiedDate": "2026-11-11T21:56:32.248+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "2f1d63f5-373b-41d9-b9e7-2fccb569478e",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "34e1c646-4c2e-4b2c-83fc-4e0f822d348a",
+            "item": {
+              "guid": "4f503dfd-e235-4f58-a565-3a8c8dfa9861"
+            },
+            "displayName": "BEEF AND LAMB GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 11.9,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "3bf74c9f-964f-469b-9145-7b02307ae704",
+                "item": {
+                  "guid": "b4aabe60-61d2-48f6-8fb8-de64501fc85f"
+                },
+                "displayName": "Fountain Soda",
+                "quantity": 1,
+                "price": 1.95,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "af9bd5e7-b331-4564-8e62-2f58e36a9ffd",
+    "openedDate": "2026-11-11T21:59:02.151+0000",
+    "modifiedDate": "2026-11-11T22:11:54.509+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "c58fbac4-218a-4316-a858-5485a0ca89ee",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "af04e837-9fd4-4259-ac43-1ca65ff4bdf9",
+            "item": {
+              "guid": "803325c0-2019-4f12-bfbe-0dab56caeefd"
+            },
+            "displayName": "CHICKEN GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 13.45,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "bd2e267a-9850-4ce0-8f73-5a0924afcfad",
+                "item": {
+                  "guid": "eb5a47b3-2295-4d88-91e5-cc112608ae4b"
+                },
+                "displayName": "ADD SPICY FETA DIP (TIROKAFTERI)",
+                "quantity": 1,
+                "price": 0.5,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "7addbc30-157a-4ef8-9e6d-b3a7f3d82f53",
+            "item": {
+              "guid": "eceb8a7d-a7d3-4876-9071-4f2f2670954c"
+            },
+            "displayName": "DIET COKE CAN",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 2.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "be631330-860e-4070-8985-824c7661d267",
+    "openedDate": "2026-11-11T22:14:01.321+0000",
+    "modifiedDate": "2026-11-11T22:14:13.076+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "6982b2a7-9740-4895-b1b3-4179c0df6204",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "c4b3663a-be55-414e-b13d-6fe9ecedfd89",
+            "item": {
+              "guid": "803325c0-2019-4f12-bfbe-0dab56caeefd"
+            },
+            "displayName": "CHICKEN GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 12.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "6467a89c-4351-41ae-915d-a6f5ef25a3c0",
+                "item": {
+                  "guid": "3528f24f-d100-48b5-b5ee-4e5a5fb760de"
+                },
+                "displayName": "ADD LETTUCE",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "b8b08e61-9b0b-4047-adf5-8fd93c34c3b7",
+            "item": {
+              "guid": "f46153ff-cce4-48b4-a82e-6345803dbadd"
+            },
+            "displayName": "GREEK VILLAGE SALAD",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 19.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "4ffe8b4f-3901-4202-86e7-16c8513f6e2e",
+            "item": {
+              "guid": "46e55a86-d8ed-411c-a8ef-b50cf2f71694"
+            },
+            "displayName": "LEMON POTATOES",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 7.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "b88f4402-f7f7-410a-bbac-6e24cb391e58",
+    "openedDate": "2026-11-11T22:15:53.569+0000",
+    "modifiedDate": "2026-11-11T22:28:57.306+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "e3a7696b-537a-4539-ba42-7ad539b57998",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "e25f4425-bc8e-485d-b9c0-0b12ac9e4fd2",
+            "item": {
+              "guid": "4f503dfd-e235-4f58-a565-3a8c8dfa9861"
+            },
+            "displayName": "BEEF AND LAMB GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 9.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "4db67c3b-7d14-4382-8642-73432f1c6355",
+            "item": {
+              "guid": "24f1a97e-e518-4c8d-9a74-7a7f85d95f93"
+            },
+            "displayName": "HomeMade French Fries",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 5.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "3222b179-7af7-4351-97b5-3b56dc3e3c12",
+    "openedDate": "2026-11-11T22:29:07.913+0000",
+    "modifiedDate": "2026-11-11T22:29:47.730+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "f57bb785-618b-4869-88e9-e89c64f98b1f",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "2e38038c-7ef1-4713-915c-7b6119653b8e",
+            "item": {
+              "guid": "eb9e8b90-c8af-4534-bdac-f3ac227c17b8"
+            },
+            "displayName": "Coke Can",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 2.55,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "a28df727-9937-47b3-936c-513f265bdcfa",
+    "openedDate": "2026-11-11T22:16:18.686+0000",
+    "modifiedDate": "2026-11-11T22:51:41.457+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "6dac91ee-bb85-4470-aa38-78debdd97ea8",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "c76217f7-52b4-4aaa-834e-50ba569b0a92",
+            "item": {
+              "guid": "d47daa97-83c8-4111-9533-874ad9c6fc17"
+            },
+            "displayName": "2 Souvlaki stick Platter",
+            "selectionType": "NONE",
+            "quantity": 2,
+            "price": 0,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "19c85dc8-e651-468f-bfc2-e4d5c33e902b",
+                "item": {
+                  "guid": "27338590-987c-4c8c-a952-179066489481"
+                },
+                "displayName": "Rice",
+                "quantity": 2,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "2bcb9024-f5b9-4b5a-8286-7e8494f5251c",
+                "item": {
+                  "guid": "ac346176-091b-47b5-8796-69b466028e15"
+                },
+                "displayName": "2 Souvlaki Chicken Sticks",
+                "quantity": 2,
+                "price": 45.9,
+                "voided": false
+              },
+              {
+                "guid": "01b42fcd-b1c7-46a6-b00c-7a7ed07dffdb",
+                "item": {
+                  "guid": "ce886ef0-bccb-4279-9315-78f4d5afdd77"
+                },
+                "displayName": "Lemon Potatoes",
+                "quantity": 2,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "de53481b-9884-4824-9647-249db70601e6",
+            "item": {
+              "guid": "67f0881f-b242-40f3-b250-6b434b9d452f"
+            },
+            "displayName": "Greek Club Sandwich ",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 0,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "d5792153-b56d-451f-8188-5fb1386843aa",
+                "item": {
+                  "guid": "f8b5b489-17d7-4c06-b3b6-23f827919615"
+                },
+                "displayName": "Gyro Chicken",
+                "quantity": 1,
+                "price": 19.95,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "2e01303a-7fbd-4bfd-a9bf-40c48d8ebeff",
+            "item": {
+              "guid": "48e777e8-12ae-404a-9f88-14995790f5ee"
+            },
+            "displayName": "CheeseBurger",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 0,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "1ee939b8-76ae-420a-af1b-9a43b1c528b0",
+    "openedDate": "2026-11-11T22:31:45.434+0000",
+    "modifiedDate": "2026-11-11T22:32:38.037+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "4b4ffddd-acb5-4ab9-9374-16ae6bb4f560",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "fb5fdcca-15bf-4737-b77a-dd265a97fa56",
+            "item": {
+              "guid": "eb9e8b90-c8af-4534-bdac-f3ac227c17b8"
+            },
+            "displayName": "Coke Can",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 2.55,
+            "voided": true,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "84de45bf-a7d4-46a5-8124-31a4ccecb14f",
+            "item": {
+              "guid": "eb9e8b90-c8af-4534-bdac-f3ac227c17b8"
+            },
+            "displayName": "Coke Can",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 2.55,
+            "voided": true,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "d4b688f6-287d-43ae-af86-a3665ef7f0de",
+    "openedDate": "2026-11-11T22:40:07.251+0000",
+    "modifiedDate": "2026-11-11T23:06:21.871+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "d72a7b64-e457-4f08-a900-d7ed7af7fbeb",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "094ead39-bd94-43ef-a3b4-e30ec7e76ec7",
+            "item": {
+              "guid": "95a80718-0011-408e-a83e-dfe2cf94e796"
+            },
+            "displayName": "HUMMUS",
+            "selectionType": "NONE",
+            "quantity": 2,
+            "price": 13.9,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "418c94b5-ef4f-462a-86b8-875dc9b1d355",
+            "item": {
+              "guid": "d47daa97-83c8-4111-9533-874ad9c6fc17"
+            },
+            "displayName": "2 Souvlaki stick Platter",
+            "selectionType": "NONE",
+            "quantity": 3,
+            "price": 74.85,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "8983fa6a-2d9e-4876-aedd-fd10ab526e96",
+                "item": {
+                  "guid": "44452e09-3a64-4db0-bc01-fbed561b4c83"
+                },
+                "displayName": "Greek Horiatiki Salad",
+                "quantity": 3,
+                "price": 6,
+                "voided": false
+              },
+              {
+                "guid": "ca587352-4f03-4081-97e8-1a8342d1e066",
+                "item": {
+                  "guid": "ce886ef0-bccb-4279-9315-78f4d5afdd77"
+                },
+                "displayName": "Lemon Potatoes",
+                "quantity": 3,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "a3576ca8-a4ac-4814-9cc7-c76b7de605be",
+                "item": {
+                  "guid": "ac346176-091b-47b5-8796-69b466028e15"
+                },
+                "displayName": "2 Souvlaki Chicken Sticks",
+                "quantity": 3,
+                "price": 68.85,
+                "voided": false
+              },
+              {
+                "guid": "8793bbd0-7bc7-4566-a036-3de948751661",
+                "item": {
+                  "guid": "27338590-987c-4c8c-a952-179066489481"
+                },
+                "displayName": "Rice",
+                "quantity": 3,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "045de379-eb67-4ecf-a35f-aa3c7e6c417b",
+    "openedDate": "2026-11-11T22:32:37.887+0000",
+    "modifiedDate": "2026-11-11T23:01:26.330+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "f0bdde3d-039a-4f3e-8b84-34bb20ed4225",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "d85913b0-b26e-4f55-a42b-17a7181da791",
+            "item": {
+              "guid": "2ea5dfde-62f9-47fd-9ec6-79c36c06bd5f"
+            },
+            "displayName": "CHICKEN GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 9.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "0a0fe775-8056-4638-8893-9b139a86afe4",
+            "item": {
+              "guid": "3192ddeb-85a0-4275-b044-57e7625dffb4"
+            },
+            "displayName": "Chicken Gyro Pita Wrap Plater",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 20.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "8af56e50-ba96-42c5-a313-095e9039ff5b",
+                "item": {
+                  "guid": "4127b2fb-dc73-4286-8854-29e94a20a2be"
+                },
+                "displayName": "Greek Horiatiki Salad",
+                "quantity": 1,
+                "price": 2,
+                "voided": false
+              },
+              {
+                "guid": "f5b0d8d9-495e-47f9-a359-7c3d781604d7",
+                "item": {
+                  "guid": "092282c7-6dd3-48e1-9806-212e699a3b5f"
+                },
+                "displayName": "Lemon  Potatoes",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "56039dbc-9a32-4721-97c2-6709b6bc26ab",
+                "item": {
+                  "guid": "634f6291-6cc9-4026-a009-2347962e570e"
+                },
+                "displayName": "Rice",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "57a81293-b2b4-4e0f-8bef-2c7e219a7f05",
+    "openedDate": "2026-11-11T22:52:48.567+0000",
+    "modifiedDate": "2026-11-11T22:52:56.460+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "bc8df553-9b9f-4eaf-a85d-6bab27e5fea6",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "dc217618-2b89-4f45-adf2-7ebc653c6eea",
+            "item": {
+              "guid": "ba2c2ed3-5ab8-4523-afba-0f620c6095c0"
+            },
+            "displayName": "PITA BREAD",
+            "selectionType": "NONE",
+            "quantity": 4,
+            "price": 6.6,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "fadc8575-1e98-4aa5-9c90-8a1c8a8ac23a",
+            "item": {
+              "guid": "84143fbb-e77d-4335-87bc-5f0e0e21e89a"
+            },
+            "displayName": "CHICKEN STICK",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 9.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "b0cfaf27-5063-4550-8e08-ab4dabdf6356",
+            "item": {
+              "guid": "a62ee11c-07dc-40cc-b0b5-f538c810dd1a"
+            },
+            "displayName": "Beef & Lamb Gyro Meat loose",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 9.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "807bc075-5775-44fc-9c50-0b8ba743a22f",
+            "item": {
+              "guid": "64904d0e-f80e-4ed5-905a-738cdbae16dc"
+            },
+            "displayName": "TZATZIKI DIP - HOMEMADE",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 2.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "345672b5-8e13-475b-997d-a52dc8c4c000",
+                "item": {
+                  "guid": "051b4ccb-53ad-410f-9fb7-4eaa08bcb99d"
+                },
+                "displayName": "4OZ DIP",
+                "quantity": 1,
+                "price": 2.95,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "7c0a489c-23b1-42b1-b861-fbdf3d76bc8f",
+            "item": {
+              "guid": "96d5b8ab-2aff-4225-9eed-bc4c43255124"
+            },
+            "displayName": "BEEF AND LAMB GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 2,
+            "price": 27.4,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "088f6e5c-101b-4e36-aaee-c15e22128524",
+                "item": {
+                  "guid": "7cbbc1e3-16da-44cc-8923-81159f85f72f"
+                },
+                "displayName": "Extra  TZATZIKI SAUCE",
+                "quantity": 2,
+                "price": 1.5,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "1be724d9-d3e6-413b-8cea-e16186bc8114",
+    "openedDate": "2026-11-11T22:57:14.221+0000",
+    "modifiedDate": "2026-11-11T23:02:13.340+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "1df527e9-f46f-4cd0-8b6b-3c73c6699f72",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "ea5fd98e-5819-48a7-ba96-1871f201c518",
+            "item": {
+              "guid": "24f1a97e-e518-4c8d-9a74-7a7f85d95f93"
+            },
+            "displayName": "HomeMade French Fries",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 5.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "27aafe87-4006-456d-8c07-422f6ed687b7",
+                "item": null,
+                "displayName": "No Salt",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "4130afd0-da10-471b-aab6-2ed3ee26786f",
+            "item": {
+              "guid": "2ea5dfde-62f9-47fd-9ec6-79c36c06bd5f"
+            },
+            "displayName": "CHICKEN GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 2,
+            "price": 19.9,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "4a69e970-c465-40cb-bcb2-ce718a10d4a5",
+                "item": {
+                  "guid": "786371d4-2354-46ff-8e12-de42e91b8c1f"
+                },
+                "displayName": "NO TOMATOES",
+                "quantity": 2,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "0621ba43-9f64-4b2e-b779-1e3a15c7a1e1",
+                "item": {
+                  "guid": "3528f24f-d100-48b5-b5ee-4e5a5fb760de"
+                },
+                "displayName": "ADD LETTUCE",
+                "quantity": 2,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "64809435-afa8-45d2-8a12-1447706d43dd",
+            "item": {
+              "guid": "778f4135-b8e3-4cb5-b63b-2aff839e156b"
+            },
+            "displayName": "BAKLAVA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 6.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "a45ce9fd-53cc-44e2-a661-fde7017b0caa",
+    "openedDate": "2026-11-11T23:11:17.765+0000",
+    "modifiedDate": "2026-11-13T17:12:25.680+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "117fc46c-8a5a-4806-adcd-932f931cdcb3",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "16dae9bc-d5ad-4736-8a3a-0b657dcf05ec",
+            "item": {
+              "guid": "b58a93dd-5fc6-4279-aa33-c2f6178a3192"
+            },
+            "displayName": "CHICKEN SOUVLAKI PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 0,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "160c0fa7-ceaf-45ae-9d1c-d1b0989b1c98",
+            "item": {
+              "guid": "1ab31742-5780-4c47-a55a-56b92879a34e"
+            },
+            "displayName": "Rice",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 0,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "bea09a61-e5f6-427b-9ddd-e0cabeeb5f88",
+            "item": {
+              "guid": "cc33bf15-795e-4646-be9f-0cd09568e6b9"
+            },
+            "displayName": "Chicken Souvlaki Stick",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 0,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "ae23cef7-89bf-4717-8bff-6f6389a07b0e",
+            "item": {
+              "guid": "bc039385-9e1a-465f-a541-920e11760733"
+            },
+            "displayName": "SPINACH PIE (SPANAKOPITA)",
+            "selectionType": "NONE",
+            "quantity": 2,
+            "price": 0,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "4dbe35e6-95b4-473c-8543-cf761c3c9187",
+            "item": {
+              "guid": "2ea5dfde-62f9-47fd-9ec6-79c36c06bd5f"
+            },
+            "displayName": "CHICKEN GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 0,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "150a8e6a-1f5b-406a-bab3-5b04a0abd1f3",
+    "openedDate": "2026-11-11T23:13:22.517+0000",
+    "modifiedDate": "2026-11-11T23:18:56.477+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "1cde0931-db3d-4c58-a110-80a2d1877894",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "a61e5716-fb3c-41d1-8cd3-4fad0761b60f",
+            "item": {
+              "guid": "202f901c-eb29-42ea-8cec-7098438fc433"
+            },
+            "displayName": "TZATZIKI (HOMEMADE)",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 6.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "74c3bdf2-5fd5-49a6-aa81-c81698a870ac",
+            "item": {
+              "guid": "f304f9fa-5ed8-4952-809c-649c0fb2ae63"
+            },
+            "displayName": "Greek Lemon Potatoes",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 5.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "b548c309-7dc2-4392-9410-bdc679c479bf",
+    "openedDate": "2026-11-11T23:21:27.276+0000",
+    "modifiedDate": "2026-11-11T23:24:08.058+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "e8935ebe-60ce-421b-9db7-2fc596e03263",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "5f0f4307-816c-45de-b035-97df7ff68550",
+            "item": {
+              "guid": "24f1a97e-e518-4c8d-9a74-7a7f85d95f93"
+            },
+            "displayName": "HomeMade French Fries",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 5.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "05e5f906-63e8-42a3-9af8-1f4093582f3e",
+            "item": {
+              "guid": "a62ee11c-07dc-40cc-b0b5-f538c810dd1a"
+            },
+            "displayName": "Beef & Lamb Gyro Meat loose",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 9.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "4ef49253-0b12-4dc3-88d5-e5c0bc7a6659",
+    "openedDate": "2026-11-11T23:29:38.701+0000",
+    "modifiedDate": "2026-11-11T23:57:44.398+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "2c280611-7d98-41a4-bf17-4e9341bfd081",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "0bb09e6f-3506-4ba2-9003-3daa04c8fb7f",
+            "item": {
+              "guid": "f46153ff-cce4-48b4-a82e-6345803dbadd"
+            },
+            "displayName": "GREEK VILLAGE SALAD",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 19.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "27daaab3-702f-4d5b-aab1-015b7790f16a",
+    "openedDate": "2026-11-11T23:24:08.650+0000",
+    "modifiedDate": "2026-11-11T23:24:50.071+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "1acbba53-9ac1-499e-ac45-76abc462205a",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "24b7ce78-755e-44de-a348-6f201a845462",
+            "item": {
+              "guid": "4f503dfd-e235-4f58-a565-3a8c8dfa9861"
+            },
+            "displayName": "BEEF AND LAMB GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 9.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "9e80dc84-b0ed-40e3-b0c5-65e72aa96ddc",
+            "item": {
+              "guid": "93a2e347-bfdd-4b0d-94d3-0b438e43a5cf"
+            },
+            "displayName": "CHOCOLATE KOK",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 6.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "bd6fa39d-cd4d-4ddd-9497-7edc38b2a0db",
+    "openedDate": "2026-11-11T23:48:02.746+0000",
+    "modifiedDate": "2026-11-12T00:13:11.175+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "7ba25ec1-c028-432d-9069-b54fdb9366bc",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "3aa3cb01-f357-471f-a197-39d153c3b2b7",
+            "item": {
+              "guid": "cea7d7ba-303b-477d-98df-8583fe3f8592"
+            },
+            "displayName": "SPANAKOPITA - SPINACH PIE",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 11.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "df4bf43f-0fb5-4f79-81c9-3c56a50d7f2b",
+            "item": {
+              "guid": "9e5d4dee-8e9d-4001-8b0e-f35433c004c9"
+            },
+            "displayName": "\"NEW\" Combo Special for 2",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 32.45,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "33a00c4b-5250-4e48-a6b5-65b377f37e2c",
+                "item": {
+                  "guid": "1d05a74a-d40c-45e3-8bbd-5e38bf8ad3ec"
+                },
+                "displayName": "2 Fries",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "d5a4e7db-30ef-4cdd-b92b-4e77a028fd52",
+                "item": {
+                  "guid": "3f532ed9-19c3-4d2c-b96c-88998eb0e4a8"
+                },
+                "displayName": "Sprite",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "5dc0c348-9843-4ac9-942a-380bee9123f4",
+                "item": {
+                  "guid": "3f532ed9-19c3-4d2c-b96c-88998eb0e4a8"
+                },
+                "displayName": "Sprite",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "c3862475-f9d4-4d5c-aac6-ecd72702460c",
+                "item": {
+                  "guid": "b8b3316a-42a6-4cf5-8801-939f3a0acf98"
+                },
+                "displayName": "Beef & Lamb Gyro Pita",
+                "quantity": 1,
+                "price": 0.5,
+                "voided": false
+              },
+              {
+                "guid": "f6309482-a19a-4c65-8075-f9c32541ed10",
+                "item": {
+                  "guid": "504e50a4-a65e-4ccd-ba5e-3210193c97c7"
+                },
+                "displayName": "Falafel Pita",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "411cd00a-8294-4f57-a3a0-7c3593aec132",
+            "item": {
+              "guid": "0c0db3e5-85db-4e55-b716-98493ca90f6d"
+            },
+            "displayName": "SPICY FETA CHEESE SPREAD - HOMEMADE",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 8.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "a73189a2-8740-4ffe-b8f1-425d057eee70",
+    "openedDate": "2026-11-11T23:51:37.132+0000",
+    "modifiedDate": "2026-11-12T00:13:04.267+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "41cb2b45-122b-40fb-8ada-3528ea895927",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "560861f0-1cb9-4ffa-8c7b-d1921eb1cae4",
+            "item": {
+              "guid": "803325c0-2019-4f12-bfbe-0dab56caeefd"
+            },
+            "displayName": "CHICKEN GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 13.45,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "4ed0330c-f024-49ed-8d27-48fb1fe58c5e",
+                "item": {
+                  "guid": "d586e464-2e5a-4488-bf1f-1ad67f127367"
+                },
+                "displayName": "ADD FETA CHEESE",
+                "quantity": 1,
+                "price": 0.5,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "6a50b7c5-6625-434c-8e64-3aeca84a426f",
+            "item": {
+              "guid": "803325c0-2019-4f12-bfbe-0dab56caeefd"
+            },
+            "displayName": "CHICKEN GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 17.9,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "8eb3589d-22e8-45a2-9083-d1bef1d50b3f",
+                "item": {
+                  "guid": "8dae9422-7fda-4682-88b3-9aa1bfb1bb08"
+                },
+                "displayName": "French Fries & Drink",
+                "quantity": 1,
+                "price": 4.95,
+                "voided": false
+              },
+              {
+                "guid": "c19abf2f-8356-4d72-b3c4-3aa8711da426",
+                "item": {
+                  "guid": "3528f24f-d100-48b5-b5ee-4e5a5fb760de"
+                },
+                "displayName": "ADD LETTUCE",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "d34a9b7e-c999-4f7e-b4d3-e6289f7ab925",
+                "item": {
+                  "guid": "c7c6f35a-be56-4e94-8672-efb5e1d3763a"
+                },
+                "displayName": "LIGHT ON SAUCE",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "721369e9-6855-42de-9ced-55467eb9fc14",
+    "openedDate": "2026-11-11T23:56:03.652+0000",
+    "modifiedDate": "2026-11-12T00:00:42.310+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "2252d577-1e7e-4f36-b72e-97d0563477f8",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "5f23a6a4-3394-422a-8b6b-9dbf958f703f",
+            "item": {
+              "guid": "202070c4-a0a8-4477-950a-78a97de42f83"
+            },
+            "displayName": "Gyro Loose Meat Beef/Lamb  Platter",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 19.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "8b15b659-e046-4a97-8b30-c0f86db99a78",
+                "item": {
+                  "guid": "7bdfdfeb-cd75-424e-b0a8-62a2aad26663"
+                },
+                "displayName": "Rice",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "ddde5d34-10d6-4f3d-8709-5adf3e48eb52",
+                "item": {
+                  "guid": "b2b2d55c-ab4b-4d25-8d9a-61cef1cfdd6e"
+                },
+                "displayName": "Lemon Potatoes",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "c6347038-2332-468b-86b4-1324dbc73f1f",
+    "openedDate": "2026-11-12T00:46:31.826+0000",
+    "modifiedDate": "2026-11-12T00:46:51.562+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "3b76aad2-7cc8-4b79-ad6d-7bd13ab662f2",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "5ce88cb7-93b4-4417-b6d1-a319ed36be78",
+            "item": {
+              "guid": "f46153ff-cce4-48b4-a82e-6345803dbadd"
+            },
+            "displayName": "GREEK VILLAGE SALAD",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 16.79,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "522b9477-9368-496d-b39e-e34a4531b125",
+            "item": {
+              "guid": "ba2c2ed3-5ab8-4523-afba-0f620c6095c0"
+            },
+            "displayName": "PITA BREAD",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 1.39,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "36e29830-8d86-457c-ad69-f9ff6332668e",
+            "item": {
+              "guid": "a62ee11c-07dc-40cc-b0b5-f538c810dd1a"
+            },
+            "displayName": "Beef & Lamb Gyro Meat loose",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 8.37,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "3ad70e5d-5d55-403f-9ab3-49acce64e4be",
+    "openedDate": "2026-11-12T00:00:43.833+0000",
+    "modifiedDate": "2026-11-12T00:48:47.601+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "2a7cf467-c338-47de-bf24-d575a52002b7",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "d142fc78-762d-4437-b826-9bfa96898902",
+            "item": {
+              "guid": "4f503dfd-e235-4f58-a565-3a8c8dfa9861"
+            },
+            "displayName": "BEEF AND LAMB GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 9.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "5036aa1b-b5b1-4f92-9196-ab970c859a16",
+            "item": {
+              "guid": "778f4135-b8e3-4cb5-b63b-2aff839e156b"
+            },
+            "displayName": "BAKLAVA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 6.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "793b7d00-0678-4e85-a172-7ce5c559d6f6",
+            "item": {
+              "guid": "f60ddcf0-8cba-495a-85e8-ec102fa9416e"
+            },
+            "displayName": "HomeMade Fries / Feta cheese",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 7.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "0d519f7b-92db-454a-98a1-c961158917ea",
+    "openedDate": "2026-11-11T23:23:35.762+0000",
+    "modifiedDate": "2026-11-12T01:17:42.479+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "fdc1eb3c-60bb-4d5b-81e8-79c727c2068a",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "e2e0e159-b3de-4079-8ca2-bb392af0e392",
+            "item": {
+              "guid": "4f503dfd-e235-4f58-a565-3a8c8dfa9861"
+            },
+            "displayName": "BEEF AND LAMB GYRO PITA",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 9.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          },
+          {
+            "guid": "6c0092e1-837c-4be8-adb8-a5edb25a898a",
+            "item": {
+              "guid": "d47daa97-83c8-4111-9533-874ad9c6fc17"
+            },
+            "displayName": "2 Souvlaki stick Platter",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 24.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "91eaab85-2c85-46d0-9e64-db7a30e71b5d",
+                "item": {
+                  "guid": "ce886ef0-bccb-4279-9315-78f4d5afdd77"
+                },
+                "displayName": "Lemon Potatoes",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "f8607cb0-1ce2-4f56-b304-9e7e7acb960a",
+                "item": {
+                  "guid": "ac346176-091b-47b5-8796-69b466028e15"
+                },
+                "displayName": "2 Souvlaki Chicken Sticks",
+                "quantity": 1,
+                "price": 22.95,
+                "voided": false
+              },
+              {
+                "guid": "23968be5-7668-46e9-912b-ff1d1f40e933",
+                "item": {
+                  "guid": "44452e09-3a64-4db0-bc01-fbed561b4c83"
+                },
+                "displayName": "Greek Horiatiki Salad",
+                "quantity": 1,
+                "price": 2,
+                "voided": false
+              },
+              {
+                "guid": "7177fa28-e296-432d-a492-c5f885567a93",
+                "item": {
+                  "guid": "27338590-987c-4c8c-a952-179066489481"
+                },
+                "displayName": "Rice",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "f63a1568-d996-4ef2-afd7-09760e61d172",
+    "openedDate": "2026-11-12T01:21:47.114+0000",
+    "modifiedDate": "2026-11-12T01:42:20.086+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "b5edf8ed-9da4-4469-a37b-949f1fd1aff7",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "eff72b1e-8b7a-411c-8b67-998dd45a4cd2",
+            "item": {
+              "guid": "edf90565-f81c-4049-962d-d4d0db17cd8b"
+            },
+            "displayName": "Greek Village",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 21.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "e05265b9-b0d8-406f-bad2-26acf999cb3a",
+                "item": {
+                  "guid": "10bd80f5-bb61-479e-9c18-06d6846415b3"
+                },
+                "displayName": "Chicken Souvlaki Stick",
+                "quantity": 1,
+                "price": 6,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "9746c94a-dde5-4f6c-86c4-a2e4243d6011",
+            "item": {
+              "guid": "cc33bf15-795e-4646-be9f-0cd09568e6b9"
+            },
+            "displayName": "Chicken Souvlaki Stick",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 7.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "3596c45c-3edf-46fb-8a69-ede27f663349",
+    "openedDate": "2026-11-12T01:27:36.016+0000",
+    "modifiedDate": "2026-11-12T01:28:28.972+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "23af421d-f1be-461f-b713-1d261bb3095e",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "070be927-f055-4517-9b95-043de7fc2531",
+            "item": {
+              "guid": "202070c4-a0a8-4477-950a-78a97de42f83"
+            },
+            "displayName": "Gyro Loose Meat Beef/Lamb  Platter",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 19.95,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [
+              {
+                "guid": "61f35436-73c0-426a-8855-e1cc4c2ee9a3",
+                "item": {
+                  "guid": "7bdfdfeb-cd75-424e-b0a8-62a2aad26663"
+                },
+                "displayName": "Rice",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              },
+              {
+                "guid": "2dff9acd-442d-431e-b85d-7e2a3afd0f73",
+                "item": {
+                  "guid": "b2b2d55c-ab4b-4d25-8d9a-61cef1cfdd6e"
+                },
+                "displayName": "Lemon Potatoes",
+                "quantity": 1,
+                "price": 0,
+                "voided": false
+              }
+            ],
+            "refundDetails": null
+          },
+          {
+            "guid": "969b2bbf-5961-48fa-8bc8-63ba6c37dbfb",
+            "item": {
+              "guid": "f0260c26-7687-43e9-95d8-e5a85758c07f"
+            },
+            "displayName": "Pita 2",
+            "selectionType": "OPEN_ITEM",
+            "quantity": 1,
+            "price": 0,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "guid": "73a7e1ac-ef6c-4b75-a0f5-68341ce01fc0",
+    "openedDate": "2026-11-12T01:28:35.294+0000",
+    "modifiedDate": "2026-11-12T01:35:47.837+0000",
+    "businessDate": 20261111,
+    "voided": false,
+    "deleted": false,
+    "checks": [
+      {
+        "guid": "bd01fae8-2408-4810-bd2a-f7a96a5e42f7",
+        "voided": false,
+        "deleted": false,
+        "selections": [
+          {
+            "guid": "06c057af-c346-4689-8d29-44096507cdeb",
+            "item": {
+              "guid": "36a618ca-0d9c-46e4-9408-d6471ae24779"
+            },
+            "displayName": "Small greek salad",
+            "selectionType": "NONE",
+            "quantity": 1,
+            "price": 7.99,
+            "voided": false,
+            "deferred": false,
+            "modifiers": [],
+            "refundDetails": null
+          }
+        ]
+      }
+    ]
+  }
+]

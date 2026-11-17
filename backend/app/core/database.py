@@ -22,9 +22,12 @@ CONNECT_TIMEOUT_SECONDS = 5
 # when it first creates its database; migrate_up does the same for any existing database.
 DB_SCRIPTS_DIR = Path(__file__).resolve().parents[2] / "db"
 
-# Undoes db/02_auth_tables.sql. Kept here instead of in db/, because Docker runs every .sql
-# file in that folder.
+# Undo db/02_auth_tables.sql and db/06_pos_sales_import.sql. Kept here instead of in db/,
+# because Docker runs every .sql file in that folder.
 DROP_AUTH_TABLES = "DROP TABLE IF EXISTS eula_acceptances, invites, restaurant_memberships, users"
+DROP_SALES_IMPORT_TABLES = (
+    "DROP TABLE IF EXISTS sync_jobs, sales_order_lines, sales_orders, menu_modifiers, menu_items"
+)
 
 
 def create_session_factory(database_url: str) -> sessionmaker[Session]:
@@ -72,8 +75,10 @@ def migrate_up(engine: Engine) -> None:
 
 
 def migrate_down(engine: Engine) -> None:
-    """Undoes db/02_auth_tables.sql: drops the four auth tables and everything in them."""
+    """Undoes db/02_auth_tables.sql and db/06_pos_sales_import.sql: drops their tables and
+    everything in them."""
     with engine.begin() as connection:
+        connection.execute(text(DROP_SALES_IMPORT_TABLES))
         connection.execute(text(DROP_AUTH_TABLES))
 
 

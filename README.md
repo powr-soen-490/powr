@@ -71,6 +71,14 @@ reloading when you edit code. Stop with `Ctrl+C`, then `docker compose down`. To
 database completely (deletes all local data), run `docker compose down -v`. After changing
 frontend dependencies, run `docker compose up --build -V` so the container reinstalls them.
 
+Docker only runs the scripts in `backend/db/` when it first creates the database. When you pull
+a new file there, apply it to your existing database while the containers are running; it only
+adds what is missing and keeps your data:
+
+```bash
+docker compose exec backend python -m app.core.database up
+```
+
 #### Option B: directly on your machine
 
 This is also the setup needed to run tests, linting and type checks locally.
@@ -431,9 +439,11 @@ Another PostgreSQL is already running on your machine. Either stop it
 (`brew services stop postgresql@16`), or set `POSTGRES_PORT=5433` in `.env` and change the
 port in `DATABASE_URL` to `5433`.
 
-**Docker: schema changes in `db/01_init.sql` are not applied**
-That script only runs when the database is first created. Run `docker compose down -v` to
-reset the database, then `docker compose up` again.
+**Docker: new tables or schema changes from `backend/db/` are missing**
+Docker only runs those scripts when it first creates the database. Apply them to your existing
+database, keeping your data: `docker compose exec backend python -m app.core.database up`.
+Only if you want a completely fresh database, run `docker compose down -v` (deletes all local
+data), then `docker compose up` again.
 
 ## CI/CD pipeline
 

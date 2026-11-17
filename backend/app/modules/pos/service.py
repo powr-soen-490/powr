@@ -9,9 +9,11 @@ from decimal import Decimal
 from typing import Any, TypedDict
 from uuid import UUID
 
+import httpx2
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.core.encryption import SecretEncryptionError, decrypt_secret, encrypt_secret
 from app.integrations.pos.models import PosConnection, PosLocation, SaleLine
 from app.integrations.pos.toast.client import (
@@ -20,9 +22,20 @@ from app.integrations.pos.toast.client import (
     ToastCredentials,
     ToastRateLimitError,
 )
-from app.modules.pos import repository
+from app.integrations.pos.toast.recorded import recorded_toast_transport
+from app.modules.pos import repository, sales_repository
+from app.modules.pos.sales_repository import DailySales
 
 TOAST = "TOAST"
+
+
+def toast_transport() -> httpx2.BaseTransport | None:
+    """How requests reach Toast: None for the real API, or the recorded week when
+    TOAST_USE_RECORDED_DATA is on for local development."""
+    if get_settings().toast_use_recorded_data:
+        return recorded_toast_transport()
+    return None
+
 
 # Lists the Toast restaurants some credentials can access (see integrations/pos/toast).
 ToastLocationFinder = Callable[[ToastCredentials], list[PosLocation]]
@@ -65,6 +78,30 @@ def aggregate_sales(
         total_orders=len(order_ids),
         total_items=sum((stat["items"] for stat in daily.values()), Decimal("0")),
         total_revenue=sum((stat["revenue"] for stat in daily.values()), Decimal("0")),
+    )
+
+
+@dataclass(frozen=True)
+class SalesSummary:
+    daily: list[DailySales]
+    total_orders: int
+    total_items: Decimal
+    total_revenue: Decimal
+
+
+def get_sales_summary(
+    db: Session, *, restaurant_id: UUID, start_date: date, end_date: date
+) -> SalesSummary:
+    """Imported Toast sales per business day; empty until an import has saved some."""
+    daily = sales_repository.daily_sales(
+        db, restaurant_id=restaurant_id, provider=TOAST, start_date=start_date, end_date=end_date
+    )
+    return SalesSummary(
+        daily=daily,
+        # An order belongs to one business day, so adding the days counts each order once.
+        total_orders=sum(day.orders for day in daily),
+        total_items=sum((day.items for day in daily), Decimal("0")),
+        total_revenue=sum((day.revenue for day in daily), Decimal("0")),
     )
 
 

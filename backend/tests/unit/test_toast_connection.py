@@ -103,7 +103,9 @@ def sign_in(
     app.dependency_overrides[get_settings] = lambda: settings
     monkeypatch.setattr(encryption, "get_settings", lambda: settings)
 
-    def find_with_fake_toast(credentials: ToastCredentials, *, base_url: str) -> list[PosLocation]:
+    def find_with_fake_toast(
+        credentials: ToastCredentials, *, base_url: str, transport: object = None
+    ) -> list[PosLocation]:
         return find_toast_locations(
             credentials,
             base_url=BASE_URL,
