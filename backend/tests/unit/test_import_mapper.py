@@ -16,6 +16,7 @@ from app.integrations.pos.models import (
     SaleLine,
     SaleModifier,
 )
+from app.integrations.pos.toast.orders import sale_lines_from_order
 from app.modules.pos.import_mapper import (
     LineRow,
     MenuItemRow,
@@ -103,6 +104,66 @@ def test_a_line_sent_twice_is_saved_once() -> None:
 
     assert len(order.lines) == 1
     assert order.lines[0].is_voided
+
+
+def test_repeated_order_payload_does_not_create_duplicate_order_rows() -> None:
+    lines = [
+        sale_line("order-1", "line-1"),
+        sale_line("order-1", "line-2"),
+        sale_line("order-1", "line-1"),
+        sale_line("order-1", "line-2"),
+    ]
+
+    orders = order_rows(lines, CONNECTION.restaurant_id)
+
+    assert [order.pos_order_id for order in orders] == ["order-1"]
+    assert [line.pos_line_id for line in orders[0].lines] == ["line-1", "line-2"]
+
+
+PERSONAL_DATA = {
+    "firstName": "John",
+    "lastName": "Smith",
+    "email": "john@mail.com",
+    "phone": "123-456-7890",
+}
+
+
+def test_personal_data_in_a_toast_order_never_passes_the_mapper() -> None:
+    order = {
+        "guid": "order-1",
+        "openedDate": "2026-11-09T18:30:00.000+0000",
+        "businessDate": 20261109,
+        "customer": PERSONAL_DATA,
+        "server": {"guid": "employee-1", **PERSONAL_DATA},
+        "deliveryInfo": {"address1": "77 Ocean Blvd", "city": "Boca Raton"},
+        "checks": [
+            {
+                "customer": PERSONAL_DATA,
+                "payments": [
+                    {
+                        "cardNumber": "4111111111111111",
+                        "cardHolderName": "John Smith",
+                    }
+                ],
+                "selections": [
+                    {
+                        "guid": "line-1",
+                        "item": {"guid": "item-gyro"},
+                        "displayName": "Gyro plate",
+                        "quantity": 1,
+                    }
+                ],
+            }
+        ],
+    }
+
+    lines = list(sale_lines_from_order(order, CONNECTION))
+    [row] = order_rows(lines, CONNECTION.restaurant_id)
+
+    assert [line.pos_line_id for line in row.lines] == ["line-1"]
+    saved = repr(row)
+    for value in (*PERSONAL_DATA.values(), "employee-1", "77 Ocean Blvd", "4111111111111111"):
+        assert value not in saved, f"{value!r} got past the mapper"
 
 
 def test_mock_sales_stay_marked_as_mock() -> None:
