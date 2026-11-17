@@ -8,15 +8,18 @@ a ToastAdapter or ToastClient themselves. See docs/toast-integration.md.
 """
 
 import logging
+from collections.abc import Iterator
+from contextlib import contextmanager
 from typing import Any
 
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
+from app.core.database import create_session_factory
 from app.integrations.pos.models import PosConnection
 from app.integrations.pos.toast.adapter import ToastAdapter
 from app.integrations.pos.toast.client import ToastCredentials
-from app.integrations.pos.toast.token_store import ToastToken
+from app.integrations.pos.toast.token_store import MemoryTokenStore, ToastToken, ToastTokenStore
 from app.modules.pos import service
 
 logger = logging.getLogger(__name__)
@@ -74,11 +77,6 @@ def saved_toast_adapter(
 
     ``credentials`` is the decrypted row from ``service.get_credentials``.
     """
-    saved_token = None
-    if credentials["access_token"] is not None:
-        saved_token = ToastToken(
-            access_token=credentials["access_token"], expires_at=credentials["expires_at"]
-        )
     return ToastAdapter(
         connection,
         ToastCredentials(
@@ -87,5 +85,44 @@ def saved_toast_adapter(
         currency=currency,
         base_url=get_settings().toast_api_base_url,
         transport=service.toast_transport(),
-        token_store=SavedToastTokenStore(db, client_id=credentials["client_id"], token=saved_token),
+        token_store=SavedToastTokenStore(
+            db, client_id=credentials["client_id"], token=_saved_token(credentials)
+        ),
+    )
+
+
+@contextmanager
+def script_token_store(client_id: str) -> Iterator[ToastTokenStore]:
+    """For developer scripts that log in with the .env credentials.
+
+    When the app is connected with the same client ID, the script reuses the app's saved token
+    and saves any new one back, so running a script costs no extra login. Otherwise (another
+    client ID, Toast never connected in the app, or no database running) the token is only
+    kept in memory and the script logs in once, like before.
+    """
+    sessions = create_session_factory(str(get_settings().database_url))
+    try:
+        with sessions() as db:
+            yield _script_store(db, client_id)
+    finally:
+        engine = sessions.kw["bind"]
+        engine.dispose()
+
+
+def _script_store(db: Session, client_id: str) -> ToastTokenStore:
+    try:
+        saved = service.get_credentials(db, service.TOAST)
+    except service.CredentialsStorageError:
+        logger.warning("Could not read the app's saved Toast login; the script logs in itself")
+        return MemoryTokenStore()
+    if saved is None or saved["client_id"] != client_id:
+        return MemoryTokenStore()
+    return SavedToastTokenStore(db, client_id=client_id, token=_saved_token(saved))
+
+
+def _saved_token(credentials: dict[str, Any]) -> ToastToken | None:
+    if credentials["access_token"] is None:
+        return None
+    return ToastToken(
+        access_token=credentials["access_token"], expires_at=credentials["expires_at"]
     )

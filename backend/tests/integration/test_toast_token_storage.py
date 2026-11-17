@@ -13,16 +13,28 @@ from sqlalchemy.orm import Session
 from app.core import encryption
 from app.core.config import Settings
 from app.core.database import migrate_up
-from app.modules.pos import repository, service
+from app.integrations.pos.toast.token_store import MemoryTokenStore, ToastToken
+from app.modules.pos import repository, service, toast_tokens
+from app.modules.pos.toast_tokens import SavedToastTokenStore, script_token_store
 
 EXPIRES_AT = datetime(2026, 11, 17, 20, 0, tzinfo=UTC)
 
 
+KEY = SecretStr(base64.urlsafe_b64encode(bytes(range(32))).decode())
+
+
 @pytest.fixture(autouse=True)
 def encryption_key(monkeypatch: pytest.MonkeyPatch) -> None:
-    key = SecretStr(base64.urlsafe_b64encode(bytes(range(32))).decode())
-    settings = Settings(_env_file=None, pos_credentials_encryption_key=key)
+    settings = Settings(_env_file=None, pos_credentials_encryption_key=KEY)
     monkeypatch.setattr(encryption, "get_settings", lambda: settings)
+
+
+def scripts_use(monkeypatch: pytest.MonkeyPatch, database_url: str) -> None:
+    """Point script_token_store at this database, like a script reading .env."""
+    settings = Settings(
+        _env_file=None, database_url=database_url, pos_credentials_encryption_key=KEY
+    )
+    monkeypatch.setattr(toast_tokens, "get_settings", lambda: settings)
 
 
 def connect(db: Session, client_id: str) -> None:
@@ -99,3 +111,49 @@ def test_connecting_can_save_the_token_from_its_login(migrated_engine: Engine) -
     assert stored is not None
     assert stored["access_token"] == "token"
     assert stored["expires_at"] == EXPIRES_AT
+
+
+def test_a_script_with_the_apps_client_id_reuses_and_saves_the_token(
+    migrated_engine: Engine, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    with Session(migrated_engine) as db:
+        connect(db, "client")
+        service.save_access_token(
+            db, pos_name="TOAST", client_id="client", access_token="t", expires_at=EXPIRES_AT
+        )
+    scripts_use(monkeypatch, migrated_engine.url.render_as_string(hide_password=False))
+
+    with script_token_store("client") as store:
+        assert isinstance(store, SavedToastTokenStore)
+        assert store.load() == ToastToken(access_token="t", expires_at=EXPIRES_AT)
+        store.save(ToastToken(access_token="new", expires_at=EXPIRES_AT))
+
+    with Session(migrated_engine) as db:
+        stored = service.get_credentials(db, "TOAST")
+    assert stored is not None
+    assert stored["access_token"] == "new"
+
+
+def test_a_script_with_another_client_id_keeps_its_token_to_itself(
+    migrated_engine: Engine, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    with Session(migrated_engine) as db:
+        connect(db, "the-apps-client")
+    scripts_use(monkeypatch, migrated_engine.url.render_as_string(hide_password=False))
+
+    with script_token_store("a-developers-client") as store:
+        assert isinstance(store, MemoryTokenStore)
+        store.save(ToastToken(access_token="dev", expires_at=None))
+
+    with Session(migrated_engine) as db:
+        stored = service.get_credentials(db, "TOAST")
+    assert stored is not None
+    assert stored["access_token"] is None
+
+
+def test_a_script_without_a_database_still_runs(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Port 1 refuses connections, like a laptop where the database is not started.
+    scripts_use(monkeypatch, "postgresql://powr:powr@127.0.0.1:1/powr")
+
+    with script_token_store("client") as store:
+        assert isinstance(store, MemoryTokenStore)

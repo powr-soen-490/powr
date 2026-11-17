@@ -5,6 +5,7 @@
 import importlib.util
 import sys
 from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import UTC, date, datetime, tzinfo
 from decimal import Decimal
 from pathlib import Path
@@ -30,6 +31,7 @@ from app.integrations.pos.toast.adapter import ToastAdapter
 from app.integrations.pos.toast.client import LOGIN_PATH, ToastCredentials
 from app.integrations.pos.toast.menus import MENUS_PATH
 from app.integrations.pos.toast.orders import ORDERS_PATH
+from app.integrations.pos.toast.token_store import MemoryTokenStore, ToastTokenStore
 from app.modules.pos import repository, service
 from app.modules.pos.sales_repository import DailySales
 from tests.unit.toast_fakes import BASE_URL, FakeToast, load_fixture
@@ -305,7 +307,12 @@ def test_pull_script_filters_sales_and_uses_usd(
     monkeypatch.setattr(script, "datetime", FrozenDateTime)
 
     def adapter(
-        connection: PosConnection, credentials: ToastCredentials, *, currency: str, base_url: str
+        connection: PosConnection,
+        credentials: ToastCredentials,
+        *,
+        currency: str,
+        base_url: str,
+        token_store: ToastTokenStore,
     ) -> ToastAdapter:
         assert currency == "USD"
         return ToastAdapter(
@@ -316,11 +323,20 @@ def test_pull_script_filters_sales_and_uses_usd(
             transport=httpx2.MockTransport(toast._handle),
             sleep=toast.sleep,
             clock=toast.clock,
+            token_store=token_store,
         )
 
+    @contextmanager
+    def no_saved_login(client_id: str) -> Iterator[ToastTokenStore]:
+        # Like a laptop where the app was never connected to Toast with this client ID.
+        assert client_id == "test-client"
+        yield MemoryTokenStore()
+
     monkeypatch.setattr(script, "ToastAdapter", adapter)
+    monkeypatch.setattr(script, "script_token_store", no_saved_login)
     script.main()
     output = capsys.readouterr().out
+    assert "logging in once" in output
     assert "Total Orders: 1" in output
     assert "Total Items: 2.35" in output
     assert "Total Revenue: $20.00" in output

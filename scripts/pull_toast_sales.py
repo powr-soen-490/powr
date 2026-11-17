@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 # Source-File AI Declaration
 # AI contribution: 50% or more AI-generated
-"""Pull about 30 days of Mykonos Grill sales through the ToastAdapter and print a summary."""
+"""Pull about 30 days of Mykonos Grill sales through the ToastAdapter and print a summary.
+
+Logs in with TOAST_CLIENT_ID and TOAST_CLIENT_SECRET from .env. When the app is connected to
+Toast with the same client ID, it reuses the app's saved token instead, so it needs no login.
+"""
 
 import sys
 from datetime import UTC, datetime, timedelta
@@ -24,7 +28,9 @@ from app.integrations.pos.toast.client import (  # noqa: E402
     ToastAuthenticationError,
     ToastCredentials,
 )
+from app.integrations.pos.toast.token_store import MemoryTokenStore  # noqa: E402
 from app.modules.pos.service import aggregate_sales  # noqa: E402
+from app.modules.pos.toast_tokens import script_token_store  # noqa: E402
 
 
 def main() -> None:
@@ -56,13 +62,22 @@ def main() -> None:
         client_secret=client_secret,
     )
 
-    adapter = ToastAdapter(
-        connection,
-        credentials,
-        currency="USD",
-        base_url=settings.toast_api_base_url,
-    )
+    with script_token_store(credentials.client_id) as token_store:
+        if isinstance(token_store, MemoryTokenStore):
+            print("The app has no saved Toast login for this client ID; logging in once.")
+        else:
+            print("Reusing the app's saved Toast login.")
+        adapter = ToastAdapter(
+            connection,
+            credentials,
+            currency="USD",
+            base_url=settings.toast_api_base_url,
+            token_store=token_store,
+        )
+        pull(adapter)
 
+
+def pull(adapter: ToastAdapter) -> None:
     try:
         # Authenticate with Toast
         if not adapter.authenticate():
