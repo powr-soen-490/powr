@@ -157,3 +157,28 @@ def test_a_script_without_a_database_still_runs(monkeypatch: pytest.MonkeyPatch)
 
     with script_token_store("client") as store:
         assert isinstance(store, MemoryTokenStore)
+
+
+def test_the_saved_store_reads_a_token_another_request_saved(migrated_engine: Engine) -> None:
+    with Session(migrated_engine) as db:
+        connect(db, "client")
+        first = ToastToken(access_token="first", expires_at=EXPIRES_AT)
+        store = SavedToastTokenStore(db, client_id="client", token=first)
+        assert store.load() == first  # read with the credentials: no extra query
+
+        with Session(migrated_engine) as other:
+            service.save_access_token(
+                other, pos_name="TOAST", client_id="client", access_token="newer", expires_at=None
+            )
+
+        assert store.load() == ToastToken(access_token="newer", expires_at=None)
+
+
+def test_the_saved_store_has_nothing_to_reuse_after_a_reconnect(migrated_engine: Engine) -> None:
+    with Session(migrated_engine) as db:
+        connect(db, "old-client")
+        store = SavedToastTokenStore(db, client_id="old-client", token=None)
+        store.load()
+        connect(db, "new-client")
+
+        assert store.load() is None

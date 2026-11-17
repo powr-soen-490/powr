@@ -37,8 +37,25 @@ class SavedToastTokenStore:
         self._db = db
         self._client_id = client_id
         self._token = token
+        self._loaded = False
 
     def load(self) -> ToastToken | None:
+        """The latest saved token. The first call returns the token read with the credentials;
+        later calls (when the client's token has expired or Toast rejected it) read the
+        database again, so a token another import or request saved meanwhile is reused
+        instead of logging in again."""
+        if not self._loaded:
+            self._loaded = True
+            return self._token
+        try:
+            saved = service.get_credentials(self._db, service.TOAST)
+        except service.CredentialsStorageError:
+            logger.exception("Could not read the saved Toast access token")
+            return self._token
+        if saved is None or saved["client_id"] != self._client_id or saved["needs_reconnect"]:
+            # Reconnected, disconnected or rejected meanwhile: nothing to reuse for this login.
+            return None
+        self._token = _saved_token(saved)
         return self._token
 
     def save(self, token: ToastToken) -> None:

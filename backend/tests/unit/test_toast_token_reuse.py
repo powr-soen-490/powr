@@ -180,3 +180,53 @@ def test_the_token_never_appears_in_logs_or_reprs(
     assert ACCESS_TOKEN not in caplog.text
     assert CLIENT_SECRET not in caplog.text
     assert ACCESS_TOKEN not in repr(store.token)
+
+
+def test_an_expired_client_reuses_a_token_another_client_saved(toast: FakeToast) -> None:
+    """Review of #179: two clients share the saved login, so only one of them logs in."""
+    store = saved("old-token", timedelta(minutes=10))
+    importing = toast.client(store)
+    importing.get(MENUS_PATH)
+    toast.now += 10 * 60
+
+    toast.client(store).get(MENUS_PATH)  # the menu page, say: it logs in and saves the token
+    importing.get(MENUS_PATH)
+
+    assert toast.logins() == 1
+    assert bearer(toast.requests_to(MENUS_PATH)[-1]) == f"Bearer {ACCESS_TOKEN}"
+
+
+def test_a_rejected_token_is_swapped_for_a_newer_saved_one_without_a_login(
+    toast: FakeToast,
+) -> None:
+    store = saved("old-token", timedelta(hours=1))
+    client = toast.client(store)
+    client.get(MENUS_PATH)
+    store.token = ToastToken(access_token="newer-token", expires_at=NOW + timedelta(hours=2))
+    toast.reply(MENUS_PATH, load_response("token_expired.json"), httpx2.Response(200, json={}))
+
+    client.get(MENUS_PATH)
+
+    assert toast.logins() == 0
+    assert [bearer(r) for r in toast.requests_to(MENUS_PATH)][-2:] == [
+        "Bearer old-token",
+        "Bearer newer-token",
+    ]
+
+
+def test_a_newer_saved_token_toast_also_rejects_costs_one_login(toast: FakeToast) -> None:
+    store = saved("old-token", timedelta(hours=1))
+    client = toast.client(store)
+    client.get(MENUS_PATH)
+    store.token = ToastToken(access_token="newer-token", expires_at=NOW + timedelta(hours=2))
+    toast.reply(
+        MENUS_PATH,
+        load_response("token_expired.json"),
+        load_response("token_expired.json"),
+        httpx2.Response(200, json={}),
+    )
+
+    client.get(MENUS_PATH)
+
+    assert toast.logins() == 1
+    assert bearer(toast.requests_to(MENUS_PATH)[-1]) == f"Bearer {ACCESS_TOKEN}"

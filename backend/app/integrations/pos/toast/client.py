@@ -111,16 +111,21 @@ class ToastClient:
     def ensure_token(self) -> None:
         """Make sure there is an unexpired token, logging in only when there is none.
 
+        Before logging in, the token store is checked again: another import or request may
+        already have saved a fresh token, and reusing it saves a login.
+
         Raises ToastAuthenticationError when Toast rejects the credentials, and
         ToastRateLimitError when Toast is limiting logins.
         """
-        if self._token is None:
-            self._token = self._token_store.load()
-        if self._token is None:
-            self.login()
-        elif self._token.is_expired(self._now()):
+        if self._usable(self._token):
+            return
+        saved = self._token_store.load()
+        if self._usable(saved):
+            self._token = saved
+            return
+        if self._token is not None or saved is not None:
             logger.info("The Toast access token expired; logging in again")
-            self.login()
+        self.login()
 
     def login(self) -> None:
         """Exchange the client ID and secret for an access token, and save it.
@@ -161,6 +166,9 @@ class ToastClient:
         """GET a Toast endpoint for this location, logging in first only if needed."""
         self.ensure_token()
         response = self._get_with_token(path, params)
+        if response.status_code == EXPIRED_TOKEN_STATUS and self._use_newer_saved_token():
+            logger.info("Toast rejected the access token for %s; using a newer saved one", path)
+            response = self._get_with_token(path, params)
         if response.status_code == EXPIRED_TOKEN_STATUS:
             logger.info("Toast rejected the access token for %s; logging in again", path)
             self.login()
@@ -180,6 +188,21 @@ class ToastClient:
         if self._restaurant_guid is not None:
             headers["Toast-Restaurant-External-ID"] = self._restaurant_guid
         return self._send("GET", path, params=params, headers=headers)
+
+    def _usable(self, token: ToastToken | None) -> bool:
+        return token is not None and not token.is_expired(self._now())
+
+    def _use_newer_saved_token(self) -> bool:
+        """After Toast rejected our token: switch to a different, unexpired token that another
+        import or request saved meanwhile. False when there is none, so we must log in."""
+        rejected = self._token
+        saved = self._token_store.load()
+        if saved is None or not self._usable(saved):
+            return False
+        if rejected is not None and saved.access_token == rejected.access_token:
+            return False
+        self._token = saved
+        return True
 
     def _now(self) -> datetime:
         return datetime.fromtimestamp(self._clock(), UTC)
