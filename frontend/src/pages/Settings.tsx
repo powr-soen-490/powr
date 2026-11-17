@@ -5,6 +5,7 @@ import { useState, type ReactNode } from 'react'
 import { Button } from '../components/Button'
 import { Segmented } from '../components/Segmented'
 import { PageHeader } from '../layout/PageHeader'
+import type { SettingsView } from '../layout/navigation'
 import { SalesImport } from './SalesImport'
 
 function SettingsRow({ title, description, children, onClick }: {
@@ -28,10 +29,11 @@ function SettingsRow({ title, description, children, onClick }: {
   )
 }
 
-export function Settings() {
+// initialView lets a link open Import sales history directly; it only sets the first view.
+export function Settings({ initialView = 'main' }: { initialView?: SettingsView }) {
   const [theme, setTheme] = useState('Light')
   const [unit, setUnit] = useState('metric')
-  const [view, setView] = useState<'main' | 'pos'>('main')
+  const [view, setView] = useState<SettingsView>(initialView)
 
   if (view === 'pos') return <SalesImport onBack={() => setView('main')} />
 

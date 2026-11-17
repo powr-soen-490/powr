@@ -2,13 +2,20 @@
 // AI contribution: 50% or more AI-generated
 
 import { useEffect, useState, type ReactNode } from 'react'
-import { Navigate, Route, Routes } from 'react-router'
+import { Navigate, Route, Routes, useLocation } from 'react-router'
 import { useFlags, useFlagsmithLoading } from '@flagsmith/flagsmith/react'
 import './styles/tokens.css'
 import './styles/global.css'
 import { fetchCurrentUser, type AuthUser } from './api/auth'
 import { Sidebar } from './layout/Sidebar'
-import { getVisibleNavigation, PAGE_FLAG_NAMES, PAGE_FLAGS, type PageId } from './layout/navigation'
+import {
+  getVisibleNavigation,
+  PAGE_FLAG_NAMES,
+  PAGE_FLAGS,
+  readDashboardLinkState,
+  type PageId,
+  type SettingsView,
+} from './layout/navigation'
 import { ToastProvider } from './components/Toast'
 import { MockDataProvider } from './mocks/MockDataProvider'
 import { Home } from './pages/Home'
@@ -22,7 +29,11 @@ import SignupPage from './pages/SignupPage'
 import ToastSettingsPage from './pages/ToastSettingsPage'
 
 function Dashboard({ user, onLoggedOut }: { user?: AuthUser; onLoggedOut?: () => void }) {
-  const [page, setPage] = useState<PageId>('home')
+  // A link can ask to open a given page first (see DashboardLinkState). It only sets the
+  // starting page, so moving around afterwards works as usual.
+  const opening = readDashboardLinkState(useLocation().state)
+  const [page, setPage] = useState<PageId>(opening?.page ?? 'home')
+  const [settingsView, setSettingsView] = useState<SettingsView>(opening?.settingsView ?? 'main')
   const flags = useFlags(PAGE_FLAG_NAMES)
   const loading = useFlagsmithLoading()
   const isPageEnabled = (pageId: PageId) => flags[PAGE_FLAGS[pageId]]?.enabled ?? false
@@ -32,13 +43,19 @@ function Dashboard({ user, onLoggedOut }: { user?: AuthUser; onLoggedOut?: () =>
     ? page
     : navigation[0]?.id ?? null
 
+  // Moving to a page always shows its main view, even after a link opened Import directly.
+  const goTo = (nextPage: PageId) => {
+    setSettingsView('main')
+    setPage(nextPage)
+  }
+
   const pages: Record<PageId, ReactNode> = {
-    home: <Home onNavigate={setPage} enabledPages={enabledPages} />,
+    home: <Home onNavigate={goTo} enabledPages={enabledPages} />,
     orders: <RecommendedOrders />,
     forecast: <Forecast />,
     menu: <MenuMapping />,
     inventory: <Inventory />,
-    settings: <Settings />,
+    settings: <Settings initialView={settingsView} />,
   }
 
   if (loading?.isLoading) {
@@ -53,7 +70,7 @@ function Dashboard({ user, onLoggedOut }: { user?: AuthUser; onLoggedOut?: () =>
             page={selectedPage}
             items={navigation}
             onNavigate={(nextPage) => {
-              if (isPageEnabled(nextPage)) setPage(nextPage)
+              if (isPageEnabled(nextPage)) goTo(nextPage)
             }}
             user={user}
             onLoggedOut={onLoggedOut}
