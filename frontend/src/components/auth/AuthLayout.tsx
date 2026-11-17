@@ -139,11 +139,14 @@ interface AuthLayoutProps {
   // Shown in the corner alert when set
   error: { title: string; message: string } | null
   footer: ReactNode
+  // Optional link shown above the title, e.g. back to the page the user came from
+  backLink?: ReactNode
   children: ReactNode
 }
 
-// Shared frame for the login and sign-up pages: brand, card, footer and error alert.
-function AuthLayout({ title, subtitle, error, footer, children }: AuthLayoutProps) {
+// Shared frame for the login, sign-up and Toast connection pages: brand, card, footer and
+// error alert.
+function AuthLayout({ title, subtitle, error, footer, backLink, children }: AuthLayoutProps) {
   return (
     <div className="auth-page">
       {error && (
@@ -160,6 +163,7 @@ function AuthLayout({ title, subtitle, error, footer, children }: AuthLayoutProp
         <p className="auth-brand">POWR</p>
 
         <section className="auth-card" aria-labelledby="auth-heading">
+          {backLink && <div className="auth-back">{backLink}</div>}
           <h1 id="auth-heading" className="auth-heading">{title}</h1>
           <p className="auth-subheading">{subtitle}</p>
           {children}

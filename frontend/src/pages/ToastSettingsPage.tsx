@@ -9,6 +9,7 @@ import {
   type PosCredentials, type ToastConnection,
 } from '../api/pos'
 import AuthLayout from '../components/auth/AuthLayout'
+import { SALES_IMPORT_LINK } from '../layout/navigation'
 import './ToastSettingsPage.css'
 
 function ToastSettingsPage({ user }: { user: AuthUser }) {
@@ -115,7 +116,10 @@ function ToastSettingsPage({ user }: { user: AuthUser }) {
   return (
     <AuthLayout title="Toast connection"
       subtitle="Enter your Toast API credentials. POWR finds your restaurant automatically."
-      error={null} footer={<Link className="auth-link" to="/">Back to home</Link>}>
+      error={null} footer={<Link className="auth-link" to="/">Back to home</Link>}
+      backLink={<Link className="btn btn-ghost" to="/" state={SALES_IMPORT_LINK}>
+        ‹ Back to Import sales history
+      </Link>}>
       {!owner ? <p>Only restaurant owners can view or change POS credentials.</p> : <>
         <p className="toast-status" role="status">
           Status: <strong>{loading ? 'Loading…' : loaded ? status : 'Unavailable'}</strong>
