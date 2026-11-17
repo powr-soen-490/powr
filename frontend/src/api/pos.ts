@@ -37,6 +37,7 @@ const CONNECT_ERRORS: Record<number, string> = {
   502: "Couldn't reach Toast. Try again later.",
 }
 
+// `errors` maps status codes to messages; key 0 replaces the message for any other failure.
 async function request(
   method: string, path: string, body?: unknown, errors: Record<number, string> = {},
 ): Promise<Response> {
@@ -54,11 +55,12 @@ async function request(
     throw new PosError('Could not reach the server. Check your connection and try again.')
   }
   if (!response.ok && !(method === 'GET' && response.status === 404)) {
-    const message = response.status === 401
+    // A message in `errors` wins, so each caller can word its own failures.
+    const message = errors[response.status] ?? (response.status === 401
       ? 'Your session has expired. Log in again.'
       : response.status === 403
         ? 'Only restaurant owners can manage POS credentials.'
-        : errors[response.status] ?? 'Could not save or load Toast credentials. Try again.'
+        : errors[0] ?? 'Could not save or load Toast credentials. Try again.')
     // Do not display arbitrary response text that could contain a submitted secret.
     throw new PosError(message, response.headers.get('X-Request-ID'))
   }
@@ -92,4 +94,82 @@ export async function connectToast(clientId: string, clientSecret: string): Prom
 
 export async function disconnectToast(): Promise<void> {
   await request('DELETE', CONNECTION_URL)
+}
+
+export interface SalesImportJob {
+  id: string
+  status: 'running' | 'failed' | 'done'
+  start_date: string
+  end_date: string
+  last_completed_date: string | null
+  days_completed: number
+  total_days: number
+  percent: number
+  orders_imported: number
+  items_imported: number
+  // Why the import stopped, written by the server for the owner; null unless it failed.
+  error: string | null
+  created_at: string
+  finished_at: string | null
+}
+
+const IMPORTS_URL = '/api/pos/toast/imports'
+
+// Why starting or retrying failed, by status code. When adding or changing a status code here,
+// update IMPORT_ERRORS in backend/app/api/toast_import.py too.
+const IMPORT_ERRORS: Record<number, string> = {
+  0: 'Could not start or load the import. Try again.',
+  403: 'Only restaurant owners can import sales.',
+}
+const START_IMPORT_ERRORS: Record<number, string> = {
+  ...IMPORT_ERRORS,
+  404: 'Connect Toast before importing sales.',
+  409: 'An import is already running.',
+  422: "Those dates can't be imported. Pick days that have already finished, with From before To.",
+}
+const RETRY_IMPORT_ERRORS: Record<number, string> = {
+  ...IMPORT_ERRORS,
+  404: 'Connect Toast again, then retry the import.',
+  409: 'This import is not stopped anymore. Refresh the page.',
+}
+
+function salesImportJob(body: SalesImportJob): SalesImportJob {
+  return {
+    id: body.id,
+    status: body.status,
+    start_date: body.start_date,
+    end_date: body.end_date,
+    last_completed_date: body.last_completed_date,
+    days_completed: body.days_completed,
+    total_days: body.total_days,
+    percent: body.percent,
+    orders_imported: body.orders_imported,
+    items_imported: body.items_imported,
+    error: body.error,
+    created_at: body.created_at,
+    finished_at: body.finished_at,
+  }
+}
+
+// The restaurant's latest sales import, or null when it has never imported.
+export async function getLatestSalesImport(): Promise<SalesImportJob | null> {
+  const response = await request('GET', `${IMPORTS_URL}/latest`, undefined, IMPORT_ERRORS)
+  const body = await response.json() as SalesImportJob | null
+  return body === null ? null : salesImportJob(body)
+}
+
+// Starts importing the business days from start to end in the background.
+export async function startSalesImport(start: string, end: string): Promise<SalesImportJob> {
+  const response = await request(
+    'POST', IMPORTS_URL, { start_date: start, end_date: end }, START_IMPORT_ERRORS,
+  )
+  return salesImportJob(await response.json() as SalesImportJob)
+}
+
+// Continues a failed import from the day after the last one it saved.
+export async function retrySalesImport(id: string): Promise<SalesImportJob> {
+  const response = await request(
+    'POST', `${IMPORTS_URL}/${encodeURIComponent(id)}/retry`, undefined, RETRY_IMPORT_ERRORS,
+  )
+  return salesImportJob(await response.json() as SalesImportJob)
 }
