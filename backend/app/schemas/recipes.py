@@ -138,3 +138,31 @@ class MenuItemModifierResponse(BaseModel):
     group_name: str
     price: Decimal | None
     sold_with_item: int = Field(description="Times sold with this item in the last 90 days.")
+
+
+class CoverageResponse(BaseModel):
+    items_total: int
+    items_mapped: int = Field(description="Items with a recipe in effect (mapped or review).")
+    item_share: Decimal | None = Field(description="items_mapped / items_total, 0 to 1.")
+    revenue_total: Decimal = Field(description="Revenue over the last 90 days.")
+    revenue_mapped: Decimal
+    revenue_share: Decimal | None = Field(description="revenue_mapped / revenue_total, 0 to 1.")
+
+
+class MenuItemSummaryResponse(BaseModel):
+    id: UUID
+    name: str
+    price: Decimal | None
+    is_active: bool
+    status: Literal["unmapped", "needs_review", "mapped"]
+    review_reasons: list[Literal["inactive_ingredient", "menu_item_changed", "unmapped_modifier"]]
+    unmapped_modifiers: list[str] = Field(description="Sold with the item, without lines.")
+    revenue_90d: Decimal
+    recipe_effective_from: datetime | None = Field(description="Of the version in effect now.")
+
+
+class MenuOverviewResponse(BaseModel):
+    coverage: CoverageResponse
+    items: list[MenuItemSummaryResponse] = Field(
+        description="Unmapped first, then needs review, then mapped; by revenue in each."
+    )

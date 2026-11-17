@@ -17,11 +17,14 @@ from sqlalchemy.orm import Session
 from app.core.auth import CurrentUserDep, RecipeEditorDep
 from app.core.database import get_db
 from app.core.units import UnitError
-from app.modules.recipes import ingredient_service
+from app.modules.recipes import coverage_service, ingredient_service
 from app.modules.recipes import recipe_service as service
 from app.modules.recipes.recipe_repository import Line, ModifierLine, Version
 from app.schemas.recipes import (
+    CoverageResponse,
     MenuItemModifierResponse,
+    MenuItemSummaryResponse,
+    MenuOverviewResponse,
     ModifierLineResponse,
     RecipeLineResponse,
     RecipeResponse,
@@ -41,6 +44,44 @@ RECIPE_ERRORS: dict[type[Exception], int] = {
     service.RecipeNotFoundError: status.HTTP_404_NOT_FOUND,
 }
 HANDLED = (UnitError, ingredient_service.IngredientError, service.RecipeError)
+
+
+@router.get("", response_model=MenuOverviewResponse)
+def menu_overview(
+    user: CurrentUserDep, db: DbSession, status: coverage_service.Status | None = None
+) -> MenuOverviewResponse:
+    """The menu mapping list: each item's status, and coverage by items and 90-day revenue.
+
+    Unmapped items come first, highest revenue first. ``status`` filters the items only;
+    coverage always covers the whole menu.
+    """
+    coverage, items = coverage_service.menu_overview(
+        db, restaurant_id=user.restaurant_id, now=datetime.now(UTC), status=status
+    )
+    return MenuOverviewResponse(
+        coverage=CoverageResponse(
+            items_total=coverage.items_total,
+            items_mapped=coverage.items_mapped,
+            item_share=coverage.item_share,
+            revenue_total=coverage.revenue_total,
+            revenue_mapped=coverage.revenue_mapped,
+            revenue_share=coverage.revenue_share,
+        ),
+        items=[
+            MenuItemSummaryResponse(
+                id=item.facts.id,
+                name=item.facts.name,
+                price=item.facts.price,
+                is_active=item.facts.is_active,
+                status=item.status,
+                review_reasons=item.review_reasons,
+                unmapped_modifiers=item.facts.unmapped_modifiers,
+                revenue_90d=item.facts.revenue,
+                recipe_effective_from=item.facts.effective_from,
+            )
+            for item in items
+        ],
+    )
 
 
 @router.get("/{menu_item_id}/recipe", response_model=RecipeResponse)
