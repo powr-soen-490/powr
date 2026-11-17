@@ -424,7 +424,9 @@ Grill data, scrubbed: the menu and the orders of **Nov 9–15, 2026**, in
 `backend/tests/fixtures/toast_week/`. The tests use it, and so can local development:
 
 1. Set `TOAST_USE_RECORDED_DATA=true` in `.env` and recreate the backend
-   (`docker compose up -d backend`; `restart` does not read `.env` again).
+   (`docker compose up -d backend`; `restart` does not read `.env` again). If your database
+   existed before #53, add the new tables first; see
+   [Run the backend](../README.md#option-a-with-docker) in the README.
 2. Connect Toast on `/settings/pos` with **any** client ID and secret. The page shows
    "Connected to: Recorded Toast week (Nov 9-15, 2026)".
 3. On **Import sales history**, import **2026-11-09 to 2026-11-15**: 367 orders, 743 items.
