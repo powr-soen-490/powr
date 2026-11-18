@@ -205,6 +205,9 @@ def _line(line: Line | ModifierLine) -> dict[str, object]:
         "entered_quantity": line.entered_quantity,
         "entered_unit": line.entered_unit,
         "cost": service.line_cost(line),
+        "unit_cost": line.unit_cost,
+        "vendor_name": line.vendor_name,
+        "ingredient_active": line.ingredient_active,
     }
 
 

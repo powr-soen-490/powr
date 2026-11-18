@@ -20,6 +20,7 @@ class UnitGroupResponse(BaseModel):
     kind: str
     base_unit: str
     units: list[str]
+    factors: dict[str, Decimal] = Field(description="How many base units one of each unit is.")
 
 
 class VendorCreateRequest(BaseModel):
@@ -103,6 +104,9 @@ class RecipeLineResponse(BaseModel):
     entered_quantity: Decimal
     entered_unit: str
     cost: Decimal | None = Field(description="At today's prices; null when unpriced.")
+    unit_cost: Decimal | None = Field(description="Price of one base unit; null when unpriced.")
+    vendor_name: str | None
+    ingredient_active: bool
 
 
 class ModifierLineResponse(RecipeLineResponse):

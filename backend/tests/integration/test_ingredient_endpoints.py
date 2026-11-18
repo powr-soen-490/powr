@@ -26,7 +26,12 @@ def create(client: TestClient, path: str, body: dict[str, Any]) -> dict[str, Any
 
 def test_units_are_grouped_by_kind(make_client: ClientFactory) -> None:
     groups = make_client().get("/api/units").json()
-    assert {"kind": "count", "base_unit": "each", "units": ["each", "dozen"]} in groups
+    count = next(group for group in groups if group["kind"] == "count")
+    assert (count["base_unit"], count["units"]) == ("each", ["each", "dozen"])
+    assert {code: Decimal(factor) for code, factor in count["factors"].items()} == {
+        "each": 1,
+        "dozen": 12,
+    }
 
 
 def test_owner_builds_vendors_and_ingredients(

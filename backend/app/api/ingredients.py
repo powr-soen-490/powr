@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.core.auth import CurrentUserDep, RecipeEditorDep
 from app.core.database import get_db
-from app.core.units import BASE_UNITS, UnitError, units_by_kind
+from app.core.units import BASE_UNITS, UNITS, UnitError, units_by_kind
 from app.modules.recipes import ingredient_service as service
 from app.modules.recipes.ingredient_repository import Ingredient, Vendor
 from app.schemas.recipes import (
@@ -43,7 +43,12 @@ INGREDIENT_ERRORS: dict[type[Exception], int] = {
 def list_units() -> list[UnitGroupResponse]:
     """Every supported unit, grouped by kind, with the kind's base unit."""
     return [
-        UnitGroupResponse(kind=kind.value, base_unit=BASE_UNITS[kind], units=units)
+        UnitGroupResponse(
+            kind=kind.value,
+            base_unit=BASE_UNITS[kind],
+            units=units,
+            factors={code: UNITS[code].factor for code in units},
+        )
         for kind, units in units_by_kind().items()
     ]
 
