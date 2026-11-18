@@ -1,48 +1,47 @@
 // Source-File AI Declaration
 // AI contribution: 50% or more AI-generated
 
+import type { MenuItemSummary } from '../../api/recipes'
 import { Badge } from '../../components/Badge'
-import { dishStatus, plural } from '../../mocks/helpers'
-import type { Dish, DishStatus } from '../../mocks/types'
+import { formatMoney } from '../../mocks/helpers'
+import { REVIEW_REASONS } from './recipeDraft'
 
-function describe(dish: Dish): string {
-  if (dish.removedFromPos) return `${dish.category} · removed from POS`
-  if (dish.ingredients.length === 0) return `${dish.category} · no ingredients yet`
-  const parts = [dish.category, plural(dish.ingredients.length, 'ingredient')]
-  if (dish.modifiers.length > 0) parts.push(plural(dish.modifiers.length, 'modifier'))
-  return parts.join(' · ')
+function describe(item: MenuItemSummary): string {
+  const revenue = `${formatMoney(Number(item.revenue_90d))} in 90 days`
+  if (!item.is_active) return `Removed from POS · ${revenue}`
+  if (item.status === 'needs_review') return REVIEW_REASONS[item.review_reasons[0]] ?? revenue
+  return revenue
 }
 
-export function StatusBadge({ status }: { status: DishStatus }) {
-  if (status === 'mapped') return <Badge tone="success">Mapped</Badge>
-  if (status === 'unmapped') return <Badge tone="warning">Unmapped</Badge>
-  return <Badge tone="neutral">Inactive</Badge>
+export function StatusBadge({ item }: { item: MenuItemSummary }) {
+  if (item.status === 'mapped') return <Badge tone="success">Mapped</Badge>
+  if (item.status === 'needs_review') return <Badge tone="info">Needs review</Badge>
+  return <Badge tone="warning">Unmapped</Badge>
 }
 
-export function DishList({ dishes, selectedId, onSelect }: {
-  dishes: Dish[]
-  selectedId: string
+export function DishList({ items, selectedId, onSelect }: {
+  items: MenuItemSummary[]
+  selectedId: string | null
   onSelect: (id: string) => void
 }) {
-  if (dishes.length === 0) return <p className="list-empty">No menu items match your filters.</p>
+  if (items.length === 0) return <p className="list-empty">No menu items match your filters.</p>
   return (
     <ul className="dish-list">
-      {dishes.map((dish) => {
-        const status = dishStatus(dish)
-        const on = dish.id === selectedId
+      {items.map((item) => {
+        const on = item.id === selectedId
         return (
-          <li key={dish.id}>
+          <li key={item.id}>
             <button
               type="button"
-              className={`dish-row${on ? ' on' : ''}${status === 'inactive' ? ' muted' : ''}`}
+              className={`dish-row${on ? ' on' : ''}${item.is_active ? '' : ' muted'}`}
               aria-current={on ? 'true' : undefined}
-              onClick={() => onSelect(dish.id)}
+              onClick={() => onSelect(item.id)}
             >
               <span className="dish-text">
-                <span className="dish-name">{dish.name}</span>
-                <span className="caption">{describe(dish)}</span>
+                <span className="dish-name">{item.name}</span>
+                <span className="caption">{describe(item)}</span>
               </span>
-              <StatusBadge status={status} />
+              <StatusBadge item={item} />
             </button>
           </li>
         )

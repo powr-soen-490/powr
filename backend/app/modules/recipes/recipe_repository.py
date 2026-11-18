@@ -54,6 +54,8 @@ class Line:
     entered_quantity: Decimal
     entered_unit: str
     unit_cost: Decimal | None
+    vendor_name: str | None = None
+    ingredient_active: bool = True
 
 
 @dataclass(frozen=True)
@@ -68,6 +70,8 @@ class ModifierLine:
     entered_quantity: Decimal
     entered_unit: str
     unit_cost: Decimal | None
+    vendor_name: str | None = None
+    ingredient_active: bool = True
 
 
 def get_menu_item(db: Session, *, restaurant_id: UUID, menu_item_id: UUID) -> MenuItem | None:
@@ -204,9 +208,11 @@ def lines(db: Session, *, restaurant_id: UUID, version_id: UUID) -> list[Line]:
     rows = db.execute(
         text("""
             SELECT l.ingredient_id, i.name AS ingredient_name, i.base_unit, l.quantity,
-                   l.entered_quantity, l.entered_unit, i.pack_price / i.pack_size AS unit_cost
+                   l.entered_quantity, l.entered_unit, i.pack_price / i.pack_size AS unit_cost,
+                   v.name AS vendor_name, i.is_active AS ingredient_active
             FROM recipe_lines AS l
             JOIN ingredients AS i ON i.id = l.ingredient_id AND i.restaurant_id = l.restaurant_id
+            LEFT JOIN vendors AS v ON v.id = i.vendor_id AND v.restaurant_id = i.restaurant_id
             WHERE l.restaurant_id = :restaurant_id AND l.recipe_version_id = :version_id
             ORDER BY lower(i.name)
         """),
@@ -220,9 +226,11 @@ def modifier_lines(db: Session, *, restaurant_id: UUID, version_id: UUID) -> lis
         text("""
             SELECT l.menu_modifier_id, mm.name AS modifier_name, l.effect, l.ingredient_id,
                    i.name AS ingredient_name, i.base_unit, l.quantity, l.entered_quantity,
-                   l.entered_unit, i.pack_price / i.pack_size AS unit_cost
+                   l.entered_unit, i.pack_price / i.pack_size AS unit_cost,
+                   v.name AS vendor_name, i.is_active AS ingredient_active
             FROM recipe_modifier_lines AS l
             JOIN ingredients AS i ON i.id = l.ingredient_id AND i.restaurant_id = l.restaurant_id
+            LEFT JOIN vendors AS v ON v.id = i.vendor_id AND v.restaurant_id = i.restaurant_id
             JOIN menu_modifiers AS mm
               ON mm.id = l.menu_modifier_id AND mm.restaurant_id = l.restaurant_id
             WHERE l.restaurant_id = :restaurant_id AND l.recipe_version_id = :version_id

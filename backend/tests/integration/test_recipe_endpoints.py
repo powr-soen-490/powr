@@ -62,9 +62,10 @@ def kitchen(make_client: ClientFactory, sign_up_owner: SignUp, migrated_engine: 
                 keys,
             ).scalar_one()
         )
+    sysco = owner.post("/api/vendors", json={"name": "Sysco"}).json()["id"]
     for name, unit, pack in [
         ("Chicken breast", "g", {"pack_size": "5", "pack_unit": "kg", "pack_price": "86.25"}),
-        ("Pita", "each", {"pack_size": "24", "pack_price": "10.32"}),
+        ("Pita", "each", {"pack_size": "24", "pack_price": "10.32", "vendor_id": sysco}),
         ("Feta", "g", {}),
     ]:
         response = owner.post("/api/ingredients", json={"name": name, "base_unit": unit, **pack})
@@ -105,6 +106,7 @@ def test_map_change_and_show_versions(kitchen: Kitchen) -> None:
     # 200 g of chicken at $86.25 per 5 kg, and one pita at $10.32 for 24
     assert costs == [("Chicken breast", Decimal("3.45")), ("Pita", Decimal("0.43"))]
     assert Decimal(body["total_cost"]) == Decimal("3.88")
+    assert [line["vendor_name"] for line in body["lines"]] == [None, "Sysco"]
     [extra] = body["modifier_lines"]
     assert (extra["modifier_name"], extra["effect"], Decimal(extra["quantity"])) == (
         "Extra feta",

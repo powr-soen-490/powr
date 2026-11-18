@@ -1,62 +1,71 @@
 // Source-File AI Declaration
 // AI contribution: 50% or more AI-generated
 
+import type { MenuModifier } from '../../api/recipes'
 import { Button } from '../../components/Button'
 import { Icon } from '../../components/Icon'
-import { formatQty } from '../../mocks/helpers'
-import type { Dish, InventoryItem, Modifier } from '../../mocks/types'
+import { formatQty, plural } from '../../mocks/helpers'
+import type { Draft, DraftModifierLine } from './recipeDraft'
 
-function ModifierEffect({ modifier, dish, items }: { modifier: Modifier; dish: Dish; items: InventoryItem[] }) {
-  const name = (id: string | null) => items.find((i) => i.id === id)?.name ?? ''
-  const amount = modifier.quantity !== null && modifier.unit ? formatQty(modifier.quantity, modifier.unit) : ''
-  if (modifier.kind === 'add-on') {
-    return <>Adds <strong className="num">{amount}</strong> {name(modifier.itemId)}</>
-  }
-  const replaced = dish.ingredients.find((i) => i.itemId === modifier.replacesItemId)
-  return (
-    <>
-      Replaces <s className="secondary">{name(modifier.replacesItemId)}{replaced && ` ${formatQty(replaced.quantity, replaced.unit)}`}</s>
-      {' '}with <strong className="num">{amount}</strong> {name(modifier.itemId)}
-    </>
-  )
+function describeLine(line: DraftModifierLine): string {
+  const verb = line.effect === 'add' ? 'Adds' : 'Removes'
+  return `${verb} ${formatQty(Number(line.quantity) || 0, line.unit)} ${line.ingredient.name}`
 }
 
-export function ModifiersCard({ dish, items, readOnly, onEdit }: {
-  dish: Dish
-  items: InventoryItem[]
+export function ModifiersCard({ modifiers, totalCount, showAll, draft, readOnly, onToggleAll, onEdit }: {
+  modifiers: MenuModifier[]
+  totalCount: number
+  showAll: boolean
+  draft: Draft
   readOnly: boolean
-  onEdit: (modifier: Modifier) => void
+  onToggleAll: () => void
+  onEdit: (modifier: MenuModifier) => void
 }) {
   return (
     <section className="card">
       <h3>Modifiers &amp; substitutions</h3>
-      <p className="caption card-intro">Synced from the POS. Applied on top of the base ingredients when ordered.</p>
-      {dish.modifiers.length === 0 ? (
-        <p className="list-empty">No modifiers for this dish in the POS.</p>
+      <p className="caption card-intro">
+        From the POS. A modifier adds or removes ingredients when ordered; a substitution removes one and adds another.
+      </p>
+      {modifiers.length === 0 ? (
+        <p className="list-empty">
+          {totalCount === 0 ? 'No modifiers in the POS.' : 'No modifiers sold with this item in the last 90 days.'}
+        </p>
       ) : (
         <ul className="modifier-list">
-          {dish.modifiers.map((m) => {
-            const unmapped = m.itemId === null
-            const kind = m.kind === 'add-on' ? 'Add-on' : 'Substitution'
+          {modifiers.map((m) => {
+            const lines = draft.modifierLines.filter((line) => line.modifierId === m.id)
+            const unmapped = lines.length === 0 && m.sold_with_item > 0
+            const sold = m.sold_with_item > 0
+              ? `Sold with it ${plural(m.sold_with_item, 'time')} in 90 days`
+              : 'Not sold with it in 90 days'
             return (
               <li key={m.id} className={`modifier-row${unmapped ? ' unmapped' : ''}`}>
                 <div className="modifier-name">
-                  <div className="kicker">{unmapped && <Icon name="warning" size={14} />}{kind}{unmapped && ' · unmapped'}</div>
+                  <div className="kicker">{unmapped && <Icon name="warning" size={14} />}{m.group_name}{unmapped && ' · unmapped'}</div>
                   <div className="strong">{m.name}</div>
+                  <div className="caption">{sold}</div>
                 </div>
                 <div className="modifier-effect">
-                  {unmapped
-                    ? "New from the POS. Orders with this modifier won't count toward forecasts yet."
-                    : <ModifierEffect modifier={m} dish={dish} items={items} />}
+                  {lines.length > 0
+                    ? lines.map(describeLine).join(' · ')
+                    : unmapped
+                      ? "Orders with this modifier don't change the ingredients counted yet."
+                      : 'No ingredient changes.'}
                 </div>
-                {unmapped
-                  ? <Button size="sm" variant="primary" disabled={readOnly} onClick={() => onEdit(m)}>Map ingredients</Button>
+                {lines.length === 0
+                  ? <Button size="sm" variant={unmapped ? 'primary' : 'secondary'} disabled={readOnly} onClick={() => onEdit(m)}>Map ingredients</Button>
                   : <Button size="sm" icon="pencil" disabled={readOnly} onClick={() => onEdit(m)}>Edit</Button>}
               </li>
             )
           })}
         </ul>
       )}
+      {totalCount > modifiers.length || showAll ? (
+        <Button size="sm" className="card-more" onClick={onToggleAll}>
+          {showAll ? 'Show only modifiers sold with this item' : `Show all ${totalCount} modifiers`}
+        </Button>
+      ) : null}
     </section>
   )
 }
