@@ -24,7 +24,7 @@ Architecture rules are in [`CLAUDE.md`](CLAUDE.md), and the AI declaration polic
 
 | Release | Demo video |
 |---|---|
-| Release 1 | TODO: add the demo video link |
+| Release 1 | [Demo](https://drive.google.com/file/d/11hW1dUvXcLXpEnEfL0ujzenk4t9D_0EC/view?usp=sharing) |
 
 ## Getting started
 
