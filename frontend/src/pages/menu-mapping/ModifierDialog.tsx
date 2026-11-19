@@ -2,74 +2,95 @@
 // AI contribution: 50% or more AI-generated
 
 import { useState } from 'react'
-import { Button } from '../../components/Button'
+import type { MenuModifier, UnitGroup } from '../../api/recipes'
+import { Button, IconButton } from '../../components/Button'
 import { Dialog } from '../../components/Dialog'
 import { NumberField, Select } from '../../components/fields'
-import { unitsFor } from '../../mocks/helpers'
-import type { Dish, InventoryItem, Modifier, Unit } from '../../mocks/types'
+import { AddIngredientBar, type CreateIngredient } from './AddIngredientBar'
+import { parseQuantity, unitsFor, type DraftModifierLine } from './recipeDraft'
 
-// Applies to the dish draft; the page's Save mapping commits it.
-export function ModifierDialog({ modifier, dish, items, onApply, onClose }: {
-  modifier: Modifier
-  dish: Dish
-  items: InventoryItem[]
-  onApply: (modifier: Modifier) => void
+type Effect = DraftModifierLine['effect']
+
+const EFFECTS: { value: Effect; label: string }[] = [
+  { value: 'add', label: 'Adds' },
+  { value: 'remove', label: 'Removes' },
+]
+
+// Edits what one modifier does to the dish. Apply changes the page's draft; "Save mapping"
+// commits it. A substitution ("rice instead of pita") is one line that removes and one that adds.
+// `hidden` keeps the dialog's state while the new-ingredient dialog is open over it.
+export function ModifierDialog({ modifier, lines: initialLines, groups, hidden, onApply, onClose, onCreate }: {
+  modifier: MenuModifier
+  lines: DraftModifierLine[]
+  groups: UnitGroup[]
+  hidden: boolean
+  onApply: (lines: DraftModifierLine[]) => void
   onClose: () => void
+  onCreate: CreateIngredient
 }) {
-  const [itemId, setItemId] = useState(modifier.itemId ?? '')
-  const [replacesItemId, setReplacesItemId] = useState(modifier.replacesItemId ?? dish.ingredients[0]?.itemId ?? '')
-  const [qty, setQty] = useState(modifier.quantity === null ? '' : String(modifier.quantity))
-  const [unit, setUnit] = useState<Unit>(modifier.unit ?? 'g')
-  const item = items.find((i) => i.id === itemId)
-  const isSwap = modifier.kind === 'substitution'
+  const [lines, setLines] = useState(initialLines)
+  const [effect, setEffect] = useState<Effect>('add')
+  const invalid = lines.some((line) => parseQuantity(line.quantity) === null)
 
-  const itemOptions = [{ value: '', label: 'Choose an inventory item' },
-    ...items.filter((i) => i.active).map((i) => ({ value: i.id, label: i.name }))]
-  const replaceOptions = dish.ingredients.map((ing) => ({
-    value: ing.itemId,
-    label: items.find((i) => i.id === ing.itemId)?.name ?? ing.itemId,
-  }))
-
-  function apply() {
-    onApply({ ...modifier, itemId, quantity: Number(qty) || 0, unit, replacesItemId: isSwap ? replacesItemId : null })
+  function update(index: number, patch: Partial<DraftModifierLine>) {
+    setLines(lines.map((line, i) => (i === index ? { ...line, ...patch } : line)))
   }
 
   return (
     <Dialog
-      open
-      width={520}
-      title={`${modifier.itemId === null ? 'Map' : 'Edit'} “${modifier.name}”`}
+      open={!hidden}
+      width={640}
+      title={`${initialLines.length === 0 ? 'Map' : 'Edit'} “${modifier.name}”`}
       onClose={onClose}
       actions={<>
         <Button onClick={onClose}>Cancel</Button>
-        <Button variant="primary" disabled={!item || !qty} onClick={apply}>Apply</Button>
+        <Button variant="primary" disabled={invalid} onClick={() => onApply(lines)}>Apply</Button>
       </>}
     >
-      <p className="caption">
-        {isSwap ? 'When ordered, this swaps one base ingredient for another.' : 'When ordered, this adds an ingredient on top of the base recipe.'}
-      </p>
-      {isSwap && <Select label="Replaces" value={replacesItemId} options={replaceOptions} onChange={setReplacesItemId} />}
-      <Select
-        label={isSwap ? 'With' : 'Inventory item'}
-        value={itemId}
-        options={itemOptions}
-        onChange={(id) => {
-          setItemId(id)
-          const next = items.find((i) => i.id === id)
-          if (next && !unitsFor(next.stockUnit).includes(unit)) setUnit(unitsFor(next.stockUnit)[0])
-        }}
-      />
-      <div className="field-row">
-        <NumberField className="grow" label="Quantity per order" placeholder="0" value={qty} onChange={setQty} />
-        <Select
-          className="w-100"
-          label="Unit"
-          value={unit}
-          disabled={!item}
-          options={(item ? unitsFor(item.stockUnit) : [unit]).map((u) => ({ value: u, label: u }))}
-          onChange={(u) => setUnit(u as Unit)}
-        />
-      </div>
+      <p className="caption">When this modifier is ordered, these ingredients are added to or removed from one order.</p>
+      {lines.length === 0 ? (
+        <p className="list-empty">No ingredient changes yet.</p>
+      ) : (
+        <table>
+          <tbody>
+            {lines.map((line, index) => {
+              const name = line.ingredient.name
+              return (
+                <tr key={`${line.effect}-${line.ingredient.id}`}>
+                  <td className="w-120">
+                    <Select label={`Effect on ${name}`} hideLabel compact value={line.effect} options={EFFECTS}
+                      onChange={(value) => update(index, { effect: value as Effect })} />
+                  </td>
+                  <td className="strong">{name}</td>
+                  <td className="w-100">
+                    <NumberField label={`Quantity of ${name}`} hideLabel compact value={line.quantity}
+                      error={parseQuantity(line.quantity) === null ? 'Above 0' : undefined}
+                      onChange={(quantity) => update(index, { quantity })} />
+                  </td>
+                  <td className="w-100">
+                    <Select label={`Unit for ${name}`} hideLabel compact value={line.unit}
+                      options={unitsFor(groups, line.ingredient).map((u) => ({ value: u, label: u }))}
+                      onChange={(unit) => update(index, { unit })} />
+                  </td>
+                  <td className="w-44">
+                    <IconButton icon="bin" label={`Remove ${name}`} size="sm"
+                      onClick={() => setLines(lines.filter((_, i) => i !== index))} />
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      )}
+      <AddIngredientBar
+        groups={groups}
+        disabled={false}
+        excludeIds={lines.map((line) => line.ingredient.id)}
+        onCreate={onCreate}
+        onAdd={(line) => setLines([...lines, { ...line, modifierId: modifier.id, effect }])}
+      >
+        <Select className="w-120" label="Change" value={effect} options={EFFECTS} onChange={(v) => setEffect(v as Effect)} />
+      </AddIngredientBar>
     </Dialog>
   )
 }

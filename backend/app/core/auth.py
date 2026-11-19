@@ -98,3 +98,17 @@ def require_owner(user: CurrentUserDep) -> CurrentUser:
 
 
 OwnerDep = Annotated[CurrentUser, Depends(require_owner)]
+
+# Who may change recipes, ingredients and vendors. Remove KITCHEN_MANAGER to make these
+# edits owner-only; everyone in the restaurant can still read them.
+RECIPE_EDITOR_ROLES = frozenset({OWNER, KITCHEN_MANAGER})
+
+
+def require_recipe_editor(user: CurrentUserDep) -> CurrentUser:
+    """Lets only RECIPE_EDITOR_ROLES through; anyone else gets 403."""
+    if user.role not in RECIPE_EDITOR_ROLES:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=FORBIDDEN_ERROR)
+    return user
+
+
+RecipeEditorDep = Annotated[CurrentUser, Depends(require_recipe_editor)]
