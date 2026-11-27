@@ -1,6 +1,6 @@
 # POWR hi-fi mockups
 
-High-fidelity mockups of the POWR web app, designed in Canva ("Mockups - POWR", [view in Canva](https://www.canva.com/d/hZ3DfgDPUiAvLcl)) and exported as PNG at 1440 px wide. They build on the rough sketches in [`../sketches/`](../sketches/) the design foundations in [`../foundations/`](../foundations/), and the brand and UI proposal in [`../brand/`](../brand/), and show the dashboard with Mykonos Grill's data as the example restaurant.
+High-fidelity mockups of the POWR web app, designed in Canva ("Mockups - POWR", [view in Canva](https://www.canva.com/d/hZ3DfgDPUiAvLcl)) and exported as PNG at 1440 px wide. They build on the rough sketches in [`../sketches/`](../sketches/), the design foundations in [`../foundations/`](../foundations/), and the brand and UI proposal in [`../brand/`](../brand/). They show the dashboard with Mykonos Grill's data as the example restaurant.
 
 | # | Screen | User story | File |
 |---|---|---|---|
